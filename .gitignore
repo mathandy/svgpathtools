@@ -1,0 +1,4 @@
+*.pyc
+.*
+/svgpathtools/nonunittests
+!/.gitignore

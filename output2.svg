@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<svg baseProfile="full" height="600px" version="1.1" viewBox="-25.5 -25.5 376.0 376.0" width="600px" xmlns="http://www.w3.org/2000/svg" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<defs/>
+	<path d="M 10.5,80.0 C 40.0,10.0 65.0,10.0 95.0,80.0 C 125.0,150.0 150.0,150.0 180.0,80.0" fill="none" stroke="red"/>
+	<path d="M 84.0,92.0 C 94.0,102.0 114.0,102.0 124.0,92.0" fill="none" stroke="purple"/>
+	<path d="M 40.0,100.0 Q 100.0,50.0 65.0,20.0" fill="none" stroke="blue"/>
+	<path d="M 10.0,315.0 L 110.0,215.0 A 30.6416522074,51.0694203457 0.0 0,1 162.55,162.45 L 172.55,152.45 A 30.1,50.1 -45.0 0,1 215.1,109.9 L 315.0,10.0" fill="green" fill-opacity="0.5" stroke="black" stroke-width="2"/>
+	<circle cx="52.5625" cy="27.5" fill="red" r="5"/>
+	<circle cx="52.6653942856" cy="27.5003296408" fill="green" r="5"/>
+	<circle cx="137.5" cy="132.5" fill="purple" r="5"/>
+	<circle cx="104.0" cy="99.5" fill="purple" r="5"/>
+	<circle cx="76.25" cy="55.0" fill="red" r="5"/>
+	<circle cx="72.4661531169" cy="63.8283469353" fill="green" r="5"/>
+	<circle cx="60.0" cy="265.0" fill="purple" r="5"/>
+	<circle cx="120.5100001" cy="144.933334054" fill="red" r="5"/>
+	<circle cx="115.010503028" cy="151.954994361" fill="green" r="5"/>
+	<circle cx="167.55" cy="157.45" fill="purple" r="5"/>
+	<circle cx="159.42414315" cy="96.77414315" fill="red" r="5"/>
+	<circle cx="159.42414315" cy="96.77414315" fill="green" r="5"/>
+	<circle cx="265.05" cy="59.95" fill="purple" r="5"/>
+</svg>

@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<svg baseProfile="full" height="368px" version="1.1" viewBox="138.46883649 65.274611702 420.978169975 257.645495611" width="600px" xmlns="http://www.w3.org/2000/svg" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<defs>
+		<path d="M 175.0,162.5 L 175.0,236.805280985" id="tp0"/>
+		<path d="M 397.915842954,162.5 L 397.915842954,88.1947190152" id="tp1"/>
+	</defs>
+	<path d="M 300.0,100.0 C 100.0,100.0 200.0,200.0 200.0,300.0" fill="none" stroke="blue" stroke-width="0.347915842954"/>
+	<path d="M 175.0,162.5 L 175.0,236.805280985" fill="none" stroke="green" stroke-width="0.347915842954"/>
+	<path d="M 175.0,162.5 L 249.305280985,162.5" fill="none" stroke="pink" stroke-width="0.347915842954"/>
+	<path d="M 422.915842954,300.0 C 422.915842954,200.0 322.915842954,100.0 522.915842954,100.0" fill="none" stroke="black" stroke-width="0.347915842954"/>
+	<path d="M 397.915842954,162.5 L 397.915842954,88.1947190152" fill="none" stroke="green" stroke-width="0.347915842954"/>
+	<path d="M 397.915842954,162.5 L 323.61056197,162.5" fill="none" stroke="pink" stroke-width="0.347915842954"/>
+	<circle cx="175.0" cy="162.5" fill="#ff0000" r="1.73957921477"/>
+	<circle cx="397.915842954" cy="162.5" fill="#ff0000" r="1.73957921477"/>
+	<text font-size="12">
+		<textPath xlink:href="#tp0">b's tangent</textPath>
+	</text>
+	<text font-size="12">
+		<textPath xlink:href="#tp1">br's tangent</textPath>
+	</text>
+</svg>
