@@ -621,12 +621,6 @@ Compatibility Notes for users of svg.path (v2.0)
 this method has been changed to use default format (instead of the
 General format, {:G}), for inceased precision. `↩ <#a2>`__
 
-To Do
------
-
--  Implement Arc X Arc intersections.
--  Implement Arc.radialrange() method.
-
 Licence
 -------
 
