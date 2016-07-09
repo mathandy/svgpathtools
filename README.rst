@@ -256,7 +256,7 @@ viewer.
     # Let's make a new SVG that's identical to the first
     wsvg(paths, attributes=attributes, filename='output1.svg')
 
-.. figure:: output1.svg
+.. figure:: https://cdn.rawgit.com/mathandy/svgpathtools/master/output1.svg
    :alt: output1.svg
 
    output1.svg
@@ -453,7 +453,7 @@ Translations (shifts), reversing orientation, and normal vectors
          'bgpkgp', nodes=[b.point(t), br.point(t)], filename='vectorframes.svg', 
          text=["b's tangent", "br's tangent"], text_path=[tangent_line, tangent_line_r])
 
-.. figure:: vectorframes.svg
+.. figure:: https://cdn.rawgit.com/mathandy/svgpathtools/master/test.svg
    :alt: vectorframes.svg
 
    vectorframes.svg
@@ -480,7 +480,7 @@ Rotations and Translations
     decorated_ellipse = decorated_ellipse.translated(4+0j)
     wsvg([top_half, midline, decorated_ellipse], filename='decorated_ellipse.svg')
 
-.. figure:: decorated_ellipse.svg
+.. figure:: https://cdn.rawgit.com/mathandy/svgpathtools/master/decorated_ellipse.svg
    :alt: decorated\_ellipse.svg
 
    decorated\_ellipse.svg
@@ -528,7 +528,7 @@ related inverse arc length methods ``.ilength()`` function to do this.
     wsvg(paths, nodes=dots, node_colors=ncols, node_radii=nradii, 
          attributes=attributes, filename='output2.svg')
 
-.. figure:: output2.svg
+.. figure:: https://cdn.rawgit.com/mathandy/svgpathtools/master/output2.svg
    :alt: output2.svg
 
    output2.svg
@@ -549,7 +549,7 @@ Intersections between Bezier curves
     disvg(paths, filename='output_intersections.svg', attributes=attributes,
           nodes = intersections, node_radii = [5]*len(intersections))
 
-.. figure:: output_intersections.svg
+.. figure:: https://cdn.rawgit.com/mathandy/svgpathtools/master/output_intersections.svg
    :alt: output\_intersections.svg
 
    output\_intersections.svg
@@ -604,7 +604,7 @@ cubics.
     
     display_offset_curve(path, 500)
 
-.. figure:: offsetcurves.svg
+.. figure:: https://cdn.rawgit.com/mathandy/svgpathtools/master/offsetcurves.svg
    :alt: offsetcurves.svg
 
    offsetcurves.svg
