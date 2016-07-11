@@ -453,7 +453,7 @@ Translations (shifts), reversing orientation, and normal vectors
          'bgpkgp', nodes=[b.point(t), br.point(t)], filename='vectorframes.svg', 
          text=["b's tangent", "br's tangent"], text_path=[tangent_line, tangent_line_r])
 
-.. figure:: https://cdn.rawgit.com/mathandy/svgpathtools/master/test.svg
+.. figure:: https://cdn.rawgit.com/mathandy/svgpathtools/master/vectorframes.svg
    :alt: vectorframes.svg
 
    vectorframes.svg
@@ -554,60 +554,52 @@ Intersections between Bezier curves
 
    output\_intersections.svg
 
-An Advanced Application: Offsetting Bezier Curves
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+An Advanced Application: Offsetting Paths
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Here we'll find the `offset
-curve <https://en.wikipedia.org/wiki/Parallel_curve>`__ for a few Bezier
-cubics.
+curve <https://en.wikipedia.org/wiki/Parallel_curve>`__ for a few paths.
 
 .. code:: python
 
-    def display_offset_curve(bezpath, offset_distance, steps=1000,
-                             stripe_width=3, stripe_colors='ygb',
-                             name='offsetcurves.svg', show_normal_line=True):
-        """Takes in a path of bezier curves, `bezpath`, and a distance,
-        `offset_distance`, and displays the 'parallel' offset curve by placing a
-        dot at a distance of `offset_distance` away at each step."""
+    from svgpathtools import parse_path, Line, Path, wsvg
+    def offset_curve(path, offset_distance, steps=1000):
+        """Takes in a Path object, `path`, and a distance,
+        `offset_distance`, and outputs an piecewise-linear approximation 
+        of the 'parallel' offset curve."""
         nls = []
-        nodes = []
-        line_colors = ''
-        node_colors = ''
-    
-        for bez in bezpath:
+        for seg in path:
             ct = 1
             for k in range(steps):
                 t = k / steps
-                nl = Line(bez.point(t),
-                          bez.point(t) + offset_distance * bez.normal(t))
+                offset_vector = offset_distance * seg.normal(t)
+                nl = Line(seg.point(t), seg.point(t) + offset_vector)
                 nls.append(nl)
-                line_colors += stripe_colors[ct % 3]
-                if not (k % stripe_width):
-                    ct += 1
-                nodes.append(bez.point(t))
-                nodes.append(nl.end)
-                node_colors += 'kr'
-        # nls.reverse()
-        if show_normal_line:
-            wsvg([bezpath] + nls, 'k' + line_colors,
-                 nodes=nodes, node_colors=node_colors,
-                 filename=name)
-        else:
-            wsvg(bezpath, 'k',
-                 nodes=nodes, node_colors=node_colors,
-                 filename=name)
+        connect_the_dots = [Line(nls[k].end, nls[k+1].end) for k in range(len(nls)-1)]
+        if path.isclosed():
+            connect_the_dots.append(Line(nls[-1].end, nls[0].end))
+        offset_path = Path(*connect_the_dots)
+        return offset_path
     
-    bez1 = parse_path("m 288,600 c -52,-28 -42,-61 0,-97 ")[0]
-    bez2 = parse_path("M 151,395 C 407,485 726.17662,160 634,339")[0]
-    bez3 = parse_path("m 117,695 c 237,-7 -103,-146 457,0")[0]
-    path = Path(bez1, bez2.translated(300), bez3.translated(500+400j))
+    # Examples:
+    path1 = parse_path("m 288,600 c -52,-28 -42,-61 0,-97 ")
+    path2 = parse_path("M 151,395 C 407,485 726.17662,160 634,339").translated(300)
+    path3 = parse_path("m 117,695 c 237,-7 -103,-146 457,0").translated(500+400j)
+    paths = [path1, path2, path3]
     
-    display_offset_curve(path, 500)
+    offset_distances = [10*k for k in range(1,51)]
+    offset_paths = []
+    for path in paths:
+        for distances in offset_distances:
+            offset_paths.append(offset_curve(path, distances))
+    
+    # Note: This will take a few moments
+    wsvg(paths + offset_paths, 'g'*len(paths) + 'r'*len(offset_paths), filename='offset_curves.svg')
 
-.. figure:: https://cdn.rawgit.com/mathandy/svgpathtools/master/offsetcurves.svg
-   :alt: offsetcurves.svg
+.. figure:: https://cdn.rawgit.com/mathandy/svgpathtools/master/offset_curves.svg
+   :alt: offset\_curves.svg
 
-   offsetcurves.svg
+   offset\_curves.svg
 
 Compatibility Notes for users of svg.path (v2.0)
 ------------------------------------------------
