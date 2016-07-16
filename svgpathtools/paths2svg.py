@@ -88,7 +88,7 @@ def disvg(paths=None, colors=None,
           openinbrowser=True, timestamp=False,
           margin_size=0.1, mindim=600, dimensions=None,
           viewbox=None, text=None, text_path=None, font_size=None,
-          attributes=None):
+          attributes=None, svg_attributes=None):
     """Takes in a list of paths and creates an SVG file containing said paths.
     REQUIRED INPUTS:
         :param paths - a list of paths
@@ -148,8 +148,11 @@ def disvg(paths=None, colors=None,
         (min_x, min_y, width, height).  This is different from the display
         dimension of the svg, which can be set through mindim or dimensions.
 
-        :param attributes - a dictionary of attributes for the input paths.
-        This will override any other conflicting settings.
+        :param attributes - a list of dictionaries of attributes for the input
+        paths.  Note: This will override any other conflicting settings.
+
+        :param svg_attributes - a dictionary of attributes for output svg.
+        Note: This will override any other conflicting settings.
 
     NOTES:
         -The unit of length here is assumed to be pixels in all variables.
@@ -272,7 +275,10 @@ def disvg(paths=None, colors=None,
                 szy = str(mindim) + 'px'
 
     # Create an SVG file
-    dwg = Drawing(filename=filename, size=(szx, szy), viewBox=viewbox)
+    if svg_attributes:
+        dwg = Drawing(filename=filename, **svg_attributes)
+    else:
+        dwg = Drawing(filename=filename, size=(szx, szy), viewBox=viewbox)
 
     # add paths
     if paths:
@@ -367,7 +373,7 @@ def wsvg(paths=None, colors=None,
           openinbrowser=False, timestamp=False,
           margin_size=0.1, mindim=600, dimensions=None,
           viewbox=None, text=None, text_path=None, font_size=None,
-          attributes=None):
+          attributes=None, svg_attributes=None):
     """Convenience function; identical to disvg() except that
     openinbrowser=False by default.  See disvg() docstring for more info."""
     disvg(paths, colors=colors, filename=filename,
@@ -375,5 +381,5 @@ def wsvg(paths=None, colors=None,
           node_colors=node_colors, node_radii=node_radii,
           openinbrowser=openinbrowser, timestamp=timestamp,
           margin_size=margin_size, mindim=mindim, dimensions=dimensions,
-          viewbox=viewbox, text=text, text_path=text_path,
-          font_size=font_size, attributes=attributes)
+          viewbox=viewbox, text=text, text_path=text_path, font_size=font_size,
+          attributes=attributes, svg_attributes=svg_attributes)

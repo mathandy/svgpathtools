@@ -225,6 +225,11 @@ Reading SVGSs
     from svgpathtools import svg2paths, wsvg
     paths, attributes = svg2paths('test.svg')
     
+    # Update: You can now also extract the svg-attributes by setting
+    # return_svg_attributes=True, or with the convenience function svg2paths2
+    from svgpathtools import svg2paths2
+    paths, attributes, svg_attributes = svg2paths2('test.svg')
+    
     # Let's print out the first path object and the color it was in the SVG
     # We'll see it is composed of two CubicBezier objects and, in the SVG file it 
     # came from, it was red
@@ -254,7 +259,7 @@ viewer.
 .. code:: python
 
     # Let's make a new SVG that's identical to the first
-    wsvg(paths, attributes=attributes, filename='output1.svg')
+    wsvg(paths, attributes=attributes, svg_attributes=svg_attributes, filename='output1.svg')
 
 .. figure:: https://cdn.rawgit.com/mathandy/svgpathtools/master/output1.svg
    :alt: output1.svg
