@@ -20,6 +20,6 @@ setup(name='svgpathtools',
       platforms="OS Independent",
       # test_suite='tests',
       requires=['numpy', 'svgwrite'],
-      keywords=['svg', 'bezier', 'svg.path'],
+      keywords=['svg', 'svg path', 'svg.path', 'bezier', 'parse svg path', 'display svg'],
       classifiers = [],
       )
