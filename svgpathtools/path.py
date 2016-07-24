@@ -524,6 +524,16 @@ class Line(object):
         """returns the curvature of the line, which is always zero."""
         return 0
 
+    # def icurvature(self, kappa):
+    #     """returns a list of t-values such that 0 <= t<= 1 and
+    #     seg.curvature(t) = kappa."""
+    #     if kappa:
+    #         raise ValueError("The .icurvature() method for Line elements will "
+    #                          "return an empty list if kappa is nonzero and "
+    #                          "will raise this exception when kappa is zero as "
+    #                          "this is true at every point on the line.")
+    #     return []
+
     def reversed(self):
         """returns a copy of the Line object with its orientation reversed."""
         return Line(self.end, self.start)
@@ -769,6 +779,17 @@ class QuadraticBezier(object):
         """returns the curvature of the segment at t."""
         return segment_curvature(self, t)
 
+    # def icurvature(self, kappa):
+    #     """returns a list of t-values such that 0 <= t<= 1 and
+    #     seg.curvature(t) = kappa."""
+    #     z = self.poly()
+    #     x, y = real(z), imag(z)
+    #     dx, dy = x.deriv(), y.deriv()
+    #     ddx, ddy = dx.deriv(), dy.deriv()
+    #
+    #     p = kappa**2*(dx**2 + dy**2)**3 - (dx*ddy - ddx*dy)**2
+    #     return polyroots01(p)
+
     def reversed(self):
         """returns a copy of the QuadraticBezier object with its orientation
         reversed."""
@@ -1000,6 +1021,17 @@ class CubicBezier(object):
     def curvature(self, t):
         """returns the curvature of the segment at t."""
         return segment_curvature(self, t)
+
+    # def icurvature(self, kappa):
+    #     """returns a list of t-values such that 0 <= t<= 1 and
+    #     seg.curvature(t) = kappa."""
+    #     z = self.poly()
+    #     x, y = real(z), imag(z)
+    #     dx, dy = x.deriv(), y.deriv()
+    #     ddx, ddy = dx.deriv(), dy.deriv()
+    #
+    #     p = kappa**2*(dx**2 + dy**2)**3 - (dx*ddy - ddx*dy)**2
+    #     return polyroots01(p)
 
     def reversed(self):
         """returns a copy of the CubicBezier object with its orientation
@@ -1395,6 +1427,43 @@ class Arc(object):
         """returns the curvature of the segment at t."""
         return segment_curvature(self, t)
 
+    # def icurvature(self, kappa):
+    #     """returns a list of t-values such that 0 <= t<= 1 and
+    #     seg.curvature(t) = kappa."""
+    #
+    #     a, b = self.radius.real, self.radius.imag
+    #     if kappa > min(a, b)/max(a, b)**2 or kappa <= 0:
+    #         return []
+    #     if a==b:
+    #         if kappa != 1/a:
+    #             return []
+    #         else:
+    #             raise ValueError(
+    #                 "The .icurvature() method for Arc elements with "
+    #                 "radius.real == radius.imag (i.e. circle segments) "
+    #                 "will raise this exception when kappa is 1/radius.real as "
+    #                 "this is true at every point on the circle segment.")
+    #
+    #     # kappa = a*b / (a^2sin^2(tau) + b^2cos^2(tau))^(3/2), tau=2*pi*phase
+    #     sin2 = np.poly1d([1, 0])
+    #     p = kappa**2*(a*sin2 + b*(1 - sin2))**3 - a*b
+    #     sin2s = polyroots01(p)
+    #     taus = []
+    #
+    #     for sin2 in sin2s:
+    #         taus += [np.arcsin(sqrt(sin2)), np.arcsin(-sqrt(sin2))]
+    #
+    #     # account for the other branch of arcsin
+    #     sgn = lambda x: x/abs(x) if x else 0
+    #     other_taus = [sgn(tau)*np.pi - tau for tau in taus if abs(tau) != np.pi/2]
+    #     taus = taus + other_taus
+    #
+    #     # get rid of points not included in segment
+    #     ts = [phase2t(tau) for tau in taus]
+    #
+    #     return [t for t in ts if 0<=t<=1]
+
+
     def reversed(self):
         """returns a copy of the Arc object with its orientation reversed."""
         return Arc(self.end, self.radius, self.rotation, self.large_arc,
@@ -1404,7 +1473,6 @@ class Arc(object):
         """Given phase -pi < psi <= pi,
         returns the t value such that
         exp(1j*psi) = self.u1transform(self.point(t)).
-        Note: This is non-trivial beca
         """
         def _deg(rads, domain_lower_limit):
             # Convert rads to degrees in [0, 360) domain
@@ -1425,7 +1493,7 @@ class Arc(object):
 
 
     def intersect(self, other_seg, tol=1e-12):
-        """NOT IMPLEMENTED.  Finds the intersections of two segments.
+        """NOT FULLY IMPLEMENTED.  Finds the intersections of two segments.
         returns a list of tuples (t1, t2) such that
         self.point(t1) == other_seg.point(t2).
         Note: This will fail if the two segments coincide for more than a
@@ -1959,12 +2027,12 @@ class Path(MutableSequence):
         float('inf') if not differentiable at T."""
         seg_idx, t = self.T2t(T)
         seg = self[seg_idx]
-        if np.isclose(t, 0) and (seg_idx != 0 or self.isclosed()):
+        if np.isclose(t, 0) and (seg_idx != 0 or self.end==self.start):
             previous_seg_in_path = self._segments[
                 (seg_idx - 1) % len(self._segments)]
             if not seg.joins_smoothl_with(previous_seg_in_path):
                 return float('inf')
-        elif np.isclose(t, 1) and (seg_idx != len(self) - 1 or self.isclosed()):
+        elif np.isclose(t, 1) and (seg_idx != len(self) - 1 or self.end==self.start):
             next_seg_in_path = self._segments[
                 (seg_idx + 1) % len(self._segments)]
             if not next_seg_in_path.joins_smoothly_with(seg):
@@ -1974,6 +2042,16 @@ class Path(MutableSequence):
         dx, dy = dz.real, dz.imag
         ddx, ddy = ddz.real, ddz.imag
         return abs(dx*ddy - dy*ddx)/(dx*dx + dy*dy)**1.5
+
+    # def icurvature(self, kappa):
+    #     """returns a list of T-values such that 0 <= T <= 1 and
+    #     seg.curvature(t) = kappa.
+    #     Note: not implemented for paths containing Arc segments."""
+    #     assert is_bezier_path(self)
+    #     Ts = []
+    #     for i, seg in enumerate(self):
+    #         Ts += [self.t2T(i, t) for t in seg.icurvature(kappa)]
+    #     return Ts
 
     def area(self):
         """returns the area enclosed by this Path object.
