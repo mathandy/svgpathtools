@@ -76,7 +76,8 @@ def parse_path(pathdef, current_pos=0j):
 
         elif command == 'Z':
             # Close path
-            segments.append(Line(current_pos, start_pos))
+            if not (current_pos == start_pos):
+                segments.append(Line(current_pos, start_pos))
             segments.closed = True
             current_pos = start_pos
             start_pos = None
