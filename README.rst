@@ -37,6 +37,11 @@ Some included tools:
 -  compute **inverse arc length**
 -  convert RGB color tuples to hexadecimal color strings and back
 
+Note on Python 3
+----------------
+While I am hopeful that this package entirely works with Python 3, it was born from a larger project coded in Python 2 and has not been thoroughly tested in 
+Python 3.  Please let me know if you find any incompatibilities.
+
 Prerequisites
 -------------
 
