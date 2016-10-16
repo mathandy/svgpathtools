@@ -80,7 +80,7 @@ Much of the core of this module was taken from `the svg.path (v2.0)
 module <https://github.com/regebro/svg.path>`__. Interested svg.path
 users should see the compatibility notes at bottom of this readme.
 
-Also, a big thanks to the author(s) of `http://pomax.github.io/bezierinfo/ <http://pomax.github.io/bezierinfo/>`_, an outstanding resource for learning about Bézier curves and Bézier curve-related algorithms.
+Also, a big thanks to the author(s) of `A Primer on Bézier Curves <http://pomax.github.io/bezierinfo/>`_, an outstanding resource for learning about Bézier curves and Bézier curve-related algorithms.
 
 Basic Usage
 -----------
