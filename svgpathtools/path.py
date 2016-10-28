@@ -612,7 +612,7 @@ class Line(object):
         point `origin` (a complex number).  By default `origin` is either
         `self.point(0.5)`, or in the case that self is an Arc object,
         `origin` defaults to `self.center`."""
-        return rotate(self, degs, origin=self.point(0.5))
+        return rotate(self, degs, origin=origin)
 
     def translated(self, z0):
         """Returns a copy of self shifted by the complex quantity `z0` such
@@ -856,7 +856,7 @@ class QuadraticBezier(object):
         point `origin` (a complex number).  By default `origin` is either
         `self.point(0.5)`, or in the case that self is an Arc object,
         `origin` defaults to `self.center`."""
-        return rotate(self, degs, origin=self.point(0.5))
+        return rotate(self, degs, origin=origin)
 
     def translated(self, z0):
         """Returns a copy of self shifted by the complex quantity `z0` such
@@ -1096,7 +1096,7 @@ class CubicBezier(object):
         point `origin` (a complex number).  By default `origin` is either
         `self.point(0.5)`, or in the case that self is an Arc object,
         `origin` defaults to `self.center`."""
-        return rotate(self, degs, origin=self.point(0.5))
+        return rotate(self, degs, origin=origin)
 
     def translated(self, z0):
         """Returns a copy of self shifted by the complex quantity `z0` such
@@ -1649,7 +1649,7 @@ class Arc(object):
         point `origin` (a complex number).  By default `origin` is either
         `self.point(0.5)`, or in the case that self is an Arc object,
         `origin` defaults to `self.center`."""
-        return rotate(self, degs, origin=self.center)
+        return rotate(self, degs, origin=origin)
 
     def translated(self, z0):
         """Returns a copy of self shifted by the complex quantity `z0` such
@@ -2200,7 +2200,7 @@ class Path(MutableSequence):
         point `origin` (a complex number).  By default `origin` is either
         `self.point(0.5)`, or in the case that self is an Arc object,
         `origin` defaults to `self.center`."""
-        return rotate(self, degs, origin=self.point(0.5))
+        return rotate(self, degs, origin=origin)
 
     def translated(self, z0):
         """Returns a copy of self shifted by the complex quantity `z0` such
