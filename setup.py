@@ -1,6 +1,6 @@
 from distutils.core import setup
 
-VERSION = '1.2.3'
+VERSION = '1.2.4'
 AUTHOR_NAME = 'Andy Port'
 AUTHOR_EMAIL = 'AndyAPort@gmail.com'
 
