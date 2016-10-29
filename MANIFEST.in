@@ -1,0 +1,2 @@
+include *.svg LICENSE*
+recursive-include test *.svg
