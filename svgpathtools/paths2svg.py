@@ -276,9 +276,9 @@ def disvg(paths=None, colors=None,
 
     # Create an SVG file
     if svg_attributes:
-        dwg = Drawing(filename=filename, **svg_attributes)
+        dwg = Drawing(filename=filename, debug=False, **svg_attributes)
     else:
-        dwg = Drawing(filename=filename, size=(szx, szy), viewBox=viewbox)
+        dwg = Drawing(filename=filename, size=(szx, szy), viewBox=viewbox, debug=False)
 
     # add paths
     if paths:
