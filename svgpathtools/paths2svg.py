@@ -152,7 +152,9 @@ def disvg(paths=None, colors=None,
         paths.  Note: This will override any other conflicting settings.
 
         :param svg_attributes - a dictionary of attributes for output svg.
-        Note: This will override any other conflicting settings.
+        Note 1: This will override any other conflicting settings.
+        Note 2: Setting `svg_attributes={'debug': False}` may result in a 
+        significant increase in speed.
 
     NOTES:
         -The unit of length here is assumed to be pixels in all variables.
