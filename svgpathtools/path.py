@@ -568,9 +568,11 @@ class Line(object):
                 return [(t1, t2)]
             return []
         elif isinstance(other_seg, QuadraticBezier):
-            return bezier_by_line_intersections(other_seg, self)
+            t2t1s = bezier_by_line_intersections(other_seg, self)
+            return [(t1, t2) for t2, t1 in t2t1s]
         elif isinstance(other_seg, CubicBezier):
-            return bezier_by_line_intersections(other_seg, self)
+            t2t1s = bezier_by_line_intersections(other_seg, self)
+            return [(t1, t2) for t2, t1 in t2t1s]
         elif isinstance(other_seg, Arc):
             t2t1s = other_seg.intersect(self)
             return [(t1, t2) for t2, t1 in t2t1s]
