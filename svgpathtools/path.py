@@ -1145,28 +1145,21 @@ class Arc(object):
             and minor axes (radii) which connect start and end.  One which
             connects them in a CCW fashion and one which connected them in a
             CW fashion.  If sweep is 1, the CCW ellipse will be used.  If
-            sweep is 0, the CW ellipse will be used.
-
+            sweep is 0, the CW ellipse will be used.  See note on curve
+            orientation below.
         end : complex
             The end point of the large_arc (must be distinct from start).
+        autoscale_radius : bool
+            If autoscale_radius == True, then will also scale self.radius
+            in the case that no ellipse exists with the input parameters
+            (see in-line comments for further explanation).
 
-        Note on CW and CCW: The notions of CW and CCW are reversed in some
-        sense when viewing SVGs (as the y coordinate starts at the top of the
-        image and increases towards the bottom).
-
-        Derived Parameters
-        ------------------
-        self._parameterize() sets self.center, self.theta and self.delta
-        for use in self.point() and other methods.  If
-        autoscale_radius == True, then this will also scale self.radius in the
-        case that no ellipse exists with the given parameters (see usage
-        below).
-
+        Derived Parameters/Attributes
+        -----------------------------
         self.theta : float
             This is the phase (in degrees) of self.u1transform(self.start).
             It is $\theta_1$ in the official documentation and ranges from
             -180 to 180.
-
         self.delta : float
             This is the angular distance (in degrees) between the start and
             end of the arc after the arc has been sent to the unit circle
@@ -1174,9 +1167,20 @@ class Arc(object):
             It is $\Delta\theta$ in the official documentation and ranges from
             -360 to 360; being positive when the arc travels CCW and negative
             otherwise (i.e. is positive/negative when sweep == True/False).
-
         self.center : complex
             This is the center of the arc's ellipse.
+        self.phi : float
+            The arc's rotation in radians, i.e. `radians(self.rotation)`.
+        self.rot_matrix : complex
+            Equal to `exp(1j * self.phi)` which is also equal to
+            `cos(self.phi) + 1j*sin(self.phi)`.
+
+
+        Note on curve orientation (CW vs CCW)
+        -------------------------------------
+        The notions of clockwise (CW) and counter-clockwise (CCW) are reversed
+        in some sense when viewing SVGs (as the y coordinate starts at the top
+        of the image and increases towards the bottom).
         """
 
         self.start = start
