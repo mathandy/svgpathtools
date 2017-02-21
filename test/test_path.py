@@ -6,8 +6,8 @@ from math import sqrt, pi
 # Internal dependencies
 from svgpathtools import *
 
-# A note left from the svg.path tools module:
-# -------------------------------------------
+# An important note for those doing any debugging:
+# ------------------------------------------------
 # Most of these test points are not calculated separately, as that would
 # take too long and be too error prone. Instead the curves have been verified
 # to be correct visually with the disvg() function.
