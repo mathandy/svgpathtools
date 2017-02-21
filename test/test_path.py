@@ -2,6 +2,7 @@
 from __future__ import division, absolute_import, print_function
 import unittest
 from math import sqrt, pi
+from operator import itemgetter
 
 # Internal dependencies
 from svgpathtools import *
@@ -901,6 +902,56 @@ class Test_ilength(unittest.TestCase):
         with self.assertRaises(ValueError):
             lin.ilength(1)
 
+
+class Test_intersect(unittest.TestCase):
+    def test_intersect(self):
+
+        ###################################################################
+        # test that `some_seg.intersect(another_seg)` will produce properly
+        # ordered tuples, i.e. the first element in each tuple refers to
+        # `some_seg` and the second element refers to `another_seg`.
+        # Also tests that the correct number of intersections is found.
+        a = Line(0 + 200j, 300 + 200j)
+        b = CubicBezier(60 + 150j, 40 + 200j, 120 + 250j, 200 + 160j)
+        c = QuadraticBezier(40 + 150j, 70 + 200j, 210 + 300j)
+        d = Arc(70 + 150j, 50 + 100j, 0, 0, 0, 200 + 100j)
+        segdict = {'line': a, "quadratic": b, 'cubic': c, 'arc': d}
+
+        # test each segment type against each other type
+        for x, y in [(x, y) for x in segdict for y in segdict]:
+            if x == y:
+                continue
+            x = segdict[x]
+            y = segdict[y]
+            xiy = sorted(x.intersect(y, tol=1e-15))
+            yix = sorted(y.intersect(x, tol=1e-15), key=itemgetter(1))
+            for xy, yx in zip(xiy, yix):
+                self.assertAlmostEqual(xy[0], yx[1])
+                self.assertAlmostEqual(xy[1], yx[0])
+                self.assertAlmostEqual(x.point(xy[0]), y.point(yx[0]))
+            self.assertTrue(len(xiy), len(yix))
+            self.assertTrue(len(xiy), 2)
+            self.assertTrue(len(yix), 2)
+
+        # test each segment against another segment of same type
+        for x in segdict:
+            if x == 'arc':
+                # this is an example of the Arc.intersect method not working
+                # in call cases.  See docstring for a note on its
+                # incomplete implementation.
+                continue
+            x = segdict[x]
+            y = x.rotated(90).translated(5)
+            xiy = sorted(x.intersect(y, tol=1e-15))
+            yix = sorted(y.intersect(x, tol=1e-15), key=itemgetter(1))
+            for xy, yx in zip(xiy, yix):
+                self.assertAlmostEqual(xy[0], yx[1])
+                self.assertAlmostEqual(xy[1], yx[0])
+                self.assertAlmostEqual(x.point(xy[0]), y.point(yx[0]))
+            self.assertTrue(len(xiy), len(yix))
+            self.assertTrue(len(xiy), 1)
+            self.assertTrue(len(yix), 1)
+        ###################################################################
 
 if __name__ == '__main__':
     unittest.main()
