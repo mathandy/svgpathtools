@@ -1115,7 +1115,8 @@ class Arc(object):
         Parameters
         ----------
         start : complex
-            The start point of the large_arc.
+            The start point of the curve. Note: `start` and `end` cannot be the
+            same.  To make a full ellipse or circle, use two `Arc` objects.
         radius : complex
             rx + 1j*ry, where rx and ry are the radii of the ellipse (also
             known as its semi-major and semi-minor axes, or vice-versa or if
@@ -1130,29 +1131,29 @@ class Arc(object):
             This is the CCW angle (in degrees) from the positive x-axis of the
             current coordinate system to the x-axis of the ellipse.
         large_arc : bool
-            This is the large_arc flag.  Given two points on an ellipse,
-            there are two elliptical arcs connecting those points, the first
-            going the short way around the ellipse, and the second going the
-            long way around the ellipse.  If large_arc is 0, the shorter
-            elliptical large_arc will be used.  If large_arc is 1, then longer
-            elliptical will be used.
-            In other words, it should be 0 for arcs spanning less than or
-            equal to 180 degrees and 1 for arcs spanning greater than 180
+            Given two points on an ellipse, there are two elliptical arcs
+            connecting those points, the first going the short way around the
+            ellipse, and the second going the long way around the ellipse.  If
+            `large_arc == False`, the shorter elliptical arc will be used.  If
+            `large_arc == True`, then longer elliptical will be used.
+            In other words, `large_arc` should be 0 for arcs spanning less than
+            or equal to 180 degrees and 1 for arcs spanning greater than 180
             degrees.
         sweep : bool
-            This is the sweep flag.  For any acceptable parameters start, end,
-            rotation, and radius, there are two ellipses with the given major
-            and minor axes (radii) which connect start and end.  One which
-            connects them in a CCW fashion and one which connected them in a
-            CW fashion.  If sweep is 1, the CCW ellipse will be used.  If
-            sweep is 0, the CW ellipse will be used.  See note on curve
+            For any acceptable parameters `start`, `end`, `rotation`, and
+            `radius`, there are two ellipses with the given major and minor
+            axes (radii) which connect `start` and `end`.  One which connects
+            them in a CCW fashion and one which connected them in a CW
+            fashion.  If `sweep == True`, the CCW ellipse will be used.  If
+            `sweep == False`, the CW ellipse will be used.  See note on curve
             orientation below.
         end : complex
-            The end point of the large_arc (must be distinct from start).
+            The end point of the curve. Note: `start` and `end` cannot be the
+            same.  To make a full ellipse or circle, use two `Arc` objects.
         autoscale_radius : bool
-            If autoscale_radius == True, then will also scale self.radius
+            If `autoscale_radius == True`, then will also scale `self.radius`
             in the case that no ellipse exists with the input parameters
-            (see in-line comments for further explanation).
+            (see inline comments for further explanation).
 
         Derived Parameters/Attributes
         -----------------------------
@@ -1182,6 +1183,8 @@ class Arc(object):
         in some sense when viewing SVGs (as the y coordinate starts at the top
         of the image and increases towards the bottom).
         """
+        assert start != end
+        assert radius.real > 0 and radius.imag > 0
 
         self.start = start
         self.radius = abs(radius.real) + 1j*abs(radius.imag)
@@ -1218,10 +1221,6 @@ class Arc(object):
         return not self == other
 
     def _parameterize(self):
-        # start cannot be the same as end as the ellipse would 
-        # not be well defined
-        assert self.start != self.end
-
         # See http://www.w3.org/TR/SVG/implnote.html#ArcImplementationNotes
         # my notation roughly follows theirs
         rx = self.radius.real
