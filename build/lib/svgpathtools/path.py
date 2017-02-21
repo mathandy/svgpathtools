@@ -568,9 +568,11 @@ class Line(object):
                 return [(t1, t2)]
             return []
         elif isinstance(other_seg, QuadraticBezier):
-            return bezier_by_line_intersections(other_seg, self)
+            t2t1s = bezier_by_line_intersections(other_seg, self)
+            return [(t1, t2) for t2, t1 in t2t1s]
         elif isinstance(other_seg, CubicBezier):
-            return bezier_by_line_intersections(other_seg, self)
+            t2t1s = bezier_by_line_intersections(other_seg, self)
+            return [(t1, t2) for t2, t1 in t2t1s]
         elif isinstance(other_seg, Arc):
             t2t1s = other_seg.intersect(self)
             return [(t1, t2) for t2, t1 in t2t1s]
@@ -820,8 +822,8 @@ class QuadraticBezier(object):
                                         longer_length=longer_length,
                                         tol=tol, tol_deC=tol)
         elif isinstance(other_seg, Arc):
-            t1 = other_seg.intersect(self)
-            return t1, t2
+            t2t1s = other_seg.intersect(self)
+            return [(t1, t2) for t2, t1 in t2t1s]
         elif isinstance(other_seg, Path):
             raise TypeError(
                 "other_seg must be a path segment, not a Path object, use "
@@ -1113,7 +1115,8 @@ class Arc(object):
         Parameters
         ----------
         start : complex
-            The start point of the large_arc.
+            The start point of the curve. Note: `start` and `end` cannot be the
+            same.  To make a full ellipse or circle, use two `Arc` objects.
         radius : complex
             rx + 1j*ry, where rx and ry are the radii of the ellipse (also
             known as its semi-major and semi-minor axes, or vice-versa or if
@@ -1128,43 +1131,36 @@ class Arc(object):
             This is the CCW angle (in degrees) from the positive x-axis of the
             current coordinate system to the x-axis of the ellipse.
         large_arc : bool
-            This is the large_arc flag.  Given two points on an ellipse,
-            there are two elliptical arcs connecting those points, the first
-            going the short way around the ellipse, and the second going the
-            long way around the ellipse.  If large_arc is 0, the shorter
-            elliptical large_arc will be used.  If large_arc is 1, then longer
-            elliptical will be used.
-            In other words, it should be 0 for arcs spanning less than or
-            equal to 180 degrees and 1 for arcs spanning greater than 180
+            Given two points on an ellipse, there are two elliptical arcs
+            connecting those points, the first going the short way around the
+            ellipse, and the second going the long way around the ellipse.  If
+            `large_arc == False`, the shorter elliptical arc will be used.  If
+            `large_arc == True`, then longer elliptical will be used.
+            In other words, `large_arc` should be 0 for arcs spanning less than
+            or equal to 180 degrees and 1 for arcs spanning greater than 180
             degrees.
         sweep : bool
-            This is the sweep flag.  For any acceptable parameters start, end,
-            rotation, and radius, there are two ellipses with the given major
-            and minor axes (radii) which connect start and end.  One which
-            connects them in a CCW fashion and one which connected them in a
-            CW fashion.  If sweep is 1, the CCW ellipse will be used.  If
-            sweep is 0, the CW ellipse will be used.
-
+            For any acceptable parameters `start`, `end`, `rotation`, and
+            `radius`, there are two ellipses with the given major and minor
+            axes (radii) which connect `start` and `end`.  One which connects
+            them in a CCW fashion and one which connected them in a CW
+            fashion.  If `sweep == True`, the CCW ellipse will be used.  If
+            `sweep == False`, the CW ellipse will be used.  See note on curve
+            orientation below.
         end : complex
-            The end point of the large_arc (must be distinct from start).
+            The end point of the curve. Note: `start` and `end` cannot be the
+            same.  To make a full ellipse or circle, use two `Arc` objects.
+        autoscale_radius : bool
+            If `autoscale_radius == True`, then will also scale `self.radius`
+            in the case that no ellipse exists with the input parameters
+            (see inline comments for further explanation).
 
-        Note on CW and CCW: The notions of CW and CCW are reversed in some
-        sense when viewing SVGs (as the y coordinate starts at the top of the
-        image and increases towards the bottom).
-
-        Derived Parameters
-        ------------------
-        self._parameterize() sets self.center, self.theta and self.delta
-        for use in self.point() and other methods.  If
-        autoscale_radius == True, then this will also scale self.radius in the
-        case that no ellipse exists with the given parameters (see usage
-        below).
-
+        Derived Parameters/Attributes
+        -----------------------------
         self.theta : float
             This is the phase (in degrees) of self.u1transform(self.start).
             It is $\theta_1$ in the official documentation and ranges from
             -180 to 180.
-
         self.delta : float
             This is the angular distance (in degrees) between the start and
             end of the arc after the arc has been sent to the unit circle
@@ -1172,10 +1168,23 @@ class Arc(object):
             It is $\Delta\theta$ in the official documentation and ranges from
             -360 to 360; being positive when the arc travels CCW and negative
             otherwise (i.e. is positive/negative when sweep == True/False).
-
         self.center : complex
             This is the center of the arc's ellipse.
+        self.phi : float
+            The arc's rotation in radians, i.e. `radians(self.rotation)`.
+        self.rot_matrix : complex
+            Equal to `exp(1j * self.phi)` which is also equal to
+            `cos(self.phi) + 1j*sin(self.phi)`.
+
+
+        Note on curve orientation (CW vs CCW)
+        -------------------------------------
+        The notions of clockwise (CW) and counter-clockwise (CCW) are reversed
+        in some sense when viewing SVGs (as the y coordinate starts at the top
+        of the image and increases towards the bottom).
         """
+        assert start != end
+        assert radius.real != 0 and radius.imag != 0
 
         self.start = start
         self.radius = abs(radius.real) + 1j*abs(radius.imag)
@@ -1212,10 +1221,6 @@ class Arc(object):
         return not self == other
 
     def _parameterize(self):
-        # start cannot be the same as end as the ellipse would 
-        # not be well defined
-        assert self.start != self.end
-
         # See http://www.w3.org/TR/SVG/implnote.html#ArcImplementationNotes
         # my notation roughly follows theirs
         rx = self.radius.real
@@ -1497,7 +1502,12 @@ class Arc(object):
         returns a list of tuples (t1, t2) such that
         self.point(t1) == other_seg.point(t2).
         Note: This will fail if the two segments coincide for more than a
-        finite collection of points."""
+        finite collection of points.
+
+        Note: Arc related intersections are only partially supported, i.e. are
+        only half-heartedly implemented and not well tested.  Please feel free
+        to let me know if you're interested in such a feature -- or even better
+        please submit an implementation if you want to code one."""
 
         if is_bezier_segment(other_seg):
             u1poly = self.u1transform(other_seg.poly())
@@ -1506,6 +1516,7 @@ class Arc(object):
             t1s = [self.phase2t(phase(u1poly(t2))) for t2 in t2s]
             return zip(t1s, t2s)
         elif isinstance(other_seg, Arc):
+            assert other_seg != self
             # This could be made explicit to increase efficiency
             longer_length = max(self.length(), other_seg.length())
             inters = bezier_intersections(self, other_seg,

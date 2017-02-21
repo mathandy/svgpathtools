@@ -286,9 +286,9 @@ def bezier_intersections(bez1, bez2, longer_length, tol=1e-8, tol_deC=1e-8):
     tol - is the smallest distance that two solutions can differ by and still
     be considered distinct solutions.
     OUTPUT: a list of tuples (t,s) in [0,1]x[0,1] such that
-        bezier_point(cubs[0],t) - bezier_point(cubs[1],s) < tol_deC
+        abs(bezier_point(bez1[0],t) - bezier_point(bez2[1],s)) < tol_deC
     Note: This will return exactly one such tuple for each intersection
-    (assuming tol_deC is small enough)"""
+    (assuming tol_deC is small enough)."""
     maxits = int(ceil(1-log(tol_deC/longer_length)/log(2)))
     pair_list = [BPair(bez1, bez2, 0.5, 0.5)]
     intersection_list = []
