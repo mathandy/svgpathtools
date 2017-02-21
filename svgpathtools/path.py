@@ -822,8 +822,8 @@ class QuadraticBezier(object):
                                         longer_length=longer_length,
                                         tol=tol, tol_deC=tol)
         elif isinstance(other_seg, Arc):
-            t1 = other_seg.intersect(self)
-            return t1, t2
+            t2t1s = other_seg.intersect(self)
+            return [(t1, t2) for t2, t1 in t2t1s]
         elif isinstance(other_seg, Path):
             raise TypeError(
                 "other_seg must be a path segment, not a Path object, use "
@@ -1184,7 +1184,7 @@ class Arc(object):
         of the image and increases towards the bottom).
         """
         assert start != end
-        assert radius.real > 0 and radius.imag > 0
+        assert radius.real != 0 and radius.imag != 0
 
         self.start = start
         self.radius = abs(radius.real) + 1j*abs(radius.imag)
@@ -1502,7 +1502,12 @@ class Arc(object):
         returns a list of tuples (t1, t2) such that
         self.point(t1) == other_seg.point(t2).
         Note: This will fail if the two segments coincide for more than a
-        finite collection of points."""
+        finite collection of points.
+
+        Note: Arc related intersections are only partially supported, i.e. are
+        only half-heartedly implemented and not well tested.  Please feel free
+        to let me know if you're interested in such a feature -- or even better
+        please submit an implementation if you want to code one."""
 
         if is_bezier_segment(other_seg):
             u1poly = self.u1transform(other_seg.poly())
@@ -1511,6 +1516,7 @@ class Arc(object):
             t1s = [self.phase2t(phase(u1poly(t2))) for t2 in t2s]
             return zip(t1s, t2s)
         elif isinstance(other_seg, Arc):
+            assert other_seg != self
             # This could be made explicit to increase efficiency
             longer_length = max(self.length(), other_seg.length())
             inters = bezier_intersections(self, other_seg,
