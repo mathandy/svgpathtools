@@ -83,9 +83,9 @@ def bezier2polynomial(p, numpy_ordering=True, return_poly1d=False):
         coeffs = p
     else:
         # https://en.wikipedia.org/wiki/Bezier_curve#Polynomial_form
-        n = len(p) + 1
+        n = len(p) - 1
         coeffs = [fac(n)//fac(n-j) * sum(
-            (-1)**(i+j) * p[i] / (fac(i) * fac(j-i)) for i in xrange(j+1))
+            (-1)**(i+j) * p[i] / (fac(i) * fac(j-i)) for i in range(j+1))
             for j in range(n+1)]
     if not numpy_ordering:
         coeffs.reverse()
