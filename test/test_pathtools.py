@@ -1,6 +1,5 @@
 # External dependencies
 from __future__ import division, absolute_import, print_function
-from builtins import range
 import unittest
 from numpy import poly1d
 

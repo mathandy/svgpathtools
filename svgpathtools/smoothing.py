@@ -5,7 +5,6 @@ curves."""
 from __future__ import division, absolute_import, print_function
 
 # Internal Dependencies
-from builtins import range
 from .path import Path, CubicBezier, Line
 from .misctools import isclose
 from .paths2svg import disvg

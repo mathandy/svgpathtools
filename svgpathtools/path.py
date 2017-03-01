@@ -4,10 +4,6 @@ Arc."""
 
 # External dependencies
 from __future__ import division, absolute_import, print_function
-from builtins import map
-from builtins import zip
-from builtins import range
-from builtins import object
 from math import sqrt, cos, sin, acos, degrees, radians, log, pi
 from cmath import exp, sqrt as csqrt, phase
 from collections import MutableSequence

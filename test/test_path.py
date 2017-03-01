@@ -1,7 +1,5 @@
 # External dependencies
 from __future__ import division, absolute_import, print_function
-from builtins import zip
-from builtins import str
 import unittest
 from math import sqrt, pi
 from operator import itemgetter

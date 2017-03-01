@@ -1,6 +1,5 @@
 from __future__ import division, absolute_import, print_function
 import numpy as np
-from builtins import range
 import unittest
 from svgpathtools.bezier import *
 from svgpathtools.path import bpoints2bezier
