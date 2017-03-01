@@ -1,5 +1,6 @@
 # External dependencies
 from __future__ import division, absolute_import, print_function
+from builtins import range
 import unittest
 from numpy import poly1d
 
@@ -57,11 +58,11 @@ class TestPathTools(unittest.TestCase):
         # Input poly1d object
         bez = poly2bez(p)
         bpoints = bez.bpoints()
-        self.assertAlmostEquals(distfcn(bpoints, correct_bpoints), 0)
+        self.assertAlmostEqual(distfcn(bpoints, correct_bpoints), 0)
 
         # Input list of coefficients
         bpoints = poly2bez(pcoeffs, return_bpoints=True)
-        self.assertAlmostEquals(distfcn(bpoints, correct_bpoints), 0)
+        self.assertAlmostEqual(distfcn(bpoints, correct_bpoints), 0)
 
         # Case: Quadratic
         pcoeffs = [(29.5+15.5j), (-31-19j), (7.5+5.5j)]
@@ -71,11 +72,11 @@ class TestPathTools(unittest.TestCase):
         # Input poly1d object
         bez = poly2bez(p)
         bpoints = bez.bpoints()
-        self.assertAlmostEquals(distfcn(bpoints, correct_bpoints), 0)
+        self.assertAlmostEqual(distfcn(bpoints, correct_bpoints), 0)
 
         # Input list of coefficients
         bpoints = poly2bez(pcoeffs, return_bpoints=True)
-        self.assertAlmostEquals(distfcn(bpoints, correct_bpoints), 0)
+        self.assertAlmostEqual(distfcn(bpoints, correct_bpoints), 0)
 
         # Case: Cubic
         pcoeffs = [(-18.5-12.5j), (34.5+16.5j), (-18-6j), (6+2j)]
@@ -85,11 +86,11 @@ class TestPathTools(unittest.TestCase):
         # Input poly1d object
         bez = poly2bez(p)
         bpoints = bez.bpoints()
-        self.assertAlmostEquals(distfcn(bpoints, correct_bpoints), 0)
+        self.assertAlmostEqual(distfcn(bpoints, correct_bpoints), 0)
 
         # Input list of coefficients object
         bpoints = poly2bez(pcoeffs, return_bpoints=True)
-        self.assertAlmostEquals(distfcn(bpoints, correct_bpoints), 0)
+        self.assertAlmostEqual(distfcn(bpoints, correct_bpoints), 0)
 
     def test_bpoints2bezier(self):
         cubic_bpoints = [(6+2j), 0, (5.5+3.5j), (4+0j)]

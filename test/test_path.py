@@ -1,5 +1,7 @@
 # External dependencies
 from __future__ import division, absolute_import, print_function
+from builtins import zip
+from builtins import str
 import unittest
 from math import sqrt, pi
 from operator import itemgetter
@@ -661,11 +663,11 @@ class TestPath(unittest.TestCase):
 
 
 class Test_ilength(unittest.TestCase):
-    def test_ilength(self):
-        # See svgpathtools.notes.inv_arclength.py for information on how these
-        # test values were generated (using the .length() method).
-        ##############################################################
-        # Lines
+    # See svgpathtools.notes.inv_arclength.py for information on how these
+    # test values were generated (using the .length() method).
+    ##############################################################
+
+    def test_ilength_lines(self):
         l = Line(1, 3-1j)
         nodall = Line(1+1j, 1+1j)
 
@@ -678,8 +680,7 @@ class Test_ilength(unittest.TestCase):
         for (l, t, s) in tests:
             self.assertAlmostEqual(l.ilength(s), t)
 
-        ###############################################################
-        # Quadratics
+    def test_ilength_quadratics(self):
         q1 = QuadraticBezier(200 + 300j, 400 + 50j, 600 + 300j)
         q2 = QuadraticBezier(200 + 300j, 400 + 50j, 500 + 200j)
         closedq = QuadraticBezier(6 + 2j, 5 - 1j, 6 + 2j)
@@ -716,8 +717,7 @@ class Test_ilength(unittest.TestCase):
                 print(t)
                 raise
 
-        ###############################################################
-        # Cubics
+    def test_ilength_cubics(self):
         c1 = CubicBezier(200 + 300j, 400 + 50j, 600+100j, -200)
         symc = CubicBezier(1-2j, 10-1j, 10+1j, 1+2j)
         closedc = CubicBezier(1-2j, 10-1j, 10+1j, 1-2j)
@@ -741,8 +741,7 @@ class Test_ilength(unittest.TestCase):
         for (c, t, s) in tests:
             self.assertAlmostEqual(c.ilength(s), t)
 
-        ###############################################################
-        # Arcs
+    def test_ilength_arcs(self):
         arc1 = Arc(0j, 100 + 50j, 0, 0, 0, 100 + 50j)
         arc2 = Arc(0j, 100 + 50j, 0, 1, 0, 100 + 50j)
         arc3 = Arc(0j, 100 + 50j, 0, 0, 1, 100 + 50j)
@@ -790,8 +789,7 @@ class Test_ilength(unittest.TestCase):
         for (c, t, s) in tests:
             self.assertAlmostEqual(c.ilength(s), t)
 
-        ###############################################################
-        # Paths
+    def test_ilength_paths(self):
         line1 = Line(600 + 350j, 650 + 325j)
         arc1 = Arc(650 + 325j, 25 + 25j, -30, 0, 1, 700 + 300j)
         cub1 = CubicBezier(650 + 325j, 25 + 25j, -30, 700 + 300j)
@@ -890,10 +888,10 @@ class Test_ilength(unittest.TestCase):
                  (apath, 1.0, 87.81018330500885)]
 
         for (c, t, s) in tests:
-            self.assertAlmostEqual(c.ilength(s), t)
+            self.assertAlmostEqual(c.ilength(s), t, msg=str((c, t, s)))
 
-        ###############################################################
-        # Exception Cases
+    # Exceptional Cases
+    def test_ilength_exceptions(self):
         nodalq = QuadraticBezier(1, 1, 1)
         with self.assertRaises(AssertionError):
             nodalq.ilength(1)

@@ -3,6 +3,8 @@ segments."""
 
 # External dependencies:
 from __future__ import division, absolute_import, print_function
+from builtins import zip
+from builtins import str
 from math import ceil
 from os import getcwd, path as os_path, makedirs
 from xml.dom.minidom import parse as md_xml_parse
@@ -74,7 +76,7 @@ def big_bounding_box(paths_n_stuff):
                 raise TypeError(
                     "paths_n_stuff can only contains Path, CubicBezier, "
                     "QuadraticBezier, Line, and complex objects.")
-    xmins, xmaxs, ymins, ymaxs = zip(*bbs)
+    xmins, xmaxs, ymins, ymaxs = list(zip(*bbs))
     xmin = min(xmins)
     xmax = max(xmaxs)
     ymin = min(ymins)

@@ -4,6 +4,10 @@ Arc."""
 
 # External dependencies
 from __future__ import division, absolute_import, print_function
+from builtins import map
+from builtins import zip
+from builtins import range
+from builtins import object
 from math import sqrt, cos, sin, acos, degrees, radians, log, pi
 from cmath import exp, sqrt as csqrt, phase
 from collections import MutableSequence
@@ -355,7 +359,8 @@ def inv_arclength(curve, s, s_tol=ILENGTH_S_TOL, maxits=ILENGTH_MAXITS,
         if curve is a Path object, then seg is a segment in curve.
     error - used to compute lengths of cubics and arcs
     min_depth - used to compute lengths of cubics and arcs
-    Note:  This function is not designed to be efficient."""
+    Note:  This function is not designed to be efficient, but if it's slower
+    than you need, make sure you have scipy installed."""
 
     curve_length = curve.length(error=error, min_depth=min_depth)
     assert curve_length > 0
@@ -1514,7 +1519,7 @@ class Arc(object):
             u1poly_mag2 = real(u1poly)**2 + imag(u1poly)**2
             t2s = polyroots01(u1poly_mag2 - 1)
             t1s = [self.phase2t(phase(u1poly(t2))) for t2 in t2s]
-            return zip(t1s, t2s)
+            return list(zip(t1s, t2s))
         elif isinstance(other_seg, Arc):
             assert other_seg != self
             # This could be made explicit to increase efficiency
@@ -2126,7 +2131,7 @@ class Path(MutableSequence):
         """returns a bounding box for the input Path object in the form
         (xmin, xmax, ymin, ymax)."""
         bbs = [seg.bbox() for seg in self._segments]
-        xmins, xmaxs, ymins, ymaxs = zip(*bbs)
+        xmins, xmaxs, ymins, ymaxs = list(zip(*bbs))
         xmin = min(xmins)
         xmax = max(xmaxs)
         ymin = min(ymins)

@@ -5,6 +5,8 @@ points given by their standard representation."""
 
 # External dependencies:
 from __future__ import division, absolute_import, print_function
+from builtins import range
+from builtins import object
 from math import factorial as fac, ceil, log, sqrt
 from numpy import poly1d
 

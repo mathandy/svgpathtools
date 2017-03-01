@@ -3,6 +3,7 @@ The main tool being the svg2paths() function."""
 
 # External dependencies
 from __future__ import division, absolute_import, print_function
+from builtins import zip
 from xml.dom.minidom import parse
 from os import path as os_path, getcwd
 from shutil import copyfile
@@ -64,9 +65,9 @@ def svg2paths(svg_file_location,
 
     def dom2dict(element):
         """Converts DOM elements to dictionaries of attributes."""
-        keys = element.attributes.keys()
-        values = [val.value for val in element.attributes.values()]
-        return dict(zip(keys, values))
+        keys = list(element.attributes.keys())
+        values = [val.value for val in list(element.attributes.values())]
+        return dict(list(zip(keys, values)))
 
     # Use minidom to extract path strings from input SVG
     paths = [dom2dict(el) for el in doc.getElementsByTagName('path')]
