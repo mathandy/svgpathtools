@@ -3,7 +3,6 @@ The main tool being the svg2paths() function."""
 
 # External dependencies
 from __future__ import division, absolute_import, print_function
-from builtins import zip
 from xml.dom.minidom import parse
 from os import path as os_path, getcwd
 from shutil import copyfile

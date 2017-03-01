@@ -3,7 +3,6 @@ aren't specific to SVGs or related mathematical objects."""
 
 # External dependencies:
 from __future__ import division, absolute_import, print_function
-from builtins import range
 import os
 import sys
 import webbrowser
