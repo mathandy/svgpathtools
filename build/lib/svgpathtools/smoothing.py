@@ -5,6 +5,7 @@ curves."""
 from __future__ import division, absolute_import, print_function
 
 # Internal Dependencies
+from builtins import range
 from .path import Path, CubicBezier, Line
 from .misctools import isclose
 from .paths2svg import disvg
@@ -23,7 +24,7 @@ def is_differentiable(path, tol=1e-8):
 def kinks(path, tol=1e-8):
     """returns indices of segments that start on a non-differentiable joint."""
     kink_list = []
-    for idx in xrange(len(path)):
+    for idx in range(len(path)):
         if idx == 0 and not path.isclosed():
             continue
         try:

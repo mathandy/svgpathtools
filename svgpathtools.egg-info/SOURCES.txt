@@ -15,6 +15,7 @@ test.svg
 vectorframes.svg
 svgpathtools/__init__.py
 svgpathtools/bezier.py
+svgpathtools/directional_field.py
 svgpathtools/misctools.py
 svgpathtools/parser.py
 svgpathtools/path.py

@@ -5,6 +5,8 @@ points given by their standard representation."""
 
 # External dependencies:
 from __future__ import division, absolute_import, print_function
+from builtins import range
+from builtins import object
 from math import factorial as fac, ceil, log, sqrt
 from numpy import poly1d
 
@@ -83,12 +85,13 @@ def bezier2polynomial(p, numpy_ordering=True, return_poly1d=False):
         coeffs = p
     else:
         # https://en.wikipedia.org/wiki/Bezier_curve#Polynomial_form
-        n = len(p) + 1
+        n = len(p) - 1
         coeffs = [fac(n)//fac(n-j) * sum(
-            (-1)**(i+j) * p[i] / (fac(i) * fac(j-i)) for i in xrange(j+1))
+            (-1)**(i+j) * p[i] / (fac(i) * fac(j-i)) for i in range(j+1))
             for j in range(n+1)]
-    if not numpy_ordering:
         coeffs.reverse()
+    if not numpy_ordering:
+        coeffs = coeffs[::-1]  # can't use .reverse() as might be tuple
     if return_poly1d:
         return poly1d(coeffs)
     return coeffs
