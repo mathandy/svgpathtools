@@ -912,8 +912,8 @@ class Test_intersect(unittest.TestCase):
         # `some_seg` and the second element refers to `another_seg`.
         # Also tests that the correct number of intersections is found.
         a = Line(0 + 200j, 300 + 200j)
-        b = CubicBezier(60 + 150j, 40 + 200j, 120 + 250j, 200 + 160j)
-        c = QuadraticBezier(40 + 150j, 70 + 200j, 210 + 300j)
+        b = QuadraticBezier(40 + 150j, 70 + 200j, 210 + 300j)
+        c = CubicBezier(60 + 150j, 40 + 200j, 120 + 250j, 200 + 160j)
         d = Arc(70 + 150j, 50 + 100j, 0, 0, 0, 200 + 100j)
         segdict = {'line': a, "quadratic": b, 'cubic': c, 'arc': d}
 
