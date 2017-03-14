@@ -87,7 +87,7 @@ def svg2paths(svg_file_location,
     # path strings, add to list
     if convert_polygons_to_paths:
         pgons = [dom2dict(el) for el in doc.getElementsByTagName('polygon')]
-        d_strings += [polyline2pathd(pg['points']) + 'z' for pg in pgons]
+        d_strings += [polyline2pathd(pg['points']) for pg in pgons]
         attribute_dictionary_list += pgons
 
     if convert_lines_to_paths:
