@@ -30,12 +30,35 @@ def polyline2pathd(polyline_d):
         d += 'z'
     return d
 
+def ellipse2pathd(ellipse):
+    """converts the parameters from an ellipse or a circle to a string for a Path
+    object d-attribute"""
+    cx = float(ellipse['cx'])
+    cy = float(ellipse['cy'])
+    rx = float(ellipse['rx'])
+    ry = float(ellipse['ry'])
+
+    r = 0
+    if 'r' in ellipse.keys():
+        r = float(ellipse['r'])
+
+    if r > 0:
+        rx = r
+        ry = r
+
+    d = ''
+    d += 'M' + str(cx - rx) + ',' + str(cy)
+    d += 'a' + str(rx) + ',' + str(ry) + ' 0 1,0 ' + str(2 * rx) + ',0'
+    d += 'a' + str(rx) + ',' + str(ry) + ' 0 1,0 ' + str(-2 * rx) + ',0'
+
+    return d
 
 def svg2paths(svg_file_location,
               convert_lines_to_paths=True,
               convert_polylines_to_paths=True,
               convert_polygons_to_paths=True,
-              return_svg_attributes=False):
+              return_svg_attributes=False,
+              convert_ellipses_to_paths=True):
     """
     Converts an SVG file into a list of Path objects and a list of
     dictionaries containing their attributes.  This currently supports
@@ -49,6 +72,8 @@ def svg2paths(svg_file_location,
     objects (converted to Paths)
     :param return_svg_attributes: Set to True and a dictionary of
     svg-attributes will be extracted and returned
+    :param convert_ellipses_to_paths: Set to False to disclude SVG-Ellipse
+    objects (converted to Paths)
     :return: list of Path objects, list of path attribute dictionaries, and
     (optionally) a dictionary of svg-attributes
 
@@ -87,7 +112,7 @@ def svg2paths(svg_file_location,
     # path strings, add to list
     if convert_polygons_to_paths:
         pgons = [dom2dict(el) for el in doc.getElementsByTagName('polygon')]
-        d_strings += [polyline2pathd(pg['points']) + 'z' for pg in pgons]
+        d_strings += [polyline2pathd(pg['points']) for pg in pgons]
         attribute_dictionary_list += pgons
 
     if convert_lines_to_paths:
@@ -95,6 +120,12 @@ def svg2paths(svg_file_location,
         d_strings += [('M' + l['x1'] + ' ' + l['y1'] +
                        'L' + l['x2'] + ' ' + l['y2']) for l in lines]
         attribute_dictionary_list += lines
+
+    if convert_ellipses_to_paths:
+        ellipses = [dom2dict(el) for el in doc.getElementsByTagName('ellipse')]
+        ellipses += [dom2dict(el) for el in doc.getElementsByTagName('circle')]
+        d_strings += [ellipse2pathd(e) for e in ellipses]
+        attribute_dictionary_list += ellipses
 
     # if pathless_svg:
     #     with open(pathless_svg, "wb") as f:
