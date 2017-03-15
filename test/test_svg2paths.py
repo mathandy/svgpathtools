@@ -10,8 +10,8 @@ class TestSVG2Paths(unittest.TestCase):
 
         # triangular polygon test
         path = paths[0]
-        path_correct = Path(Line(55.5+0j, 55.5+50j), 
-                            Line(55.5+50j, 105.5+50j), 
+        path_correct = Path(Line(55.5+0j, 55.5+50j),
+                            Line(55.5+50j, 105.5+50j),
                             Line(105.5+50j, 55.5+0j)
                             )
         self.assertTrue(path.isclosed())
@@ -28,3 +28,9 @@ class TestSVG2Paths(unittest.TestCase):
         self.assertTrue(path.isclosed())
         self.assertTrue(len(path)==4)
         self.assertTrue(path==path_correct)
+
+def test_svg2paths_ellipses(self):
+
+        paths, _ = svg2paths(join(dirname(__file__), 'ellipses.svg'))
+
+        self.assertTrue(path.isclosed())
