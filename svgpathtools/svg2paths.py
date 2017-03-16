@@ -12,16 +12,13 @@ from .parser import parse_path
 
 
 def polyline2pathd(polyline_d):
-    """converts the string from a polyline d-attribute to a string for a Path
-    object d-attribute"""
+    """converts the string from a polyline points-attribute to a string for a 
+    Path object d-attribute"""
     points = polyline_d.replace(', ', ',')
     points = points.replace(' ,', ',')
     points = points.split()
 
-    if points[0] == points[-1]:
-        closed = True
-    else:
-        closed = False
+    closed = points[0] == points[-1]
 
     d = 'M' + points.pop(0).replace(',', ' ')
     for p in points:
@@ -29,6 +26,30 @@ def polyline2pathd(polyline_d):
     if closed:
         d += 'z'
     return d
+
+
+def polygon2pathd(polyline_d):
+    """converts the string from a polygon points-attribute to a string for a 
+    Path object d-attribute.
+    Note:  For a polygon made from n points, the resulting path will be 
+    composed of n lines (even if some of these lines have length zero)."""
+    points = polyline_d.replace(', ', ',')
+    points = points.replace(' ,', ',')
+    points = points.split()
+
+    reduntantly_closed = points[0] == points[-1]
+
+    d = 'M' + points[0].replace(',', ' ')
+    for p in points[1:]:
+        d += 'L' + p.replace(',', ' ')
+    
+    # The `parse_path` call ignores redundant 'z' (closure) commands
+    # e.g. `parse_path('M0 0L100 100Z') == parse_path('M0 0L100 100L0 0Z')`
+    # This check ensures that an n-point polygon is converted to an n-Line path.
+    if reduntantly_closed:
+        d += 'L' + points[0].replace(',', ' ')
+
+    return d + 'z'
 
 
 def svg2paths(svg_file_location,
@@ -87,7 +108,7 @@ def svg2paths(svg_file_location,
     # path strings, add to list
     if convert_polygons_to_paths:
         pgons = [dom2dict(el) for el in doc.getElementsByTagName('polygon')]
-        d_strings += [polyline2pathd(pg['points']) + 'z' for pg in pgons]
+        d_strings += [polygon2pathd(pg['points']) for pg in pgons]
         attribute_dictionary_list += pgons
 
     if convert_lines_to_paths:
