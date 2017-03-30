@@ -1,3 +1,4 @@
+
 svgpathtools
 ============
 
@@ -36,11 +37,6 @@ Some included tools:
 -  compute **arc length**
 -  compute **inverse arc length**
 -  convert RGB color tuples to hexadecimal color strings and back
-
-Note on Python 3
-----------------
-While I am hopeful that this package entirely works with Python 3, it was born from a larger project coded in Python 2 and has not been thoroughly tested in 
-Python 3.  Please let me know if you find any incompatibilities.
 
 Prerequisites
 -------------
@@ -85,8 +81,6 @@ Much of the core of this module was taken from `the svg.path (v2.0)
 module <https://github.com/regebro/svg.path>`__. Interested svg.path
 users should see the compatibility notes at bottom of this readme.
 
-Also, a big thanks to the author(s) of `A Primer on Bézier Curves <http://pomax.github.io/bezierinfo/>`_, an outstanding resource for learning about Bézier curves and Bézier curve-related algorithms.
-
 Basic Usage
 -----------
 
@@ -117,11 +111,11 @@ information on what each parameter means.
 on discontinuous Path objects. A simple workaround is provided, however,
 by the ``Path.continuous_subpaths()`` method. `↩ <#a1>`__
 
-.. code:: python
+.. code:: ipython2
 
     from __future__ import division, print_function
 
-.. code:: python
+.. code:: ipython2
 
     # Coordinates are given as points in the complex plane
     from svgpathtools import Path, Line, QuadraticBezier, CubicBezier, Arc
@@ -158,7 +152,7 @@ The ``Path`` class is a mutable sequence, so it behaves much like a
 list. So segments can **append**\ ed, **insert**\ ed, set by index,
 **del**\ eted, **enumerate**\ d, **slice**\ d out, etc.
 
-.. code:: python
+.. code:: ipython2
 
     # Let's append another to the end of it
     path.append(CubicBezier(250+350j, 275+350j, 250+225j, 200+100j))
@@ -225,7 +219,7 @@ Reading SVGSs
 | Note: Line, Polyline, Polygon, and Path SVG elements can all be
   converted to Path objects using this function.
 
-.. code:: python
+.. code:: ipython2
 
     # Read SVG into a list of path objects and list of dictionaries of attributes 
     from svgpathtools import svg2paths, wsvg
@@ -262,7 +256,7 @@ convenience function **disvg()** (or set 'openinbrowser=True') to
 automatically attempt to open the created svg file in your default SVG
 viewer.
 
-.. code:: python
+.. code:: ipython2
 
     # Let's make a new SVG that's identical to the first
     wsvg(paths, attributes=attributes, svg_attributes=svg_attributes, filename='output1.svg')
@@ -294,7 +288,7 @@ over the domain 0 <= t <= 1.
   that ``path.point(T)=path[k].point(t)``.
 | There is also a ``Path.t2T()`` method to solve the inverse problem.
 
-.. code:: python
+.. code:: ipython2
 
     # Example:
     
@@ -324,11 +318,11 @@ over the domain 0 <= t <= 1.
     True
 
 
-Tangent vectors and Bezier curves as numpy polynomial objects
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Bezier curves as NumPy polynomial objects
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-| Another great way to work with the parameterizations for Line,
-  QuadraticBezier, and CubicBezier objects is to convert them to
+| Another great way to work with the parameterizations for ``Line``,
+  ``QuadraticBezier``, and ``CubicBezier`` objects is to convert them to
   ``numpy.poly1d`` objects. This is done easily using the
   ``Line.poly()``, ``QuadraticBezier.poly()`` and ``CubicBezier.poly()``
   methods.
@@ -360,9 +354,10 @@ form
    \end{bmatrix}
    \begin{bmatrix}P_0\\P_1\\P_2\\P_3\end{bmatrix}
 
-QuadraticBezier.poly() and Line.poly() are defined similarly.
+``QuadraticBezier.poly()`` and ``Line.poly()`` are `defined
+similarly <https://en.wikipedia.org/wiki/B%C3%A9zier_curve#General_definition>`__.
 
-.. code:: python
+.. code:: ipython2
 
     # Example:
     b = CubicBezier(300+100j, 100+100j, 200+200j, 200+300j)
@@ -392,15 +387,21 @@ QuadraticBezier.poly() and Line.poly() are defined similarly.
     (-400 + -100j) t + (900 + 300j) t - 600 t + (300 + 100j)
 
 
-To illustrate the awesomeness of being able to convert our Bezier curve
-objects to numpy.poly1d objects and back, lets compute the unit tangent
-vector of the above CubicBezier object, b, at t=0.5 in four different
-ways.
+The ability to convert between Bezier objects to NumPy polynomial
+objects is very useful. For starters, we can take turn a list of Bézier
+segments into a NumPy array ### Numpy Array operations on Bézier path
+segments `Example available
+here <https://github.com/mathandy/svgpathtools/blob/master/examples/compute-many-points-quickly-using-numpy-arrays.py>`__
 
-Tangent vectors (and more on polynomials)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+To further illustrate the power of being able to convert our Bezier
+curve objects to numpy.poly1d objects and back, lets compute the unit
+tangent vector of the above CubicBezier object, b, at t=0.5 in four
+different ways.
 
-.. code:: python
+Tangent vectors (and more on NumPy polynomials)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code:: ipython2
 
     t = 0.5
     ### Method 1: the easy way
@@ -442,7 +443,7 @@ Tangent vectors (and more on polynomials)
 Translations (shifts), reversing orientation, and normal vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code:: python
+.. code:: ipython2
 
     # Speaking of tangents, let's add a normal vector to the picture
     n = b.normal(t)
@@ -472,7 +473,7 @@ Translations (shifts), reversing orientation, and normal vectors
 Rotations and Translations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code:: python
+.. code:: ipython2
 
     # Let's take a Line and an Arc and make some pictures
     top_half = Arc(start=-1, radius=1+2j, rotation=0, large_arc=1, sweep=1, end=1)
@@ -505,7 +506,7 @@ midpoints of the paths from ``test.svg``. We'll need to compute use the
 ``CubicBezier.length()``, and ``Arc.length()`` methods, as well as the
 related inverse arc length methods ``.ilength()`` function to do this.
 
-.. code:: python
+.. code:: ipython2
 
     # First we'll load the path data from the file test.svg
     paths, attributes = svg2paths('test.svg')
@@ -547,7 +548,7 @@ related inverse arc length methods ``.ilength()`` function to do this.
 Intersections between Bezier curves
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code:: python
+.. code:: ipython2
 
     # Let's find all intersections between redpath and the other 
     redpath = paths[0]
@@ -571,7 +572,7 @@ An Advanced Application: Offsetting Paths
 Here we'll find the `offset
 curve <https://en.wikipedia.org/wiki/Parallel_curve>`__ for a few paths.
 
-.. code:: python
+.. code:: ipython2
 
     from svgpathtools import parse_path, Line, Path, wsvg
     def offset_curve(path, offset_distance, steps=1000):
@@ -628,3 +629,4 @@ Licence
 -------
 
 This module is under a MIT License.
+
