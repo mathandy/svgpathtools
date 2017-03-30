@@ -660,6 +660,35 @@ class TestPath(unittest.TestCase):
         self.assertTrue(chk1)
         self.assertTrue(chk2)
 
+    def test_cropped(self):
+        p_closed = Path(Line(0, 1), Line(1, 1 + 1j), Line(1 + 1j, 1j),
+                        Line(1j, 0))
+        first_half = Path(Line(0, 1), Line(1, 1 + 1j))
+        second_half = Path(Line(1 + 1j, 1j), Line(1j, 0))
+        middle_half = Path(Line(1, 1 + 1j), Line(1 + 1j, 1j))
+        other_middle_half = Path(Line(1j, 0), Line(0, 1))
+        self.assertTrue(p_closed.cropped(0, 0.5) == first_half)
+        self.assertTrue(p_closed.cropped(1, 0.5) == first_half)
+        self.assertTrue(p_closed.cropped(.5, 1) == second_half)
+        self.assertTrue(p_closed.cropped(0.25, 0.75) == middle_half)
+        self.assertTrue(p_closed.cropped(0.75, 0.25) == other_middle_half)
+        with self.assertRaises(AssertionError):
+            p_closed.cropped(1, 0)
+        with self.assertRaises(AssertionError):
+            p_closed.cropped(.5, 1.1)
+        with self.assertRaises(AssertionError):
+            p_closed.cropped(-0.1, 0.1)
+
+        p_open = Path(Line(0, 1), Line(1, 1 + 1j), Line(1 + 1j, 1j),
+                      Line(1j, 2j))
+        self.assertTrue(p_open.cropped(0, 0.5) == first_half)
+        with self.assertRaises(ValueError):
+            p_open.cropped(.75, .25)
+        with self.assertRaises(ValueError):
+            p_open.cropped(1, .25)
+        with self.assertRaises(AssertionError):
+            p_open.cropped(1, 0)
+
 
 class Test_ilength(unittest.TestCase):
     # See svgpathtools.notes.inv_arclength.py for information on how these
