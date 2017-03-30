@@ -389,8 +389,12 @@ similarly <https://en.wikipedia.org/wiki/B%C3%A9zier_curve#General_definition>`_
 
 The ability to convert between Bezier objects to NumPy polynomial
 objects is very useful. For starters, we can take turn a list of Bézier
-segments into a NumPy array ### Numpy Array operations on Bézier path
-segments `Example available
+segments into a NumPy array
+
+Numpy Array operations on Bézier path segments
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+`Example available
 here <https://github.com/mathandy/svgpathtools/blob/master/examples/compute-many-points-quickly-using-numpy-arrays.py>`__
 
 To further illustrate the power of being able to convert our Bezier
