@@ -11,7 +11,7 @@ from .parser import parse_path
 
 
 def polyline2pathd(polyline_d):
-    """converts the string from a polyline points-attribute to a string for a 
+    """converts the string from a polyline points-attribute to a string for a
     Path object d-attribute"""
     points = polyline_d.replace(', ', ',')
     points = points.replace(' ,', ',')
@@ -29,18 +29,21 @@ def polyline2pathd(polyline_d):
 def ellipse2pathd(ellipse):
     """converts the parameters from an ellipse or a circle to a string for a Path
     object d-attribute"""
-    cx = float(ellipse['cx'])
-    cy = float(ellipse['cy'])
-    rx = float(ellipse['rx'])
-    ry = float(ellipse['ry'])
 
-    r = 0
-    if 'r' in ellipse.keys():
-        r = float(ellipse['r'])
+    cx = ellipse.get('cx', None)
+    cy = ellipse.get('cy', None)
+    rx = ellipse.get('rx', None)
+    ry = ellipse.get('ry', None)
+    r = ellipse.get('r', None)
 
-    if r > 0:
-        rx = r
-        ry = r
+    if r is not None:
+        rx = ry = float(r)
+    else:
+        rx = float(rx)
+        ry = float(ry)
+
+    cx = float(cx)
+    cy = float(cy)
 
     d = ''
     d += 'M' + str(cx - rx) + ',' + str(cy)
@@ -51,9 +54,9 @@ def ellipse2pathd(ellipse):
 
 
 def polygon2pathd(polyline_d):
-    """converts the string from a polygon points-attribute to a string for a 
+    """converts the string from a polygon points-attribute to a string for a
     Path object d-attribute.
-    Note:  For a polygon made from n points, the resulting path will be 
+    Note:  For a polygon made from n points, the resulting path will be
     composed of n lines (even if some of these lines have length zero)."""
     points = polyline_d.replace(', ', ',')
     points = points.replace(' ,', ',')
@@ -64,7 +67,7 @@ def polygon2pathd(polyline_d):
     d = 'M' + points[0].replace(',', ' ')
     for p in points[1:]:
         d += 'L' + p.replace(',', ' ')
-    
+
     # The `parse_path` call ignores redundant 'z' (closure) commands
     # e.g. `parse_path('M0 0L100 100Z') == parse_path('M0 0L100 100L0 0Z')`
     # This check ensures that an n-point polygon is converted to an n-Line path.
@@ -83,7 +86,7 @@ def svg2paths(svg_file_location,
     """
     Converts an SVG file into a list of Path objects and a list of
     dictionaries containing their attributes.  This currently supports
-    SVG Path, Line, Polyline, and Polygon elements.
+    SVG Path, Line, Polyline, Circle and Ellipse, and Polygon elements.
     :param svg_file_location: the location of the svg file
     :param convert_lines_to_paths: Set to False to disclude SVG-Line objects
     (converted to Paths)
@@ -94,7 +97,7 @@ def svg2paths(svg_file_location,
     :param return_svg_attributes: Set to True and a dictionary of
     svg-attributes will be extracted and returned
     :param convert_ellipses_to_paths: Set to False to disclude SVG-Ellipse
-    objects (converted to Paths)
+    objects (converted to Paths). Circles are treated as ellipses.
     :return: list of Path objects, list of path attribute dictionaries, and
     (optionally) a dictionary of svg-attributes
     """
@@ -133,7 +136,7 @@ def svg2paths(svg_file_location,
         d_strings += [('M' + l['x1'] + ' ' + l['y1'] +
                        'L' + l['x2'] + ' ' + l['y2']) for l in lines]
         attribute_dictionary_list += lines
-    
+
     if convert_ellipses_to_paths:
         ellipses = [dom2dict(el) for el in doc.getElementsByTagName('ellipse')]
         ellipses += [dom2dict(el) for el in doc.getElementsByTagName('circle')]
