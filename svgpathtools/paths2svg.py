@@ -278,8 +278,8 @@ def disvg(paths=None, colors=None,
 
     # Create an SVG file
     if svg_attributes:
-        szx = svg_attributes.get("width", "100%")
-        szy = svg_attributes.get("height", "100%")
+        szx = svg_attributes.get("width", szx)
+        szy = svg_attributes.get("height", szy)
         dwg = Drawing(filename=filename, size=(szx, szy), **svg_attributes)
     else:
         dwg = Drawing(filename=filename, size=(szx, szy), viewBox=viewbox)
