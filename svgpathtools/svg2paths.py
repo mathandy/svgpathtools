@@ -5,9 +5,12 @@ The main tool being the svg2paths() function."""
 from __future__ import division, absolute_import, print_function
 from xml.dom.minidom import parse
 from os import path as os_path, getcwd
+from shutil import copyfile
+import numpy as np
 
 # Internal dependencies
 from .parser import parse_path
+from .path import Path, bpoints2bezier
 
 
 def polyline2pathd(polyline_d):
@@ -71,51 +74,122 @@ def svg2paths(svg_file_location,
     svg-attributes will be extracted and returned
     :return: list of Path objects, list of path attribute dictionaries, and
     (optionally) a dictionary of svg-attributes
+
     """
     if os_path.dirname(svg_file_location) == '':
         svg_file_location = os_path.join(getcwd(), svg_file_location)
 
+    # if pathless_svg:
+    #     copyfile(svg_file_location, pathless_svg)
+    #     doc = parse(pathless_svg)
+    # else:
     doc = parse(svg_file_location)
 
+    # Parse a list of paths
     def dom2dict(element):
         """Converts DOM elements to dictionaries of attributes."""
         keys = list(element.attributes.keys())
         values = [val.value for val in list(element.attributes.values())]
         return dict(list(zip(keys, values)))
 
-    # Use minidom to extract path strings from input SVG
-    paths = [dom2dict(el) for el in doc.getElementsByTagName('path')]
-    d_strings = [el['d'] for el in paths]
-    attribute_dictionary_list = paths
+    def parseTrafo(trafoStr):
+        """Returns six matrix elements for a matrix transformation for any valid SVG transformation string."""
+        #print(trafoStr)
+        valueStr = trafoStr.split('(')[1].split(')')[0]
+        values = list(map(float, valueStr.split(',')))
+        if 'translate' in trafoStr:
+            x = values[0]
+            y = values[1] if (len(values) > 1) else 0.
+            return [1.,0.,0.,1.,x,y]
+        elif 'scale' in trafoStr:
+            x = values[0]
+            y = values[1] if (len(values) > 1) else 0.
+            return [x,0.,0.,y,0.,0.]
+        elif 'rotate' in trafoStr:
+            a = values[0]
+            x = values[1] if (len(values) > 1) else 0.
+            y = values[2] if (len(values) > 2) else 0.
+            A = np.dot([cos(a),sin(a),-sin(a),cos(a),0.,0.,0.,0.,1.].reshape((3,3)),[1.,0.,0.,1.,-x,-y,0.,0.,1.].reshape((3,3)))
+            A = list(np.dot([1.,0.,0.,1.,x,y,0.,0.,1.].reshape((3,3)),A).reshape((9,))[:6])
+            return A
+        elif 'skewX' in trafoStr:
+            a = values[0]
+            return [1.,0.,tan(a),1.,0.,0.]
+        elif 'skewY' in trafoStr:
+            a = values[0]
+            return [1.,tan(a),0.,1.,0.,0.]
+        else:
+            while len(values) < 6:
+               values += [0.]
+            return values
 
-    # Use minidom to extract polyline strings from input SVG, convert to
-    # path strings, add to list
-    if convert_polylines_to_paths:
-        plins = [dom2dict(el) for el in doc.getElementsByTagName('polyline')]
-        d_strings += [polyline2pathd(pl['points']) for pl in plins]
-        attribute_dictionary_list += plins
+    def parseNode(node):
+        """Recursively iterate over nodes. Parse the groups individually to apply group transformations."""
+        # Get everything in this tag
+        #ret_list, attribute_dictionary_list = [parseNode(child) for child in node.childNodes]
+        data = [parseNode(child) for child in node.childNodes]
+        if len(data) == 0:
+            ret_list = []
+            attribute_dictionary_list = []
+        else:
+            # Flatten the lists
+            ret_list = []
+            attribute_dictionary_list = []
+            for item in data:
+                if type(item) == tuple:
+                    if len(item[0]) > 0:
+                        ret_list += item[0]
+                        attribute_dictionary_list += item[1]
+        
+        if node.nodeName == 'g':
+            # Group found
+            # Analyse group properties
+            group = dom2dict(node)
+            if 'transform' in group.keys():
+                trafo = group['transform']
+                
+                # Convert all transformations into a matrix operation
+                A = parseTrafo(trafo)
+                A = np.array([A[::2],A[1::2],[0.,0.,1.]])
+                
+                # Apply transformation to all elements of the paths
+                xy = lambda z: np.array([z.real, z.imag, 1.])
+                z = lambda xy: xy[0] + 1j*xy[1]
+                
+                ret_list = [Path(*[bpoints2bezier([z(np.dot(A,xy(pt)))
+                    for pt in seg.bpoints()]) 
+                        for seg in path])
+                            for path in ret_list]
+            return ret_list, attribute_dictionary_list
+        elif node.nodeName == 'path':
+            # Path found; parsing it
+            path = dom2dict(node)
+            d_string = path['d']
+            return [parse_path(d_string)]+ret_list, [path]+attribute_dictionary_list
+        elif convert_polylines_to_paths and node.nodeName == 'polyline':
+            attrs = dom2dict(node)
+            path = parse_path(polyline2pathd(node['points']))
+            return [path]+ret_list, [attrs]+attribute_dictionary_list
+        elif convert_polygons_to_paths and node.nodeName == 'polygon':
+            attrs = dom2dict(node)
+            path = parse_path(polygon2pathd(node['points']))
+            return [path]+ret_list, [attrs]+attribute_dictionary_list
+        elif convert_lines_to_paths and node.nodeName == 'line':
+            line = dom2dict(node)
+            d_string = ('M' + line['x1'] + ' ' + line['y1'] +
+                        'L' + line['x2'] + ' ' + line['y2'])
+            path = parse_path(d_string)
+            return [path]+ret_list, [line]+attribute_dictionary_list
+        else:
+            return ret_list, attribute_dictionary_list
 
-    # Use minidom to extract polygon strings from input SVG, convert to
-    # path strings, add to list
-    if convert_polygons_to_paths:
-        pgons = [dom2dict(el) for el in doc.getElementsByTagName('polygon')]
-        d_strings += [polygon2pathd(pg['points']) for pg in pgons]
-        attribute_dictionary_list += pgons
-
-    if convert_lines_to_paths:
-        lines = [dom2dict(el) for el in doc.getElementsByTagName('line')]
-        d_strings += [('M' + l['x1'] + ' ' + l['y1'] +
-                       'L' + l['x2'] + ' ' + l['y2']) for l in lines]
-        attribute_dictionary_list += lines
-
+    path_list, attribute_dictionary_list = parseNode(doc)
     if return_svg_attributes:
         svg_attributes = dom2dict(doc.getElementsByTagName('svg')[0])
         doc.unlink()
-        path_list = [parse_path(d) for d in d_strings]
         return path_list, attribute_dictionary_list, svg_attributes
     else:
         doc.unlink()
-        path_list = [parse_path(d) for d in d_strings]
         return path_list, attribute_dictionary_list
 
 
