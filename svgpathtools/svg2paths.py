@@ -5,7 +5,6 @@ The main tool being the svg2paths() function."""
 from __future__ import division, absolute_import, print_function
 from xml.dom.minidom import parse
 from os import path as os_path, getcwd
-from shutil import copyfile
 import numpy as np
 
 # Internal dependencies
@@ -92,54 +91,53 @@ def svg2paths(svg_file_location,
         values = [val.value for val in list(element.attributes.values())]
         return dict(list(zip(keys, values)))
 
-    def parseTrafo(trafoStr):
+    def parse_trafo(trafo_str):
         """Returns six matrix elements for a matrix transformation for any valid SVG transformation string."""
-        #print(trafoStr)
-        valueStr = trafoStr.split('(')[1].split(')')[0]
-        values = list(map(float, valueStr.split(',')))
-        if 'translate' in trafoStr:
+        value_str = trafo_str.split('(')[1].split(')')[0]
+        values = list(map(float, value_str.split(',')))
+        if 'translate' in trafo_str:
             x = values[0]
             y = values[1] if (len(values) > 1) else 0.
-            return [1.,0.,0.,1.,x,y]
-        elif 'scale' in trafoStr:
+            return [1., 0., 0., 1., x, y]
+        elif 'scale' in trafo_str:
             x = values[0]
             y = values[1] if (len(values) > 1) else 0.
-            return [x,0.,0.,y,0.,0.]
-        elif 'rotate' in trafoStr:
+            return [x, 0., 0., y, 0., 0.]
+        elif 'rotate' in trafo_str:
             a = values[0]
             x = values[1] if (len(values) > 1) else 0.
             y = values[2] if (len(values) > 2) else 0.
-            A = np.dot([cos(a),sin(a),-sin(a),cos(a),0.,0.,0.,0.,1.].reshape((3,3)),[1.,0.,0.,1.,-x,-y,0.,0.,1.].reshape((3,3)))
-            A = list(np.dot([1.,0.,0.,1.,x,y,0.,0.,1.].reshape((3,3)),A).reshape((9,))[:6])
-            return A
-        elif 'skewX' in trafoStr:
+            am = np.dot(np.array([np.cos(a), np.sin(a), -np.sin(a), np.cos(a), 0., 0., 0., 0., 1.]).reshape((3, 3)),
+                        np.array([1., 0., 0., 1., -x, -y, 0., 0., 1.]).reshape((3, 3)))
+            am = list(np.dot(np.array([1., 0., 0., 1., x, y, 0., 0., 1.]).reshape((3, 3)), am).reshape((9, ))[:6])
+            return am
+        elif 'skewX' in trafo_str:
             a = values[0]
-            return [1.,0.,tan(a),1.,0.,0.]
-        elif 'skewY' in trafoStr:
+            return [1., 0., np.tan(a), 1., 0., 0.]
+        elif 'skewY' in trafo_str:
             a = values[0]
-            return [1.,tan(a),0.,1.,0.,0.]
+            return [1., np.tan(a), 0., 1., 0., 0.]
         else:
             while len(values) < 6:
-               values += [0.]
+                values += [0.]
             return values
 
-    def parseNode(node):
+    def parse_node(node):
         """Recursively iterate over nodes. Parse the groups individually to apply group transformations."""
         # Get everything in this tag
-        #ret_list, attribute_dictionary_list = [parseNode(child) for child in node.childNodes]
-        data = [parseNode(child) for child in node.childNodes]
+        data = [parse_node(child) for child in node.childNodes]
         if len(data) == 0:
             ret_list = []
-            attribute_dictionary_list = []
+            attribute_dictionary_list_int = []
         else:
             # Flatten the lists
             ret_list = []
-            attribute_dictionary_list = []
+            attribute_dictionary_list_int = []
             for item in data:
                 if type(item) == tuple:
                     if len(item[0]) > 0:
                         ret_list += item[0]
-                        attribute_dictionary_list += item[1]
+                        attribute_dictionary_list_int += item[1]
         
         if node.nodeName == 'g':
             # Group found
@@ -149,18 +147,21 @@ def svg2paths(svg_file_location,
                 trafo = group['transform']
                 
                 # Convert all transformations into a matrix operation
-                A = parseTrafo(trafo)
-                A = np.array([A[::2],A[1::2],[0.,0.,1.]])
+                am = parse_trafo(trafo)
+                am = np.array([am[::2], am[1::2], [0., 0., 1.]])
                 
                 # Apply transformation to all elements of the paths
-                xy = lambda z: np.array([z.real, z.imag, 1.])
-                z = lambda xy: xy[0] + 1j*xy[1]
+                def xy(p):
+                    return np.array([p.real, p.imag, 1.])
+
+                def z(coords):
+                    return coords[0] + 1j*coords[1]
                 
-                ret_list = [Path(*[bpoints2bezier([z(np.dot(A,xy(pt)))
-                    for pt in seg.bpoints()]) 
-                        for seg in path])
+                ret_list = [Path(*[bpoints2bezier([z(np.dot(am, xy(pt)))
+                            for pt in seg.bpoints()])
+                            for seg in path])
                             for path in ret_list]
-            return ret_list, attribute_dictionary_list
+            return ret_list, attribute_dictionary_list_int
         elif node.nodeName == 'path':
             # Path found; parsing it
             path = dom2dict(node)
@@ -183,7 +184,7 @@ def svg2paths(svg_file_location,
         else:
             return ret_list, attribute_dictionary_list
 
-    path_list, attribute_dictionary_list = parseNode(doc)
+    path_list, attribute_dictionary_list = parse_node(doc)
     if return_svg_attributes:
         svg_attributes = dom2dict(doc.getElementsByTagName('svg')[0])
         doc.unlink()
