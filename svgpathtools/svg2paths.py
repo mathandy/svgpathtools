@@ -104,18 +104,19 @@ def svg2paths(svg_file_location,
             y = values[1] if (len(values) > 1) else 0.
             return [x, 0., 0., y, 0., 0.]
         elif 'rotate' in trafo_str:
-            a = values[0]
+            a = values[0]*np.pi/180.
             x = values[1] if (len(values) > 1) else 0.
             y = values[2] if (len(values) > 2) else 0.
-            am = np.dot(np.array([np.cos(a), np.sin(a), -np.sin(a), np.cos(a), 0., 0., 0., 0., 1.]).reshape((3, 3)),
-                        np.array([1., 0., 0., 1., -x, -y, 0., 0., 1.]).reshape((3, 3)))
-            am = list(np.dot(np.array([1., 0., 0., 1., x, y, 0., 0., 1.]).reshape((3, 3)), am).reshape((9, ))[:6])
+            am = np.dot(np.array([np.cos(a), -np.sin(a), 0., np.sin(a), np.cos(a), 0., 0., 0., 1.]).reshape((3, 3)),
+                        np.array([1., 0., -x, 0., 1., -y, 0., 0., 1.]).reshape((3, 3)))
+            am = list(np.dot(np.array([1., 0., x, 0., 1., y, 0., 0., 1.]).reshape((3, 3)), am).reshape((9, ))[:6])
+            am = am[::3]+am[1::3]+am[2::3]
             return am
         elif 'skewX' in trafo_str:
-            a = values[0]
+            a = values[0]*np.pi/180.
             return [1., 0., np.tan(a), 1., 0., 0.]
         elif 'skewY' in trafo_str:
-            a = values[0]
+            a = values[0]*np.pi/180.
             return [1., np.tan(a), 0., 1., 0., 0.]
         else:
             while len(values) < 6:
@@ -166,23 +167,23 @@ def svg2paths(svg_file_location,
             # Path found; parsing it
             path = dom2dict(node)
             d_string = path['d']
-            return [parse_path(d_string)]+ret_list, [path]+attribute_dictionary_list
+            return [parse_path(d_string)]+ret_list, [path]+attribute_dictionary_list_int
         elif convert_polylines_to_paths and node.nodeName == 'polyline':
             attrs = dom2dict(node)
             path = parse_path(polyline2pathd(node['points']))
-            return [path]+ret_list, [attrs]+attribute_dictionary_list
+            return [path]+ret_list, [attrs]+attribute_dictionary_list_int
         elif convert_polygons_to_paths and node.nodeName == 'polygon':
             attrs = dom2dict(node)
-            path = parse_path(polygon2pathd(node['points']))
-            return [path]+ret_list, [attrs]+attribute_dictionary_list
+            path = parse_path(polygon2pathd(attrs['points']))
+            return [path]+ret_list, [attrs]+attribute_dictionary_list_int
         elif convert_lines_to_paths and node.nodeName == 'line':
             line = dom2dict(node)
             d_string = ('M' + line['x1'] + ' ' + line['y1'] +
                         'L' + line['x2'] + ' ' + line['y2'])
             path = parse_path(d_string)
-            return [path]+ret_list, [line]+attribute_dictionary_list
+            return [path]+ret_list, [line]+attribute_dictionary_list_int
         else:
-            return ret_list, attribute_dictionary_list
+            return ret_list, attribute_dictionary_list_int
 
     path_list, attribute_dictionary_list = parse_node(doc)
     if return_svg_attributes:
