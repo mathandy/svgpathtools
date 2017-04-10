@@ -93,35 +93,47 @@ def svg2paths(svg_file_location,
 
     def parse_trafo(trafo_str):
         """Returns six matrix elements for a matrix transformation for any valid SVG transformation string."""
-        value_str = trafo_str.split('(')[1].split(')')[0]
-        values = list(map(float, value_str.split(',')))
-        if 'translate' in trafo_str:
-            x = values[0]
-            y = values[1] if (len(values) > 1) else 0.
-            return [1., 0., 0., 1., x, y]
-        elif 'scale' in trafo_str:
-            x = values[0]
-            y = values[1] if (len(values) > 1) else 0.
-            return [x, 0., 0., y, 0., 0.]
-        elif 'rotate' in trafo_str:
-            a = values[0]*np.pi/180.
-            x = values[1] if (len(values) > 1) else 0.
-            y = values[2] if (len(values) > 2) else 0.
-            am = np.dot(np.array([np.cos(a), -np.sin(a), 0., np.sin(a), np.cos(a), 0., 0., 0., 1.]).reshape((3, 3)),
-                        np.array([1., 0., -x, 0., 1., -y, 0., 0., 1.]).reshape((3, 3)))
-            am = list(np.dot(np.array([1., 0., x, 0., 1., y, 0., 0., 1.]).reshape((3, 3)), am).reshape((9, ))[:6])
-            am = am[::3]+am[1::3]+am[2::3]
-            return am
-        elif 'skewX' in trafo_str:
-            a = values[0]*np.pi/180.
-            return [1., 0., np.tan(a), 1., 0., 0.]
-        elif 'skewY' in trafo_str:
-            a = values[0]*np.pi/180.
-            return [1., np.tan(a), 0., 1., 0., 0.]
-        else:
-            while len(values) < 6:
-                values += [0.]
-            return values
+        trafos = trafo_str.split(')')[:-1]
+        trafo_matrix = np.array([1., 0., 0., 0., 1., 0., 0., 0., 1.]).reshape((3, 3)) # Start with neutral matrix
+
+        for trafo_sub_str in trafos:
+            trafo_sub_str = trafo_sub_str.lstrip(', ')
+            value_str = trafo_sub_str.split('(')[1]
+            values = list(map(float, value_str.split(',')))
+            if 'translate' in trafo_sub_str:
+                x = values[0]
+                y = values[1] if (len(values) > 1) else 0.
+                trafo_matrix = np.dot(trafo_matrix,
+                                      np.array([1., 0., x, 0., 1., y, 0., 0., 1.]).reshape((3, 3)))
+            elif 'scale' in trafo_sub_str:
+                x = values[0]
+                y = values[1] if (len(values) > 1) else 0.
+                trafo_matrix = np.dot(trafo_matrix,
+                                      np.array([x, 0., 0., 0., y, 0., 0., 0., 1.]).reshape((3, 3)))
+            elif 'rotate' in trafo_sub_str:
+                a = values[0]*np.pi/180.
+                x = values[1] if (len(values) > 1) else 0.
+                y = values[2] if (len(values) > 2) else 0.
+                am = np.dot(np.array([np.cos(a), -np.sin(a), 0., np.sin(a), np.cos(a), 0., 0., 0., 1.]).reshape((3, 3)),
+                            np.array([1., 0., -x, 0., 1., -y, 0., 0., 1.]).reshape((3, 3)))
+                am = np.dot(np.array([1., 0., x, 0., 1., y, 0., 0., 1.]).reshape((3, 3)), am)
+                trafo_matrix = np.dot(trafo_matrix, am)
+            elif 'skewX' in trafo_sub_str:
+                a = values[0]*np.pi/180.
+                trafo_matrix = np.dot(trafo_matrix,
+                                      np.array([1., np.tan(a), 0., 0., 1., 0., 0., 0., 1.]).reshape((3, 3)))
+            elif 'skewY' in trafo_sub_str:
+                a = values[0]*np.pi/180.
+                trafo_matrix = np.dot(trafo_matrix,
+                                      np.array([1., 0., 0., np.tan(a), 1., 0., 0., 0., 1.]).reshape((3, 3)))
+            else: # Assume matrix transformation
+                while len(values) < 6:
+                    values += [0.]
+                trafo_matrix = np.dot(trafo_matrix,
+                                      np.array([values[::2], values[1::2], [0., 0., 1.]]))
+
+        trafo_list = list(trafo_matrix.reshape((9,))[:6])
+        return trafo_list[::3]+trafo_list[1::3]+trafo_list[2::3]
 
     def parse_node(node):
         """Recursively iterate over nodes. Parse the groups individually to apply group transformations."""

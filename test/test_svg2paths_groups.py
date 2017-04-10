@@ -11,4 +11,5 @@ class TestSvg2pathsGroups(TestCase):
         self.assertTrue((len(paths) % 2) == 0)
 
         for i in range(len(paths)//2):
+            print(i * 2)
             self.assertTrue(len(paths[i * 2].intersect(paths[i * 2 + 1])) > 0, 'Path '+str(i * 2)+' does not intersect path '+str(i * 2 + 1)+'!')
