@@ -10,8 +10,8 @@ class TestSVG2Paths(unittest.TestCase):
 
         # triangular polygon test
         path = paths[0]
-        path_correct = Path(Line(55.5+0j, 55.5+50j), 
-                            Line(55.5+50j, 105.5+50j), 
+        path_correct = Path(Line(55.5+0j, 55.5+50j),
+                            Line(55.5+50j, 105.5+50j),
                             Line(105.5+50j, 55.5+0j)
                             )
         self.assertTrue(path.isclosed())
