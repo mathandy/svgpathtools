@@ -28,8 +28,8 @@ def polyline2pathd(polyline_d):
 
 
 def ellipse2pathd(ellipse):
-    """converts the parameters from an ellipse or a circle to a string for a Path
-    object d-attribute"""
+    """converts the parameters from an ellipse or a circle to a string for a 
+    Path object d-attribute"""
 
     cx = ellipse.get('cx', None)
     cy = ellipse.get('cy', None)
@@ -87,7 +87,7 @@ def svg2paths(svg_file_location,
     """
     Converts an SVG file into a list of Path objects and a list of
     dictionaries containing their attributes.  This currently supports
-    SVG Path, Line, Polyline, Circle and Ellipse, and Polygon elements.
+    SVG Path, Line, Polyline, Polygon, Circle, and Ellipse elements.
     :param svg_file_location: the location of the svg file
     :param convert_lines_to_paths: Set to False to disclude SVG-Line objects
     (converted to Paths)
