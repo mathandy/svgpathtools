@@ -11,7 +11,7 @@ from .parser import parse_path
 
 
 def polyline2pathd(polyline_d):
-    """converts the string from a polyline points-attribute to a string for a 
+    """converts the string from a polyline points-attribute to a string for a
     Path object d-attribute"""
     points = polyline_d.replace(', ', ',')
     points = points.replace(' ,', ',')
@@ -55,8 +55,9 @@ def ellipse2pathd(ellipse):
 
 
 def polygon2pathd(polyline_d):
+    """converts the string from a polygon points-attribute to a string for a
     Path object d-attribute.
-    Note:  For a polygon made from n points, the resulting path will be 
+    Note:  For a polygon made from n points, the resulting path will be
     composed of n lines (even if some of these lines have length zero)."""
     points = polyline_d.replace(', ', ',')
     points = points.replace(' ,', ',')
@@ -67,7 +68,7 @@ def polygon2pathd(polyline_d):
     d = 'M' + points[0].replace(',', ' ')
     for p in points[1:]:
         d += 'L' + p.replace(',', ' ')
-    
+
     # The `parse_path` call ignores redundant 'z' (closure) commands
     # e.g. `parse_path('M0 0L100 100Z') == parse_path('M0 0L100 100L0 0Z')`
     # This check ensures that an n-point polygon is converted to an n-Line path.
