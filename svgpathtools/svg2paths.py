@@ -84,23 +84,29 @@ def svg2paths(svg_file_location,
               convert_polygons_to_paths=True,
               return_svg_attributes=False,
               convert_ellipses_to_paths=True):
-    """
+    """Converts an SVG into a list of Path objects and attribute dictionaries. 
+
     Converts an SVG file into a list of Path objects and a list of
     dictionaries containing their attributes.  This currently supports
     SVG Path, Line, Polyline, Polygon, Circle, and Ellipse elements.
-    :param svg_file_location: the location of the svg file
-    :param convert_lines_to_paths: Set to False to disclude SVG-Line objects
-    (converted to Paths)
-    :param convert_polylines_to_paths: Set to False to disclude SVG-Polyline
-    objects (converted to Paths)
-    :param convert_polygons_to_paths: Set to False to disclude SVG-Polygon
-    objects (converted to Paths)
-    :param return_svg_attributes: Set to True and a dictionary of
-    svg-attributes will be extracted and returned
-    :param convert_ellipses_to_paths: Set to False to disclude SVG-Ellipse
-    objects (converted to Paths). Circles are treated as ellipses.
-    :return: list of Path objects, list of path attribute dictionaries, and
-    (optionally) a dictionary of svg-attributes
+
+    Args:
+        svg_file_location (string): the location of the svg file
+        convert_lines_to_paths (bool): Set to False to disclude SVG-Line objects
+            (converted to Paths)
+        convert_polylines_to_paths (bool): Set to False to disclude SVG-Polyline
+            objects (converted to Paths)
+        convert_polygons_to_paths (bool): Set to False to disclude SVG-Polygon
+            objects (converted to Paths)
+        return_svg_attributes (bool): Set to True and a dictionary of
+            svg-attributes will be extracted and returned
+        convert_ellipses_to_paths (bool): Set to False to disclude SVG-Ellipse
+            objects (converted to Paths). Circles are treated as ellipses.
+
+    Returns: 
+        list: The list of Path objects.
+        list: The list of corresponding path attribute dictionaries.
+        dict (optional): A dictionary ofsvg-attributes.
     """
     if os_path.dirname(svg_file_location) == '':
         svg_file_location = os_path.join(getcwd(), svg_file_location)
