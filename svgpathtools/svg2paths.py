@@ -79,10 +79,10 @@ def polygon2pathd(polyline_d):
 
 
 def svg2paths(svg_file_location,
+              return_svg_attributes=False,
               convert_lines_to_paths=True,
               convert_polylines_to_paths=True,
               convert_polygons_to_paths=True,
-              return_svg_attributes=False,
               convert_ellipses_to_paths=True):
     """Converts an SVG into a list of Path objects and attribute dictionaries. 
 
@@ -92,21 +92,21 @@ def svg2paths(svg_file_location,
 
     Args:
         svg_file_location (string): the location of the svg file
-        convert_lines_to_paths (bool): Set to False to disclude SVG-Line objects
+        convert_lines_to_paths (bool): Set to False to exclude SVG-Line objects
             (converted to Paths)
-        convert_polylines_to_paths (bool): Set to False to disclude SVG-Polyline
+        convert_polylines_to_paths (bool): Set to False to exclude SVG-Polyline
             objects (converted to Paths)
-        convert_polygons_to_paths (bool): Set to False to disclude SVG-Polygon
+        convert_polygons_to_paths (bool): Set to False to exclude SVG-Polygon
             objects (converted to Paths)
         return_svg_attributes (bool): Set to True and a dictionary of
             svg-attributes will be extracted and returned
-        convert_ellipses_to_paths (bool): Set to False to disclude SVG-Ellipse
+        convert_ellipses_to_paths (bool): Set to False to exclude SVG-Ellipse
             objects (converted to Paths). Circles are treated as ellipses.
 
     Returns: 
         list: The list of Path objects.
         list: The list of corresponding path attribute dictionaries.
-        dict (optional): A dictionary ofsvg-attributes.
+        dict (optional): A dictionary of svg-attributes (see `svg2paths2()`).
     """
     if os_path.dirname(svg_file_location) == '':
         svg_file_location = os_path.join(getcwd(), svg_file_location)
@@ -162,15 +162,17 @@ def svg2paths(svg_file_location,
 
 
 def svg2paths2(svg_file_location,
+               return_svg_attributes=True,
                convert_lines_to_paths=True,
                convert_polylines_to_paths=True,
                convert_polygons_to_paths=True,
-               return_svg_attributes=True):
+               convert_ellipses_to_paths=True):
     """Convenience function; identical to svg2paths() except that
     return_svg_attributes=True by default.  See svg2paths() docstring for more
     info."""
     return svg2paths(svg_file_location=svg_file_location,
+                     return_svg_attributes=return_svg_attributes,
                      convert_lines_to_paths=convert_lines_to_paths,
                      convert_polylines_to_paths=convert_polylines_to_paths,
                      convert_polygons_to_paths=convert_polygons_to_paths,
-                     return_svg_attributes=return_svg_attributes)
+                     convert_ellipses_to_paths=convert_ellipses_to_paths)
