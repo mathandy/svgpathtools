@@ -29,6 +29,33 @@ def polyline2pathd(polyline_d):
     return d
 
 
+def ellipse2pathd(ellipse):
+    """converts the parameters from an ellipse or a circle to a string for a 
+    Path object d-attribute"""
+
+    cx = ellipse.get('cx', None)
+    cy = ellipse.get('cy', None)
+    rx = ellipse.get('rx', None)
+    ry = ellipse.get('ry', None)
+    r = ellipse.get('r', None)
+
+    if r is not None:
+        rx = ry = float(r)
+    else:
+        rx = float(rx)
+        ry = float(ry)
+
+    cx = float(cx)
+    cy = float(cy)
+
+    d = ''
+    d += 'M' + str(cx - rx) + ',' + str(cy)
+    d += 'a' + str(rx) + ',' + str(ry) + ' 0 1,0 ' + str(2 * rx) + ',0'
+    d += 'a' + str(rx) + ',' + str(ry) + ' 0 1,0 ' + str(-2 * rx) + ',0'
+
+    return d
+
+
 def polygon2pathd(polyline_d):
     """converts the string from a polygon points-attribute to a string for a 
     Path object d-attribute.
@@ -43,10 +70,11 @@ def polygon2pathd(polyline_d):
     d = 'M' + points[0].replace(',', ' ')
     for p in points[1:]:
         d += 'L' + p.replace(',', ' ')
-    
+
     # The `parse_path` call ignores redundant 'z' (closure) commands
     # e.g. `parse_path('M0 0L100 100Z') == parse_path('M0 0L100 100L0 0Z')`
-    # This check ensures that an n-point polygon is converted to an n-Line path.
+    # This check ensures that an n-point polygon is converted to an n-Line
+    # path.
     if reduntantly_closed:
         d += 'L' + points[0].replace(',', ' ')
 
@@ -54,37 +82,37 @@ def polygon2pathd(polyline_d):
 
 
 def svg2paths(svg_file_location,
+              return_svg_attributes=False,
               convert_lines_to_paths=True,
               convert_polylines_to_paths=True,
               convert_polygons_to_paths=True,
-              return_svg_attributes=False):
-    """
+              convert_ellipses_to_paths=True):
+    """Converts an SVG into a list of Path objects and attribute dictionaries. 
     Converts an SVG file into a list of Path objects and a list of
     dictionaries containing their attributes.  This currently supports
-    SVG Path, Line, Polyline, and Polygon elements.
-    :param svg_file_location: the location of the svg file
-    :param convert_lines_to_paths: Set to False to disclude SVG-Line objects
-    (converted to Paths)
-    :param convert_polylines_to_paths: Set to False to disclude SVG-Polyline
-    objects (converted to Paths)
-    :param convert_polygons_to_paths: Set to False to disclude SVG-Polygon
-    objects (converted to Paths)
-    :param return_svg_attributes: Set to True and a dictionary of
-    svg-attributes will be extracted and returned
-    :return: list of Path objects, list of path attribute dictionaries, and
-    (optionally) a dictionary of svg-attributes
-
+    SVG Path, Line, Polyline, Polygon, Circle, and Ellipse elements.
+    Args:
+        svg_file_location (string): the location of the svg file
+        convert_lines_to_paths (bool): Set to False to exclude SVG-Line objects
+            (converted to Paths)
+        convert_polylines_to_paths (bool): Set to False to exclude SVG-Polyline
+            objects (converted to Paths)
+        convert_polygons_to_paths (bool): Set to False to exclude SVG-Polygon
+            objects (converted to Paths)
+        return_svg_attributes (bool): Set to True and a dictionary of
+            svg-attributes will be extracted and returned
+        convert_ellipses_to_paths (bool): Set to False to exclude SVG-Ellipse
+            objects (converted to Paths). Circles are treated as ellipses.
+    Returns: 
+        list: The list of Path objects.
+        list: The list of corresponding path attribute dictionaries.
+        dict (optional): A dictionary of svg-attributes (see `svg2paths2()`).
     """
     if os_path.dirname(svg_file_location) == '':
         svg_file_location = os_path.join(getcwd(), svg_file_location)
 
-    # if pathless_svg:
-    #     copyfile(svg_file_location, pathless_svg)
-    #     doc = parse(pathless_svg)
-    # else:
     doc = parse(svg_file_location)
 
-    # Parse a list of paths
     def dom2dict(element):
         """Converts DOM elements to dictionaries of attributes."""
         keys = list(element.attributes.keys())
@@ -92,9 +120,11 @@ def svg2paths(svg_file_location,
         return dict(list(zip(keys, values)))
 
     def parse_trafo(trafo_str):
-        """Returns six matrix elements for a matrix transformation for any valid SVG transformation string."""
+        """Returns six matrix elements for a matrix transformation for any 
+        valid SVG transformation string."""
         trafos = trafo_str.split(')')[:-1]
-        trafo_matrix = np.array([1., 0., 0., 0., 1., 0., 0., 0., 1.]).reshape((3, 3)) # Start with neutral matrix
+        trafo_matrix = np.array([1., 0., 0., 0., 1., 0., 0., 0., 1.]).reshape(
+            (3, 3))  # Start with neutral matrix
 
         for trafo_sub_str in trafos:
             trafo_sub_str = trafo_sub_str.lstrip(', ')
@@ -103,40 +133,53 @@ def svg2paths(svg_file_location,
             if 'translate' in trafo_sub_str:
                 x = values[0]
                 y = values[1] if (len(values) > 1) else 0.
-                trafo_matrix = np.dot(trafo_matrix,
-                                      np.array([1., 0., x, 0., 1., y, 0., 0., 1.]).reshape((3, 3)))
+                trafo_matrix = np.dot(trafo_matrix, np.array(
+                    [1., 0., x, 0., 1., y, 0., 0., 1.]).reshape((3, 3)))
             elif 'scale' in trafo_sub_str:
                 x = values[0]
                 y = values[1] if (len(values) > 1) else 0.
                 trafo_matrix = np.dot(trafo_matrix,
-                                      np.array([x, 0., 0., 0., y, 0., 0., 0., 1.]).reshape((3, 3)))
+                                      np.array([x, 0., 0., 0., y, 0., 0., 0.,
+                                                1.]).reshape((3, 3)))
             elif 'rotate' in trafo_sub_str:
-                a = values[0]*np.pi/180.
+                a = values[0] * np.pi / 180.
                 x = values[1] if (len(values) > 1) else 0.
                 y = values[2] if (len(values) > 2) else 0.
-                am = np.dot(np.array([np.cos(a), -np.sin(a), 0., np.sin(a), np.cos(a), 0., 0., 0., 1.]).reshape((3, 3)),
-                            np.array([1., 0., -x, 0., 1., -y, 0., 0., 1.]).reshape((3, 3)))
-                am = np.dot(np.array([1., 0., x, 0., 1., y, 0., 0., 1.]).reshape((3, 3)), am)
+                am = np.dot(np.array(
+                    [np.cos(a), -np.sin(a), 0., np.sin(a), np.cos(a), 0., 0.,
+                     0., 1.]).reshape((3, 3)),
+                            np.array(
+                                [1., 0., -x, 0., 1., -y, 0., 0., 1.]).reshape(
+                                (3, 3)))
+                am = np.dot(
+                    np.array([1., 0., x, 0., 1., y, 0., 0., 1.]).reshape(
+                        (3, 3)), am)
                 trafo_matrix = np.dot(trafo_matrix, am)
             elif 'skewX' in trafo_sub_str:
-                a = values[0]*np.pi/180.
+                a = values[0] * np.pi / 180.
                 trafo_matrix = np.dot(trafo_matrix,
-                                      np.array([1., np.tan(a), 0., 0., 1., 0., 0., 0., 1.]).reshape((3, 3)))
+                                      np.array(
+                                          [1., np.tan(a), 0., 0., 1., 0., 0.,
+                                           0., 1.]).reshape((3, 3)))
             elif 'skewY' in trafo_sub_str:
-                a = values[0]*np.pi/180.
+                a = values[0] * np.pi / 180.
                 trafo_matrix = np.dot(trafo_matrix,
-                                      np.array([1., 0., 0., np.tan(a), 1., 0., 0., 0., 1.]).reshape((3, 3)))
-            else: # Assume matrix transformation
+                                      np.array(
+                                          [1., 0., 0., np.tan(a), 1., 0., 0.,
+                                           0., 1.]).reshape((3, 3)))
+            else:  # Assume matrix transformation
                 while len(values) < 6:
                     values += [0.]
                 trafo_matrix = np.dot(trafo_matrix,
-                                      np.array([values[::2], values[1::2], [0., 0., 1.]]))
+                                      np.array([values[::2], values[1::2],
+                                                [0., 0., 1.]]))
 
         trafo_list = list(trafo_matrix.reshape((9,))[:6])
-        return trafo_list[::3]+trafo_list[1::3]+trafo_list[2::3]
+        return trafo_list[::3] + trafo_list[1::3] + trafo_list[2::3]
 
     def parse_node(node):
-        """Recursively iterate over nodes. Parse the groups individually to apply group transformations."""
+        """Recursively iterate over nodes. Parse the groups individually to 
+        apply group transformations."""
         # Get everything in this tag
         data = [parse_node(child) for child in node.childNodes]
         if len(data) == 0:
@@ -151,49 +194,55 @@ def svg2paths(svg_file_location,
                     if len(item[0]) > 0:
                         ret_list += item[0]
                         attribute_dictionary_list_int += item[1]
-        
+
         if node.nodeName == 'g':
             # Group found
             # Analyse group properties
             group = dom2dict(node)
             if 'transform' in group.keys():
                 trafo = group['transform']
-                
+
                 # Convert all transformations into a matrix operation
                 am = parse_trafo(trafo)
                 am = np.array([am[::2], am[1::2], [0., 0., 1.]])
-                
+
                 # Apply transformation to all elements of the paths
                 def xy(p):
                     return np.array([p.real, p.imag, 1.])
 
                 def z(coords):
-                    return coords[0] + 1j*coords[1]
-                
+                    return coords[0] + 1j * coords[1]
+
                 ret_list = [Path(*[bpoints2bezier([z(np.dot(am, xy(pt)))
-                            for pt in seg.bpoints()])
-                            for seg in path])
+                                                   for pt in seg.bpoints()])
+                                   for seg in path])
                             for path in ret_list]
             return ret_list, attribute_dictionary_list_int
         elif node.nodeName == 'path':
             # Path found; parsing it
             path = dom2dict(node)
             d_string = path['d']
-            return [parse_path(d_string)]+ret_list, [path]+attribute_dictionary_list_int
+            return [parse_path(d_string)] + ret_list, [
+                path] + attribute_dictionary_list_int
         elif convert_polylines_to_paths and node.nodeName == 'polyline':
             attrs = dom2dict(node)
             path = parse_path(polyline2pathd(node['points']))
-            return [path]+ret_list, [attrs]+attribute_dictionary_list_int
+            return [path] + ret_list, [attrs] + attribute_dictionary_list_int
         elif convert_polygons_to_paths and node.nodeName == 'polygon':
             attrs = dom2dict(node)
             path = parse_path(polygon2pathd(attrs['points']))
-            return [path]+ret_list, [attrs]+attribute_dictionary_list_int
+            return [path] + ret_list, [attrs] + attribute_dictionary_list_int
         elif convert_lines_to_paths and node.nodeName == 'line':
             line = dom2dict(node)
             d_string = ('M' + line['x1'] + ' ' + line['y1'] +
                         'L' + line['x2'] + ' ' + line['y2'])
             path = parse_path(d_string)
-            return [path]+ret_list, [line]+attribute_dictionary_list_int
+            return [path] + ret_list, [line] + attribute_dictionary_list_int
+        elif convert_ellipses_to_paths and (
+                node.nodeName == 'ellipse' or node.nodeName == 'circle'):
+            attrs = dom2dict(node)
+            path = parse_path(ellipse2pathd(attrs))
+            return [path] + ret_list, [attrs] + attribute_dictionary_list_int
         else:
             return ret_list, attribute_dictionary_list_int
 
@@ -208,15 +257,17 @@ def svg2paths(svg_file_location,
 
 
 def svg2paths2(svg_file_location,
+               return_svg_attributes=True,
                convert_lines_to_paths=True,
                convert_polylines_to_paths=True,
                convert_polygons_to_paths=True,
-               return_svg_attributes=True):
+               convert_ellipses_to_paths=True):
     """Convenience function; identical to svg2paths() except that
     return_svg_attributes=True by default.  See svg2paths() docstring for more
     info."""
     return svg2paths(svg_file_location=svg_file_location,
+                     return_svg_attributes=return_svg_attributes,
                      convert_lines_to_paths=convert_lines_to_paths,
                      convert_polylines_to_paths=convert_polylines_to_paths,
                      convert_polygons_to_paths=convert_polygons_to_paths,
-                     return_svg_attributes=return_svg_attributes)
+                     convert_ellipses_to_paths=convert_ellipses_to_paths)
