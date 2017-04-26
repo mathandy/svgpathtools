@@ -10,23 +10,6 @@ from os import path as os_path, getcwd
 from .parser import parse_path
 
 
-def polyline2pathd(polyline_d):
-    """converts the string from a polyline points-attribute to a string for a
-    Path object d-attribute"""
-    points = polyline_d.replace(', ', ',')
-    points = points.replace(' ,', ',')
-    points = points.split()
-
-    closed = points[0] == points[-1]
-
-    d = 'M' + points.pop(0).replace(',', ' ')
-    for p in points:
-        d += 'L' + p.replace(',', ' ')
-    if closed:
-        d += 'z'
-    return d
-
-
 def ellipse2pathd(ellipse):
     """converts the parameters from an ellipse or a circle to a string for a 
     Path object d-attribute"""
@@ -54,6 +37,23 @@ def ellipse2pathd(ellipse):
     return d
 
 
+def polyline2pathd(polyline_d):
+    """converts the string from a polyline points-attribute to a string for a
+    Path object d-attribute"""
+    points = polyline_d.replace(', ', ',')
+    points = points.replace(' ,', ',')
+    points = points.split()
+
+    closed = points[0] == points[-1]
+
+    d = 'M' + points.pop(0).replace(',', ' ')
+    for p in points:
+        d += 'L' + p.replace(',', ' ')
+    if closed:
+        d += 'z'
+    return d
+
+
 def polygon2pathd(polyline_d):
     """converts the string from a polygon points-attribute to a string for a
     Path object d-attribute.
@@ -78,12 +78,30 @@ def polygon2pathd(polyline_d):
     return d + 'z'
 
 
+def rect2pathd(rect):
+    """Converts an SVG-rect element to a Path d-string.
+    
+    The rectangle will start at the (x,y) coordinate specified by the rectangle 
+    object and proceed counter-clockwise."""
+    x0, y0 = rect['x'], rect['y']
+    w, h = rect["width"], rect["height"]
+    x1, y1 = x0 + w, y0
+    x2, y2 = x0 + w, y0 + h
+    x3, y3 = x0, y0 + h
+
+    d = ("M{} {} L {} {} L {} {} L {} {} z"
+         "".format(x0, y0, x1, y1, x2, y2, x3, y3))
+    return d
+
+
 def svg2paths(svg_file_location,
               return_svg_attributes=False,
+              convert_circles_to_paths=True,
+              convert_ellipses_to_paths=True,
               convert_lines_to_paths=True,
               convert_polylines_to_paths=True,
               convert_polygons_to_paths=True,
-              convert_ellipses_to_paths=True):
+              convert_rectangles_to_paths=True):
     """Converts an SVG into a list of Path objects and attribute dictionaries. 
 
     Converts an SVG file into a list of Path objects and a list of
@@ -92,16 +110,23 @@ def svg2paths(svg_file_location,
 
     Args:
         svg_file_location (string): the location of the svg file
-        convert_lines_to_paths (bool): Set to False to exclude SVG-Line objects
+        return_svg_attributes (bool): Set to True and a dictionary of
+            svg-attributes will be extracted and returned.  See also the 
+            `svg2paths2()` function.
+        convert_circles_to_paths: Set to False to exclude SVG-Circle
+            elements (converted to Paths).  By default circles are included as 
+            paths of two `Arc` objects.
+        convert_ellipses_to_paths (bool): Set to False to exclude SVG-Ellipse
+            elements (converted to Paths).  By default ellipses are included as 
+            paths of two `Arc` objects.
+        convert_lines_to_paths (bool): Set to False to exclude SVG-Line elements
             (converted to Paths)
         convert_polylines_to_paths (bool): Set to False to exclude SVG-Polyline
-            objects (converted to Paths)
+            elements (converted to Paths)
         convert_polygons_to_paths (bool): Set to False to exclude SVG-Polygon
-            objects (converted to Paths)
-        return_svg_attributes (bool): Set to True and a dictionary of
-            svg-attributes will be extracted and returned
-        convert_ellipses_to_paths (bool): Set to False to exclude SVG-Ellipse
-            objects (converted to Paths). Circles are treated as ellipses.
+            elements (converted to Paths)
+        convert_rectangles_to_paths (bool): Set to False to exclude SVG-Rect
+            elements (converted to Paths).
 
     Returns: 
         list: The list of Path objects.
@@ -146,9 +171,18 @@ def svg2paths(svg_file_location,
 
     if convert_ellipses_to_paths:
         ellipses = [dom2dict(el) for el in doc.getElementsByTagName('ellipse')]
-        ellipses += [dom2dict(el) for el in doc.getElementsByTagName('circle')]
         d_strings += [ellipse2pathd(e) for e in ellipses]
         attribute_dictionary_list += ellipses
+
+    if convert_circles_to_paths:
+        circles = [dom2dict(el) for el in doc.getElementsByTagName('circle')]
+        d_strings += [ellipse2pathd(c) for c in circles]
+        attribute_dictionary_list += circles
+
+    if convert_rectangles_to_paths:
+        rectangles = [dom2dict(el) for el in doc.getElementsByTagName('rect')]
+        d_strings += [rect2pathd(r) for r in rectangles]
+        attribute_dictionary_list += rectangles
 
     if return_svg_attributes:
         svg_attributes = dom2dict(doc.getElementsByTagName('svg')[0])
@@ -163,16 +197,20 @@ def svg2paths(svg_file_location,
 
 def svg2paths2(svg_file_location,
                return_svg_attributes=True,
+               convert_circles_to_paths=True,
+               convert_ellipses_to_paths=True,
                convert_lines_to_paths=True,
                convert_polylines_to_paths=True,
                convert_polygons_to_paths=True,
-               convert_ellipses_to_paths=True):
+               convert_rectangles_to_paths=True):
     """Convenience function; identical to svg2paths() except that
     return_svg_attributes=True by default.  See svg2paths() docstring for more
     info."""
     return svg2paths(svg_file_location=svg_file_location,
                      return_svg_attributes=return_svg_attributes,
+                     convert_circles_to_paths=convert_circles_to_paths,
+                     convert_ellipses_to_paths=convert_ellipses_to_paths,
                      convert_lines_to_paths=convert_lines_to_paths,
                      convert_polylines_to_paths=convert_polylines_to_paths,
                      convert_polygons_to_paths=convert_polygons_to_paths,
-                     convert_ellipses_to_paths=convert_ellipses_to_paths)
+                     convert_rectangles_to_paths=convert_rectangles_to_paths)
