@@ -97,6 +97,21 @@ def bbox2path(xmin, xmax, ymin, ymax):
     return Path(b, r, t.reversed(), l.reversed())
 
 
+def polyline(*points):
+    """Converts a list of points to a Path composed of lines connecting those 
+    points (i.e. a linear spline or polyline).  See also `polygon()`."""
+    return Path(*[Line(points[i], points[i+1])
+                  for i in range(len(points) - 1)])
+
+
+def polygon(*points):
+    """Converts a list of points to a Path composed of lines connecting those 
+    points, then closes the path by connecting the last point to the first.  
+    See also `polyline()`."""
+    return Path(*[Line(points[i], points[(i + 1) % len(points)])
+                  for i in range(len(points))])
+
+
 # Conversion###################################################################
 
 def bpoints2bezier(bpoints):
