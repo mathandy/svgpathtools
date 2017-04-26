@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink">
+
+	<rect width="300" height="100" stroke='red'/>
+
+	<rect x="200" y="200" width="300" height="100" stroke='blue'/>
+</svg>
