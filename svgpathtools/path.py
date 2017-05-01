@@ -488,7 +488,7 @@ class Line(object):
                 self.unit_tangent(0), previous.unit_tangent(1))
 
     def point(self, t):
-        """returns the coordinates of the Bezier curve evaluated at t."""
+        """returns the coordinates of the line evaluated at t."""
         distance = self.end - self.start
         return self.start + distance*t
 
@@ -504,7 +504,7 @@ class Line(object):
                              min_depth=min_depth)
 
     def bpoints(self):
-        """returns the Bezier control points of the segment."""
+        """returns the control points of the segment."""
         return self.start, self.end
 
     def poly(self, return_coeffs=False):
