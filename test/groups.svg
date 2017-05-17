@@ -83,7 +83,7 @@
        id="p14"
        style="stroke:#ff0000;stroke-width:2."
        d="m 1100.,100. 100.,0." />
-  <g id="concatenated" transform="translate(1150.,150.),rotate(-90.)">
+  <g id="concatenated" transform="translate(1150.,150.) rotate(-90.)">
     <path
      id="p15"
        style="stroke:#ff0000;stroke-width:2."

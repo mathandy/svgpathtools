@@ -2136,7 +2136,13 @@ class Path(MutableSequence):
 
     def cropped(self, T0, T1):
         """returns a cropped copy of the path."""
+        assert 0 <= T0 <= 1 and 0 <= T1<= 1
         assert T0 != T1
+        assert not (T0 == 1 and T1 == 0)
+
+        if T0 == 1 and 0 < T1 < 1 and self.isclosed():
+            return self.cropped(0, T1)
+
         if T1 == 1:
             seg1 = self[-1]
             t_seg1 = 1
@@ -2171,7 +2177,7 @@ class Path(MutableSequence):
 
             # T1<T0 must cross discontinuity case
             if T1 < T0:
-                if self.isclosed():
+                if not self.isclosed():
                     raise ValueError("This path is not closed, thus T0 must "
                                      "be less than T1.")
                 else:
