@@ -15,10 +15,12 @@ test.svg
 vectorframes.svg
 svgpathtools/__init__.py
 svgpathtools/bezier.py
+svgpathtools/directional_field.py
 svgpathtools/misctools.py
 svgpathtools/parser.py
 svgpathtools/path.py
 svgpathtools/paths2svg.py
+svgpathtools/pathtools.py
 svgpathtools/polytools.py
 svgpathtools/smoothing.py
 svgpathtools/svg2paths.py
@@ -26,13 +28,10 @@ svgpathtools.egg-info/PKG-INFO
 svgpathtools.egg-info/SOURCES.txt
 svgpathtools.egg-info/dependency_links.txt
 svgpathtools.egg-info/top_level.txt
-test/groups.svg
-test/polygons.svg
 test/test.svg
 test/test_bezier.py
 test/test_generation.py
 test/test_parsing.py
 test/test_path.py
+test/test_pathtools.py
 test/test_polytools.py
-test/test_svg2paths.py
-test/test_svg2paths_groups.py
