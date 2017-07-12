@@ -39,7 +39,6 @@ def ellipse2pathd(ellipse):
     return d
 
 
-
 def polyline2pathd(polyline_d):
     """converts the string from a polyline points-attribute to a string for a 
     Path object d-attribute"""
@@ -55,6 +54,7 @@ def polyline2pathd(polyline_d):
     if closed:
         d += 'z'
     return d
+
 
 def polygon2pathd(polyline_d):
     """converts the string from a polygon points-attribute to a string for a 
@@ -96,6 +96,7 @@ def rect2pathd(rect):
          "".format(x0, y0, x1, y1, x2, y2, x3, y3))
     return d
 
+
 def svg2paths(svg_file_location,
               return_svg_attributes=False,
               convert_circles_to_paths=True,
@@ -104,13 +105,15 @@ def svg2paths(svg_file_location,
               convert_polylines_to_paths=True,
               convert_polygons_to_paths=True,
               convert_rectangles_to_paths=True):
-    """Converts an SVG into a list of Path objects and attribute dictionaries. 
+    """Converts an SVG into a list of Path objects and attribute dictionaries.
+
     Converts an SVG file into a list of Path objects and a list of
     dictionaries containing their attributes.  This currently supports
     SVG Path, Line, Polyline, Polygon, Circle, and Ellipse elements.
+
     Args:
         svg_file_location (string): the location of the svg file
-		return_svg_attributes (bool): Set to True and a dictionary of
+        return_svg_attributes (bool): Set to True and a dictionary of
             svg-attributes will be extracted and returned.  See also the 
             `svg2paths2()` function.
         convert_circles_to_paths: Set to False to exclude SVG-Circle
@@ -125,10 +128,9 @@ def svg2paths(svg_file_location,
             elements (converted to Paths)
         convert_polygons_to_paths (bool): Set to False to exclude SVG-Polygon
             elements (converted to Paths)
-        return_svg_attributes (bool): Set to True and a dictionary of
-            svg-attributes will be extracted and returned
         convert_rectangles_to_paths (bool): Set to False to exclude SVG-Rect
             elements (converted to Paths).
+
     Returns: 
         list: The list of Path objects.
         list: The list of corresponding path attribute dictionaries.
