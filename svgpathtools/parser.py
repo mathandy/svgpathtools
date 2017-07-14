@@ -1,7 +1,6 @@
 """This submodule contains the path_parse() function used to convert SVG path
 element d-strings into svgpathtools Path objects.
-Note: This file was taken (nearly) as is from the svg.path module
-(v 2.0)."""
+Note: This file was taken (nearly) as is from the svg.path module (v 2.0)."""
 
 # External dependencies
 from __future__ import division, absolute_import, print_function
@@ -26,7 +25,7 @@ def _tokenize_path(pathdef):
             yield token
 
 
-def parse_path(pathdef, current_pos=0j):
+def parse_path(pathdef, current_pos=0j, tree_element=None):
     # In the SVG specs, initial movetos are absolute, even if
     # specified as 'm'. This is the default behavior here as well.
     # But if you pass in a current_pos variable, the initial moveto
@@ -35,7 +34,11 @@ def parse_path(pathdef, current_pos=0j):
     # Reverse for easy use of .pop()
     elements.reverse()
 
-    segments = Path()
+    if tree_element is None:
+        segments = Path()
+    else:
+        segments = Path(tree_element=tree_element)
+
     start_pos = None
     command = None
 

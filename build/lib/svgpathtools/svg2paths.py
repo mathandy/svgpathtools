@@ -69,29 +69,29 @@ def svg2paths(svg_file_location,
         return dict(list(zip(keys, values)))
 
     # Use minidom to extract path strings from input SVG
-    paths = [dom2dict(el) for el in doc.getElementsByTagName('path')]
+    paths = [dom2dict(el) for el in doc.get_elements_by_tag('path')]
     d_strings = [el['d'] for el in paths]
     attribute_dictionary_list = paths
     # if pathless_svg:
-    #     for el in doc.getElementsByTagName('path'):
+    #     for el in doc.get_elements_by_tag('path'):
     #         el.parentNode.removeChild(el)
 
     # Use minidom to extract polyline strings from input SVG, convert to
     # path strings, add to list
     if convert_polylines_to_paths:
-        plins = [dom2dict(el) for el in doc.getElementsByTagName('polyline')]
+        plins = [dom2dict(el) for el in doc.get_elements_by_tag('polyline')]
         d_strings += [polyline2pathd(pl['points']) for pl in plins]
         attribute_dictionary_list += plins
 
     # Use minidom to extract polygon strings from input SVG, convert to
     # path strings, add to list
     if convert_polygons_to_paths:
-        pgons = [dom2dict(el) for el in doc.getElementsByTagName('polygon')]
+        pgons = [dom2dict(el) for el in doc.get_elements_by_tag('polygon')]
         d_strings += [polyline2pathd(pg['points']) + 'z' for pg in pgons]
         attribute_dictionary_list += pgons
 
     if convert_lines_to_paths:
-        lines = [dom2dict(el) for el in doc.getElementsByTagName('line')]
+        lines = [dom2dict(el) for el in doc.get_elements_by_tag('line')]
         d_strings += [('M' + l['x1'] + ' ' + l['y1'] +
                        'L' + l['x2'] + ' ' + l['y2']) for l in lines]
         attribute_dictionary_list += lines
@@ -101,7 +101,7 @@ def svg2paths(svg_file_location,
     #         doc.writexml(f)
 
     if return_svg_attributes:
-        svg_attributes = dom2dict(doc.getElementsByTagName('svg')[0])
+        svg_attributes = dom2dict(doc.get_elements_by_tag('svg')[0])
         doc.unlink()
         path_list = [parse_path(d) for d in d_strings]
         return path_list, attribute_dictionary_list, svg_attributes

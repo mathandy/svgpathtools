@@ -1715,6 +1715,9 @@ class Path(MutableSequence):
             self._start = None
             self._end = None
 
+        if 'tree_element' in kw:
+            self._tree_element = kw['tree_element']
+
     def __getitem__(self, index):
         return self._segments[index]
 
