@@ -39,8 +39,35 @@ def ellipse2pathd(ellipse):
     return d
 
 
+def ellipse2pathd(ellipse):
+    """converts the parameters from an ellipse or a circle to a string for a 
+    Path object d-attribute"""
+
+    cx = ellipse.get('cx', None)
+    cy = ellipse.get('cy', None)
+    rx = ellipse.get('rx', None)
+    ry = ellipse.get('ry', None)
+    r = ellipse.get('r', None)
+
+    if r is not None:
+        rx = ry = float(r)
+    else:
+        rx = float(rx)
+        ry = float(ry)
+
+    cx = float(cx)
+    cy = float(cy)
+
+    d = ''
+    d += 'M' + str(cx - rx) + ',' + str(cy)
+    d += 'a' + str(rx) + ',' + str(ry) + ' 0 1,0 ' + str(2 * rx) + ',0'
+    d += 'a' + str(rx) + ',' + str(ry) + ' 0 1,0 ' + str(-2 * rx) + ',0'
+
+    return d
+
+
 def polyline2pathd(polyline_d):
-    """converts the string from a polyline points-attribute to a string for a 
+    """converts the string from a polyline points-attribute to a string for a
     Path object d-attribute"""
     points = polyline_d.replace(', ', ',')
     points = points.replace(' ,', ',')
@@ -57,9 +84,9 @@ def polyline2pathd(polyline_d):
 
 
 def polygon2pathd(polyline_d):
-    """converts the string from a polygon points-attribute to a string for a 
+    """converts the string from a polygon points-attribute to a string for a
     Path object d-attribute.
-    Note:  For a polygon made from n points, the resulting path will be 
+    Note:  For a polygon made from n points, the resulting path will be
     composed of n lines (even if some of these lines have length zero)."""
     points = polyline_d.replace(', ', ',')
     points = points.replace(' ,', ',')
@@ -281,7 +308,21 @@ def svg2paths(svg_file_location,
         else:
             return ret_list, attribute_dictionary_list_int
 
-    path_list, attribute_dictionary_list = parse_node(doc)
+    if convert_ellipses_to_paths:
+        ellipses = [dom2dict(el) for el in doc.getElementsByTagName('ellipse')]
+        d_strings += [ellipse2pathd(e) for e in ellipses]
+        attribute_dictionary_list += ellipses
+
+    if convert_circles_to_paths:
+        circles = [dom2dict(el) for el in doc.getElementsByTagName('circle')]
+        d_strings += [ellipse2pathd(c) for c in circles]
+        attribute_dictionary_list += circles
+
+    if convert_rectangles_to_paths:
+        rectangles = [dom2dict(el) for el in doc.getElementsByTagName('rect')]
+        d_strings += [rect2pathd(r) for r in rectangles]
+        attribute_dictionary_list += rectangles
+
     if return_svg_attributes:
         svg_attributes = dom2dict(doc.getElementsByTagName('svg')[0])
         doc.unlink()
