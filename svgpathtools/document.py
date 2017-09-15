@@ -1,50 +1,46 @@
-"""An (experimental) replacement for the svg2paths and paths2svg functionality.
+"""(Experimental) replacement for import/export functionality.
 
-This module contains the `Document` class, a container for a DOM-style document 
-(e.g. svg, html, xml, etc.) designed to replace and improve upon the IO functionality of svgpathtools (i.e. 
-the svg2paths and disvg/wsvg functions). 
+This module contains the `Document` class, a container for a DOM-style 
+document (e.g. svg, html, xml, etc.) designed to replace and improve 
+upon the IO functionality of svgpathtools (i.e. the svg2paths and 
+disvg/wsvg functions). 
 
 An Historic Note:
-     The functionality in this module is meant to replace and improve upon the 
-     IO functionality previously provided by the the `svg2paths` and 
-     `disvg`/`wsvg` functions. 
+     The functionality in this module is meant to replace and improve 
+     upon the IO functionality previously provided by the the 
+     `svg2paths` and `disvg`/`wsvg` functions. 
 
 Example:
-    Typical usage looks something the following.
+    Typical usage looks something like the following.
 
         >> from svgpathtools import *
         >> doc = Document('my_file.html')
         >> for p in doc.paths:
-        >>     foo(p)  # do some stuff using svgpathtools functionality
-        >> foo2(doc.tree)  # do some stuff using ElementTree's functionality
-        >> doc.display()  # open modified document in OS's default application
+        >>     foo(p)  # do stuff using svgpathtools functionality
+        >> foo2(doc.tree)  # do stuff using ElementTree's functionality
+        >> doc.display()  # display doc in OS's default application
         >> doc.save('my_new_file.html')
-
-Attributes:
-    CONVERSIONS (dict): A dictionary whose keys are tag-names (of path-like 
-        objects to be converted to paths during parsing) and whose values are 
-        functions that take in a dictionary (of attributes) and return a string 
-        (the path d-string).  See the `Document` class docstring for more info.
 
 Todo: (please see contributor guidelines in CONTRIBUTING.md)
     * Finish "NotImplemented" methods.
-    * Find some clever (and easy to implement) way to create a thorough set of 
-    unittests.
-    * Finish Documentation for each method (approximately following the Google 
-    Python Style Guide, see [1]_ for some nice examples).  
+    * Find some clever (and easy to implement) way to create a thorough 
+    set of unittests.
+    * Finish Documentation for each method (approximately following the 
+    Google Python Style Guide, see [1]_ for some nice examples).  
     For nice style examples, see [1]_.
 
 Some thoughts on this module's direction:
-    * The `Document` class should ONLY grab path elements that are inside an 
-    SVG.  
-    * To handle transforms... there should be a "get_transform" function and 
-    also a "flatten_transforms" tool that removes any present transform 
-    attributes from all SVG-Path elements in the document (applying the 
-    transformations before to the svgpathtools Path objects).
-    Note: This ability to "flatten" will ignore CSS files (and any relevant 
-    files that are not parsed into the tree automatically by ElementTree)... 
-    that is unless you have any bright ideas on this.  I really know very 
-    little about DOM-style documents.
+    * The `Document` class should ONLY grab path elements that are 
+    inside an SVG.  
+    * To handle transforms... there should be a "get_transform" 
+    function and also a "flatten_transforms" tool that removes any 
+    present transform attributes from all SVG-Path elements in the 
+    document (applying the transformations before to the svgpathtools 
+    Path objects).
+    Note: This ability to "flatten" will ignore CSS files (and any 
+    relevant files that are not parsed into the tree automatically by 
+    ElementTree)... that is unless you have any bright ideas on this.  
+    I really know very little about DOM-style documents.
 """
 
 # External dependencies
@@ -71,11 +67,11 @@ class Document:
     def __init__(self, filename=None, conversions=CONVERSIONS):
         """A container for a DOM-style document.
 
-        The `Document` class is meant to be used to parse, create, save, and 
-        modify DOM-style documents.  Given the `filename` of a DOM-style 
-        document, it parses the document into an ElementTree object, extracts 
-        all SVG-Path and Path-like (see `conversions` below) objects into 
-        a list of svgpathtools Path objects."""
+        The `Document` class is meant to be used to parse, create, save, 
+        and modify DOM-style documents.  Given the `filename` of a 
+        DOM-style document, it parses the document into an ElementTree 
+        object, extracts all SVG-Path and Path-like (see `conversions` 
+        below) objects into a list of svgpathtools Path objects."""
 
         # remember location of original svg file
         if filename is not None and os.path.dirname(filename) == '':
@@ -100,8 +96,8 @@ class Document:
     def get_elements_by_tag(self, tag):
         """Returns a generator of all elements with the give tag. 
 
-        Note: for more advanced XML-related functionality, use the `tree` 
-        attribute (an ElementTree object).
+        Note: for more advanced XML-related functionality, use the 
+        `tree` attribute (an ElementTree object).
         """
         return self.tree.iter(tag=self._prefix + tag)
 
@@ -113,7 +109,7 @@ class Document:
         d_strings = [el['d'] for el in paths]
         attribute_dictionary_list = paths
 
-        # Get d-strings for path-like elements (using `conversions` dictionary)
+        # Convert path-like elements to d-strings and attribute dicts
         if conversions:
             for tag, fcn in conversions.items():
                 attributes = [el.attrib for el in self.get_elements_by_tag(tag)]
@@ -146,7 +142,7 @@ class Document:
         raise NotImplementedError
 
     def update_tree(self):
-        """Rewrite the d-string's for each path in the `tree` attribute."""
+        """Rewrite d-string's for each path in the `tree` attribute."""
         raise NotImplementedError
 
     def save(self, filename, update=True):
@@ -158,9 +154,7 @@ class Document:
             output_svg.write(etree.tostring(self.tree.getroot()))
 
     def display(self, filename=None, update=True):
-        """Display the document.
-
-        Opens the document """
+        """Displays/opens the doc using the OS's default application."""
         if update:
             self.update_tree()
 
