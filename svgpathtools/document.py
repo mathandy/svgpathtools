@@ -41,6 +41,11 @@ Some thoughts on this module's direction:
     relevant files that are not parsed into the tree automatically by 
     ElementTree)... that is unless you have any bright ideas on this.  
     I really know very little about DOM-style documents.
+
+A Big Problem:  
+    Derivatives and other functions may be messed up by 
+    transforms unless transforms are flattened (and not included in 
+    css)
 """
 
 # External dependencies
@@ -54,7 +59,7 @@ from .svg2paths import (ellipse2pathd, line2pathd, polyline2pathd,
                         polygon2pathd, rect2pathd)
 from .misctools import open_in_browser
 
-
+# THESE MUST BE WRAPPED TO OUPUT ElementTree.element objects
 CONVERSIONS = {'circle': ellipse2pathd,
                'ellipse': ellipse2pathd,
                'line': line2pathd,
@@ -64,14 +69,28 @@ CONVERSIONS = {'circle': ellipse2pathd,
 
 
 class Document:
-    def __init__(self, filename=None, conversions=CONVERSIONS):
-        """A container for a DOM-style document.
+    def __init__(self, filename, conversions=False, transform_paths=True):
+        """(EXPERIMENTAL) A container for a DOM-style document.
 
-        The `Document` class is meant to be used to parse, create, save, 
-        and modify DOM-style documents.  Given the `filename` of a 
-        DOM-style document, it parses the document into an ElementTree 
-        object, extracts all SVG-Path and Path-like (see `conversions` 
-        below) objects into a list of svgpathtools Path objects."""
+        The `Document` class provides a simple interface to modify and analyze 
+        the path elements in a DOM-style document.  The DOM-style document is 
+        parsed into an ElementTree object (stored in the `tree` attribute and 
+        all SVG-Path (and, optionally, Path-like) elements are extracted into a 
+        list of svgpathtools Path objects. For more information on "Path-like"
+        objects, see the below explanation of the `conversions` argument.
+        
+        Args:
+            merge_transforms (object): 
+            filename (str): The filename of the DOM-style object.
+                conversions (bool or dict): If true, automatically converts 
+                circle, ellipse, line, polyline, polygon, and rect elements 
+                into path elements.  These changes are saved in the ElementTree 
+                object.  For custom conversions, a dictionary can be passed in instead whose 
+                keys are the element tags that are to be converted and whose values 
+                are the corresponding conversion functions.  Conversion 
+                functions should both take in and return an ElementTree.element
+                object.
+        """
 
         # remember location of original svg file
         if filename is not None and os.path.dirname(filename) == '':
@@ -94,7 +113,7 @@ class Document:
         self.paths = self._get_paths(conversions)
 
     def get_elements_by_tag(self, tag):
-        """Returns a generator of all elements with the give tag. 
+        """Returns a generator of all elements with the given tag. 
 
         Note: for more advanced XML-related functionality, use the 
         `tree` attribute (an ElementTree object).
@@ -112,11 +131,14 @@ class Document:
         # Convert path-like elements to d-strings and attribute dicts
         if conversions:
             for tag, fcn in conversions.items():
-                attributes = [el.attrib for el in self.get_elements_by_tag(tag)]
+                attributes = [l.attrib for l in self.get_elements_by_tag(tag)]
                 d_strings += [fcn(d) for d in attributes]
 
         path_list = [parse_path(d) for d in d_strings]
         return path_list
+
+    def convert_pathlike_elements_to_paths(self, conversions=CONVERSIONS):
+        raise NotImplementedError
 
     def get_svg_attributes(self):
         """To help with backwards compatibility."""
