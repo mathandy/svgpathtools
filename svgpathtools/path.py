@@ -1300,10 +1300,13 @@ class Arc(object):
         # delta is the angular distance of the arc (w.r.t the circle)
         # theta is the angle between the positive x'-axis and the start point
         # on the circle
+        u1_real_rounded = u1.real
+        if u1.real > 1 or u1.real < -1:
+            u1_real_rounded = round(u1.real)
         if u1.imag > 0:
-            self.theta = degrees(acos(u1.real))
+            self.theta = degrees(acos(u1_real_rounded))
         elif u1.imag < 0:
-            self.theta = -degrees(acos(u1.real))
+            self.theta = -degrees(acos(u1_real_rounded))
         else:
             if u1.real > 0:  # start is on pos u_x axis
                 self.theta = 0
