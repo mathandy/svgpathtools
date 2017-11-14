@@ -28,15 +28,14 @@ setup(name='svgpathtools',
       author=AUTHOR_NAME,
       author_email=AUTHOR_EMAIL,
       url='https://github.com/mathandy/svgpathtools',
-      download_url = 'http://github.com/mathandy/svgpathtools/tarball/'+VERSION,
+      download_url='http://github.com/mathandy/svgpathtools/tarball/' + VERSION,
       license='MIT',
-      
-      # install_requires=['numpy', 'svgwrite'],
+
       platforms="OS Independent",
       # test_suite='tests',
-      requires=['numpy', 'svgwrite'],
+      install_requires=['numpy', 'svgwrite'],
       keywords=['svg', 'svg path', 'svg.path', 'bezier', 'parse svg path', 'display svg'],
-      classifiers = [
+      classifiers=[
             "Development Status :: 4 - Beta",
             "Intended Audience :: Developers",
             "License :: OSI Approved :: MIT License",
