@@ -585,7 +585,6 @@ curve <https://en.wikipedia.org/wiki/Parallel_curve>`__ for a few paths.
         of the 'parallel' offset curve."""
         nls = []
         for seg in path:
-            ct = 1
             for k in range(steps):
                 t = k / float(steps)
                 offset_vector = offset_distance * seg.normal(t)
