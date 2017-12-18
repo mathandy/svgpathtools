@@ -587,7 +587,7 @@ curve <https://en.wikipedia.org/wiki/Parallel_curve>`__ for a few paths.
         for seg in path:
             ct = 1
             for k in range(steps):
-                t = k / steps
+                t = k / float(steps)
                 offset_vector = offset_distance * seg.normal(t)
                 nl = Line(seg.point(t), seg.point(t) + offset_vector)
                 nls.append(nl)
