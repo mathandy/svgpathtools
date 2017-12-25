@@ -1248,6 +1248,51 @@ class Test_intersect(unittest.TestCase):
                 assert_intersections(a, l, intersections, None)
 
 
+    def test_intersect_arc_line_1(self):
+
+        """Verify the return value of intersects() when an Arc ends at
+        the starting point of a Line."""
+
+        a = Arc(start=(0+0j), radius=(10+10j), rotation=0, large_arc=False,
+                sweep=False, end=(10+10j), autoscale_radius=False)
+        l = Line(start=(10+10j), end=(20+10j))
+
+        i = a.intersect(l)
+        assert(len(i) == 1)
+        assert(i[0][0] == 1.0)
+        assert(i[0][1] == 0.0)
+
+
+    def test_intersect_arc_line_2(self):
+
+        """Verify the return value of intersects() when an Arc is pierced
+        once by a Line."""
+
+        a = Arc(start=(0+0j), radius=(10+10j), rotation=0, large_arc=False,
+                sweep=False, end=(10+10j), autoscale_radius=False)
+        l = Line(start=(0+9j), end=(20+9j))
+
+        i = a.intersect(l)
+        assert(len(i) == 1)
+        assert(i[0][0] >= 0.0)
+        assert(i[0][0] <= 1.0)
+        assert(i[0][1] >= 0.0)
+        assert(i[0][1] <= 1.0)
+
+
+    def test_intersect_arc_line_3(self):
+
+        """Verify the return value of intersects() when an Arc misses
+        a Line, but the circle that the Arc is part of hits the Line."""
+
+        a = Arc(start=(0+0j), radius=(10+10j), rotation=0, large_arc=False,
+                sweep=False, end=(10+10j), autoscale_radius=False)
+        l = Line(start=(11+100j), end=(11-100j))
+
+        i = a.intersect(l)
+        assert(len(i) == 0)
+
+
 class TestPathTools(unittest.TestCase):
     # moved from test_pathtools.py
 
