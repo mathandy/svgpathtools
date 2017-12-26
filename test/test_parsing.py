@@ -137,3 +137,31 @@ class TestParser(unittest.TestCase):
 
     def test_errors(self):
         self.assertRaises(ValueError, parse_path, 'M 100 100 L 200 200 Z 100 200')
+
+    def test_roundoff(self):
+        """Paths with arc segments may have floating point round-off issues"""
+        path1 = parse_path("""
+        M160.172,102.95
+        L159.922,102.95
+        A0.025,0.025 0 0,1 159.897,102.925
+        L159.897,102.675
+        A0.025,0.025 0 0,1 159.922,102.65
+        L160.172,102.65
+        A0.025,0.025 0 0,1 160.197,102.675
+        L160.197,102.925
+        A0.025,0.025 0 0,1 160.172,102.95""")
+
+        path2 = Path(Line(start=(160.172 + 102.95j), end=(159.922 + 102.95j)),
+                     Arc(start=(159.922 + 102.95j), radius=(0.025 + 0.025j), rotation=0.0,
+                         large_arc=False, sweep=True, end=(159.897 + 102.925j)),
+                     Line(start=(159.897 + 102.925j), end=(159.897 + 102.675j)),
+                     Arc(start=(159.897 + 102.675j), radius=(0.025 + 0.025j), rotation=0.0,
+                         large_arc=False, sweep=True, end=(159.922 + 102.65j)),
+                     Line(start=(159.922 + 102.65j), end=(160.172 + 102.65j)),
+                     Arc(start=(160.172 + 102.65j), radius=(0.025 + 0.025j), rotation=0.0,
+                         large_arc=False, sweep=True, end=(160.197 + 102.675j)),
+                     Line(start=(160.197 + 102.675j), end=(160.197 + 102.925j)),
+                     Arc(start=(160.197 + 102.925j), radius=(0.025 + 0.025j), rotation=0.0,
+                         large_arc=False, sweep=True, end=(160.172 + 102.95j)))
+
+        self.assertEqual(path1, path2)
