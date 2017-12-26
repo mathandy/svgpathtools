@@ -353,6 +353,18 @@ class QuadraticBezierTest(unittest.TestCase):
 
 class ArcTest(unittest.TestCase):
 
+    def test_trusting_acos(self):
+        """`u1.real` is > 1 in this arc due to numerical error."""
+        try:
+            a1 = Arc(start=(160.197+102.925j), 
+                     radius=(0.025+0.025j), 
+                     rotation=0.0, 
+                     large_arc=False, 
+                     sweep=True, 
+                     end=(160.172+102.95j))
+        except ValueError:
+            self.fail("Arc() raised ValueError unexpectedly!")
+
     def test_points(self):
         arc1 = Arc(0j, 100 + 50j, 0, 0, 0, 100 + 50j)
         self.assertAlmostEqual(arc1.center, 100 + 0j)
