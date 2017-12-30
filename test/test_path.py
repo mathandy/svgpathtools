@@ -992,6 +992,80 @@ class Test_intersect(unittest.TestCase):
         ###################################################################
 
 
+    def test_intersect_arc_line_1(self):
+
+        """Verify the return value of intersects() when an Arc ends at
+        the starting point of a Line."""
+
+        a = Arc(start=(0+0j), radius=(10+10j), rotation=0, large_arc=False,
+                sweep=False, end=(10+10j), autoscale_radius=False)
+        l = Line(start=(10+10j), end=(20+10j))
+
+        i = a.intersect(l)
+        assert(len(i) == 1)
+        assert(i[0][0] == 1.0)
+        assert(i[0][1] == 0.0)
+
+
+    def test_intersect_arc_line_2(self):
+
+        """Verify the return value of intersects() when an Arc is pierced
+        once by a Line."""
+
+        a = Arc(start=(0+0j), radius=(10+10j), rotation=0, large_arc=False,
+                sweep=False, end=(10+10j), autoscale_radius=False)
+        l = Line(start=(0+9j), end=(20+9j))
+
+        i = a.intersect(l)
+        assert(len(i) == 1)
+        assert(i[0][0] >= 0.0)
+        assert(i[0][0] <= 1.0)
+        assert(i[0][1] >= 0.0)
+        assert(i[0][1] <= 1.0)
+
+
+    def test_intersect_arc_line_3(self):
+
+        """Verify the return value of intersects() when an Arc misses
+        a Line, but the circle that the Arc is part of hits the Line."""
+
+        a = Arc(start=(0+0j), radius=(10+10j), rotation=0, large_arc=False,
+                sweep=False, end=(10+10j), autoscale_radius=False)
+        l = Line(start=(11+100j), end=(11-100j))
+
+        i = a.intersect(l)
+        assert(len(i) == 0)
+
+
+    def test_intersect_arc_arc_1(self):
+
+        """Verify the return value of intersect() when one Arc hits
+        another."""
+
+        a0 = Arc(start=(41-32.608j), radius=(60.6+60.6j), rotation=0.0, large_arc=True,
+                sweep=False, end=(40.234-32.613j), autoscale_radius=False)
+        a1 = Arc(start=(12.7-32.613j), radius=(41+41j), rotation=0.0, large_arc=False,
+                sweep=True, end=(41-60.913j), autoscale_radius=False)
+
+        i = a0.intersect(a1)
+        assert(len(i) == 1)
+
+
+    def test_intersect_arc_arc_2(self):
+
+        """Verify the return value of intersect() when one Arc just
+        barely touches another."""
+
+        a0 = Arc(start=(-11.8336055388+70.9107269466j), radius=(46.029+46.029j),
+                rotation=0.0, large_arc=False, sweep=False, end=(-61.8608771664+73.6957167236j))
+        a1 = Arc(start=(-61.8608550539+73.6957005624j), radius=(46.029+46.029j),
+                rotation=0.0, large_arc=False, sweep=False, end=(-79.7045318117+120.516304677j))
+
+        # The distance between a0's end and a1's start is 2.738881234050836e-05.
+        i = a0.intersect(a1)
+        assert(len(i) == 0)
+
+
 class TestPathTools(unittest.TestCase):
     # moved from test_pathtools.py
 
