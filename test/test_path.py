@@ -1039,6 +1039,21 @@ class Test_intersect(unittest.TestCase):
         assert(len(i) == 1)
 
 
+    def test_intersect_arc_arc_2(self):
+
+        """Verify the return value of intersect() when one Arc just
+        barely touches another."""
+
+        a0 = Arc(start=(-11.8336055388+70.9107269466j), radius=(46.029+46.029j),
+                rotation=0.0, large_arc=False, sweep=False, end=(-61.8608771664+73.6957167236j))
+        a1 = Arc(start=(-61.8608550539+73.6957005624j), radius=(46.029+46.029j),
+                rotation=0.0, large_arc=False, sweep=False, end=(-79.7045318117+120.516304677j))
+
+        # The distance between a0's end and a1's start is 2.738881234050836e-05.
+        i = a0.intersect(a1)
+        assert(len(i) == 0)
+
+
 class TestPathTools(unittest.TestCase):
     # moved from test_pathtools.py
 
