@@ -1025,6 +1025,20 @@ class Test_intersect(unittest.TestCase):
         assert(len(i) == 0)
 
 
+    def test_intersect_arc_arc_1(self):
+
+        """Verify the return value of intersect() when one Arc hits
+        another."""
+
+        a0 = Arc(start=(41-32.608j), radius=(60.6+60.6j), rotation=0.0, large_arc=True,
+                sweep=False, end=(40.234-32.613j), autoscale_radius=False)
+        a1 = Arc(start=(12.7-32.613j), radius=(41+41j), rotation=0.0, large_arc=False,
+                sweep=True, end=(41-60.913j), autoscale_radius=False)
+
+        i = a0.intersect(a1)
+        assert(len(i) == 1)
+
+
 class TestPathTools(unittest.TestCase):
     # moved from test_pathtools.py
 
