@@ -1293,6 +1293,16 @@ class Test_intersect(unittest.TestCase):
         assert(len(i) == 0)
 
 
+    def test_intersect_arc_line_disjoint_bboxes(self):
+        # The arc is very short, which contributes to the problem here.
+        l = Line(start=(125.314540561+144.192926144j), end=(125.798713132+144.510685287j))
+        a = Arc(start=(128.26640649+146.908463323j), radius=(2+2j),
+                rotation=0, large_arc=False, sweep=True,
+                end=(128.26640606+146.90846449j))
+        i = l.intersect(a)
+        assert(i == [])
+
+
 class TestPathTools(unittest.TestCase):
     # moved from test_pathtools.py
 
