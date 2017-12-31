@@ -29,6 +29,25 @@ def random_line():
     return Line(start, end)
 
 
+def random_arc():
+    x = (random.random() - 0.5) * 2000
+    y = (random.random() - 0.5) * 2000
+    start = complex(x, y)
+
+    x = (random.random() - 0.5) * 2000
+    y = (random.random() - 0.5) * 2000
+    end = complex(x, y)
+
+    x = (random.random() - 0.5) * 2000
+    y = (random.random() - 0.5) * 2000
+    radius = complex(x, y)
+
+    large_arc = random.choice([True, False])
+    sweep = random.choice([True, False])
+
+    return Arc(start=start, radius=radius, rotation=0.0, large_arc=large_arc, sweep=sweep, end=end)
+
+
 class LineTest(unittest.TestCase):
 
     def test_lines(self):
@@ -555,6 +574,67 @@ class ArcTest(unittest.TestCase):
         segment = Arc(0j, 100 + 50j, 0, 0, 0, 100 + 50j)
         self.assertTrue(segment == Arc(0j, 100 + 50j, 0, 0, 0, 100 + 50j))
         self.assertTrue(segment != Arc(0j, 100 + 50j, 0, 1, 0, 100 + 50j))
+
+    def test_point_to_t(self):
+        a = Arc(start=(0+0j), radius=(5+5j), rotation=0.0, large_arc=True, sweep=True, end=(0+10j))
+        self.assertEqual(a.point_to_t(0+0j), 0.0)
+        self.assertAlmostEqual(a.point_to_t(5+5j), 0.5)
+        self.assertEqual(a.point_to_t(0+10j), 1.0)
+        self.assertIsNone(a.point_to_t(-5+5j))
+        self.assertIsNone(a.point_to_t(0+5j))
+        self.assertIsNone(a.point_to_t(1+0j))
+        self.assertIsNone(a.point_to_t(0-1j))
+        self.assertIsNone(a.point_to_t(0+11j))
+
+        a = Arc(start=(0+0j), radius=(5+5j), rotation=0.0, large_arc=True, sweep=False, end=(0+10j))
+        self.assertEqual(a.point_to_t(0+0j), 0.0)
+        self.assertAlmostEqual(a.point_to_t(-5+5j), 0.5)
+        self.assertEqual(a.point_to_t(0+10j), 1.0)
+        self.assertIsNone(a.point_to_t(5+5j))
+        self.assertIsNone(a.point_to_t(0+5j))
+        self.assertIsNone(a.point_to_t(1+0j))
+        self.assertIsNone(a.point_to_t(0-1j))
+        self.assertIsNone(a.point_to_t(0+11j))
+
+        a = Arc(start=(-10+0j), radius=(10+20j), rotation=0.0, large_arc=True, sweep=True, end=(10+0j))
+        self.assertEqual(a.point_to_t(-10+0j), 0.0)
+        self.assertAlmostEqual(a.point_to_t(0-20j), 0.5)
+        self.assertEqual(a.point_to_t(10+0j), 1.0)
+        self.assertIsNone(a.point_to_t(0+20j))
+        self.assertIsNone(a.point_to_t(-5+5j))
+        self.assertIsNone(a.point_to_t(0+5j))
+        self.assertIsNone(a.point_to_t(1+0j))
+        self.assertIsNone(a.point_to_t(0-1j))
+        self.assertIsNone(a.point_to_t(0+11j))
+
+        a = Arc(start=(100.834+27.987j), radius=(60.6+60.6j), rotation=0.0, large_arc=False, sweep=False, end=(40.234-32.613j))
+        self.assertEqual(a.point_to_t(100.834+27.987j), 0.0)
+        self.assertAlmostEqual(a.point_to_t(96.2210993246+4.7963831644j), 0.25)
+        self.assertAlmostEqual(a.point_to_t(83.0846703014-14.8636715784j), 0.50)
+        self.assertAlmostEqual(a.point_to_t(63.4246151671-28.0001000158j), 0.75)
+        self.assertEqual(a.point_to_t(40.234-32.613j), 1.00)
+        self.assertIsNone(a.point_to_t(-10+0j))
+        self.assertIsNone(a.point_to_t(0+0j))
+
+        a = Arc(start=(423.049961698-41.3779390229j), radius=(904.283878032+597.298520765j), rotation=0.0, large_arc=True, sweep=False, end=(548.984030235-312.385118044j))
+        orig_t = 0.854049465076
+        p = a.point(orig_t)
+        computed_t = a.point_to_t(p)
+        self.assertAlmostEqual(orig_t, computed_t)
+
+        a = Arc(start=(-1-750j), radius=(750+750j), rotation=0.0, large_arc=True, sweep=False, end=1-750j)
+        self.assertAlmostEqual(a.point_to_t(730.5212132777968+169.8191111892562j), 0.71373858)
+        self.assertIsNone(a.point_to_t(730.5212132777968+169j))
+        self.assertIsNone(a.point_to_t(730.5212132777968+171j))
+
+        random.seed()
+        for arc_index in range(100):
+            a = random_arc()
+            for t_index in range(100):
+                orig_t = random.random()
+                p = a.point(orig_t)
+                computed_t = a.point_to_t(p)
+                self.assertAlmostEqual(orig_t, computed_t)
 
 
 class TestPath(unittest.TestCase):
