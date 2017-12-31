@@ -608,6 +608,23 @@ class Line(object):
         ymax = max(self.start.imag, self.end.imag)
         return xmin, xmax, ymin, ymax
 
+    def point_to_t(self, point):
+        """If the point lies on the Line, returns its `t` parameter.
+        If the point does not lie on the Line, returns None."""
+
+        if np.isclose(point, self.start, rtol=0):
+            return 0.0
+        elif np.isclose(point, self.end, rtol=0):
+            return 1.0
+
+        p = self.poly()
+        # p(t) = (p_1 * t) + p_0 = point
+        # t = (point - p_0) / p_1
+        t = (point - p[0]) / p[1]
+        if np.isclose(t.imag, 0) and (t.real >= 0.0) and (t.real <= 1.0):
+            return t.real
+        return None
+
     def cropped(self, t0, t1):
         """returns a cropped copy of this segment which starts at
         self.point(t0) and ends at self.point(t1)."""
