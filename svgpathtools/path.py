@@ -4,7 +4,7 @@ Arc."""
 
 # External dependencies
 from __future__ import division, absolute_import, print_function
-from math import sqrt, cos, sin, acos, degrees, radians, log, pi
+from math import sqrt, cos, sin, acos, asin, degrees, radians, log, pi
 from cmath import exp, sqrt as csqrt, phase
 from collections import MutableSequence
 from warnings import warn
@@ -1373,6 +1373,112 @@ class Arc(object):
         x = rx*cosphi*cos(angle) - ry*sinphi*sin(angle) + self.center.real
         y = rx*sinphi*cos(angle) + ry*cosphi*sin(angle) + self.center.imag
         return complex(x, y)
+
+    def point_to_t(self, point):
+        """If the point lies on the Arc, returns its `t` parameter.
+        If the point does not lie on the Arc, returns None.
+        This function only works on Arcs with rotation == 0.0"""
+
+        def in_range(min, max, val):
+            return (min <= val) and (max >= val)
+
+        if np.isclose(point, self.start, rtol=0.0):
+            return 0.0
+        elif np.isclose(point, self.end, rtol=0.0):
+            return 1.0
+
+        if self.rotation != 0.0:
+            raise ValueError("Arc.point_to_t() only works on non-rotated Arcs.")
+
+        v = point - self.center
+        distance_from_center = sqrt((v.real * v.real) + (v.imag * v.imag))
+        min_radius = min(self.radius.real, self.radius.imag)
+        max_radius = max(self.radius.real, self.radius.imag)
+        if (distance_from_center < min_radius) and not np.isclose(distance_from_center, min_radius):
+            return None
+        if (distance_from_center > max_radius) and not np.isclose(distance_from_center, max_radius):
+            return None
+
+        # x = center_x + radius_x cos(radians(theta + t delta))
+        # y = center_y + radius_y sin(radians(theta + t delta))
+        #
+        # For x:
+        # cos(radians(theta + t delta)) = (x - center_x) / radius_x
+        # radians(theta + t delta) = acos((x - center_x) / radius_x)
+        # theta + t delta = degrees(acos((x - center_x) / radius_x))
+        # t_x = (degrees(acos((x - center_x) / radius_x)) - theta) / delta
+        #
+        # Similarly for y:
+        # t_y = (degrees(asin((y - center_y) / radius_y)) - theta) / delta
+
+        x = point.real
+        y = point.imag
+
+        #
+        # +Y points down!
+        #
+        # sweep mean clocwise
+        # sweep && (delta > 0)
+        # !sweep && (delta < 0)
+        #
+        # -180 <= theta_1 <= 180
+        #
+        # large_arc && (-360 <= delta <= 360)
+        # !large_arc && (-180 < delta < 180)
+        #
+
+        end_angle = self.theta + self.delta
+        min_angle = min(self.theta, end_angle)
+        max_angle = max(self.theta, end_angle)
+
+        acos_arg = (x - self.center.real) / self.radius.real
+
+        x_angle_0 = degrees(acos(acos_arg))
+        while x_angle_0 < min_angle:
+            x_angle_0 += 360.0
+        while x_angle_0 > max_angle:
+            x_angle_0 -= 360.0
+
+        x_angle_1 = -1.0 * x_angle_0
+        while x_angle_1 < min_angle:
+            x_angle_1 += 360.0
+        while x_angle_1 > max_angle:
+            x_angle_1 -= 360.0
+
+        t_x_0 = (x_angle_0 - self.theta) / self.delta
+        t_x_1 = (x_angle_1 - self.theta) / self.delta
+
+        asin_arg = (y - self.center.imag) / self.radius.imag
+
+        y_angle_0 = degrees(asin(asin_arg))
+        while y_angle_0 < min_angle:
+            y_angle_0 += 360.0
+        while y_angle_0 > max_angle:
+            y_angle_0 -= 360.0
+
+        y_angle_1 = 180 - y_angle_0
+        while y_angle_1 < min_angle:
+            y_angle_1 += 360.0
+        while y_angle_1 > max_angle:
+            y_angle_1 -= 360.0
+
+        t_y_0 = (y_angle_0 - self.theta) / self.delta
+        t_y_1 = (y_angle_1 - self.theta) / self.delta
+
+        t = None
+        if np.isclose(t_x_0, t_y_0):
+            t = (t_x_0 + t_y_0) / 2.0
+        elif np.isclose(t_x_0, t_y_1):
+            t= (t_x_0 + t_y_1) / 2.0
+        elif np.isclose(t_x_1, t_y_0):
+            t = (t_x_1 + t_y_0) / 2.0
+        elif np.isclose(t_x_1, t_y_1):
+            t = (t_x_1 + t_y_1) / 2.0
+
+        if (t >= 0.0) and (t <= 1.0):
+            return t
+
+        return None
 
     def centeriso(self, z):
         """This is an isometry that translates and rotates self so that it
