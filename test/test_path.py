@@ -4,6 +4,7 @@ import unittest
 from math import sqrt, pi
 from operator import itemgetter
 import numpy as np
+import random
 
 # Internal dependencies
 from svgpathtools import *
@@ -14,6 +15,18 @@ from svgpathtools.path import _NotImplemented4ArcException
 # Most of these test points are not calculated separately, as that would
 # take too long and be too error prone. Instead the curves have been verified
 # to be correct visually with the disvg() function.
+
+
+def random_line():
+    x = (random.random() - 0.5) * 2000
+    y = (random.random() - 0.5) * 2000
+    start = complex(x, y)
+
+    x = (random.random() - 0.5) * 2000
+    y = (random.random() - 0.5) * 2000
+    end = complex(x, y)
+
+    return Line(start, end)
 
 
 class LineTest(unittest.TestCase):
@@ -55,6 +68,71 @@ class LineTest(unittest.TestCase):
         self.assertFalse(line == str(line))
         self.assertTrue(line != str(line))
         self.assertFalse(cubic == line)
+
+    def test_point_to_t(self):
+        l = Line(start=(0+0j), end=(0+10j))
+        self.assertEqual(l.point_to_t(0+0j), 0.0)
+        self.assertAlmostEqual(l.point_to_t(0+5j), 0.5)
+        self.assertEqual(l.point_to_t(0+10j), 1.0)
+        self.assertIsNone(l.point_to_t(1+0j))
+        self.assertIsNone(l.point_to_t(0-1j))
+        self.assertIsNone(l.point_to_t(0+11j))
+
+        l = Line(start=(0+0j), end=(10+10j))
+        self.assertEqual(l.point_to_t(0+0j), 0.0)
+        self.assertAlmostEqual(l.point_to_t(5+5j), 0.5)
+        self.assertEqual(l.point_to_t(10+10j), 1.0)
+        self.assertIsNone(l.point_to_t(1+0j))
+        self.assertIsNone(l.point_to_t(0-1j))
+        self.assertIsNone(l.point_to_t(0+11j))
+        self.assertIsNone(l.point_to_t(10.001+10.001j))
+        self.assertIsNone(l.point_to_t(-0.001-0.001j))
+
+        l = Line(start=(0+0j), end=(10+0j))
+        self.assertEqual(l.point_to_t(0+0j), 0.0)
+        self.assertAlmostEqual(l.point_to_t(5+0j), 0.5)
+        self.assertEqual(l.point_to_t(10+0j), 1.0)
+        self.assertIsNone(l.point_to_t(0+1j))
+        self.assertIsNone(l.point_to_t(0-1j))
+        self.assertIsNone(l.point_to_t(0+11j))
+        self.assertIsNone(l.point_to_t(10.001+0j))
+        self.assertIsNone(l.point_to_t(-0.001-0j))
+
+        l = Line(start=(-2-1j), end=(11-20j))
+        self.assertEqual(l.point_to_t(-2-1j), 0.0)
+        self.assertAlmostEqual(l.point_to_t(4.5-10.5j), 0.5)
+        self.assertEqual(l.point_to_t(11-20j), 1.0)
+        self.assertIsNone(l.point_to_t(0+1j))
+        self.assertIsNone(l.point_to_t(0-1j))
+        self.assertIsNone(l.point_to_t(0+11j))
+        self.assertIsNone(l.point_to_t(10.001+0j))
+        self.assertIsNone(l.point_to_t(-0.001-0j))
+
+        l = Line(start=(40.234-32.613j), end=(12.7-32.613j))
+        self.assertEqual(l.point_to_t(40.234-32.613j), 0.0)
+        self.assertAlmostEqual(l.point_to_t(33.3505-32.613j), 0.25)
+        self.assertAlmostEqual(l.point_to_t(26.467-32.613j), 0.50)
+        self.assertAlmostEqual(l.point_to_t(19.5835-32.613j), 0.75)
+        self.assertEqual(l.point_to_t(12.7-32.613j), 1.0)
+        self.assertIsNone(l.point_to_t(40.25-32.613j))
+        self.assertIsNone(l.point_to_t(12.65-32.613j))
+        self.assertIsNone(l.point_to_t(11-20j))
+        self.assertIsNone(l.point_to_t(0+1j))
+        self.assertIsNone(l.point_to_t(0-1j))
+        self.assertIsNone(l.point_to_t(0+11j))
+        self.assertIsNone(l.point_to_t(10.001+0j))
+        self.assertIsNone(l.point_to_t(-0.001-0j))
+
+        random.seed()
+        for line_index in range(100):
+            l = random_line()
+            for t_index in range(100):
+                orig_t = random.random()
+                p = l.point(orig_t)
+                computed_t = l.point_to_t(p)
+                self.assertAlmostEqual(orig_t, computed_t)
+
+
 
 
 class CubicBezierTest(unittest.TestCase):
