@@ -28,6 +28,25 @@ def random_line():
     return Line(start, end)
 
 
+def random_arc():
+    x = (random.random() - 0.5) * 2000
+    y = (random.random() - 0.5) * 2000
+    start = complex(x, y)
+
+    x = (random.random() - 0.5) * 2000
+    y = (random.random() - 0.5) * 2000
+    end = complex(x, y)
+
+    x = (random.random() - 0.5) * 2000
+    y = (random.random() - 0.5) * 2000
+    radius = complex(x, y)
+
+    large_arc = random.choice([True, False])
+    sweep = random.choice([True, False])
+
+    return Arc(start=start, radius=radius, rotation=0.0, large_arc=large_arc, sweep=sweep, end=end)
+
+
 class LineTest(unittest.TestCase):
 
     def test_lines(self):
@@ -556,6 +575,71 @@ class ArcTest(unittest.TestCase):
         segment = Arc(0j, 100 + 50j, 0, 0, 0, 100 + 50j)
         self.assertTrue(segment == Arc(0j, 100 + 50j, 0, 0, 0, 100 + 50j))
         self.assertTrue(segment != Arc(0j, 100 + 50j, 0, 1, 0, 100 + 50j))
+
+    def test_point_to_t(self):
+        a = Arc(start=(0+0j), radius=(5+5j), rotation=0.0, large_arc=True, sweep=True, end=(0+10j))
+        assert(a.point_to_t(0+0j) == 0.0)
+        assert(np.isclose(a.point_to_t(5+5j), 0.5))
+        assert(a.point_to_t(0+10j) == 1.0)
+        assert(a.point_to_t(-5+5j) == None)
+        assert(a.point_to_t(0+5j) == None)
+        assert(a.point_to_t(1+0j) == None)
+        assert(a.point_to_t(0-1j) == None)
+        assert(a.point_to_t(0+11j) == None)
+
+        a = Arc(start=(0+0j), radius=(5+5j), rotation=0.0, large_arc=True, sweep=False, end=(0+10j))
+        assert(a.point_to_t(0+0j) == 0.0)
+        assert(np.isclose(a.point_to_t(-5+5j), 0.5))
+        assert(a.point_to_t(0+10j) == 1.0)
+        assert(a.point_to_t(5+5j) == None)
+        assert(a.point_to_t(0+5j) == None)
+        assert(a.point_to_t(1+0j) == None)
+        assert(a.point_to_t(0-1j) == None)
+        assert(a.point_to_t(0+11j) == None)
+
+        a = Arc(start=(-10+0j), radius=(10+20j), rotation=0.0, large_arc=True, sweep=True, end=(10+0j))
+        assert(a.point_to_t(-10+0j) == 0.0)
+        assert(np.isclose(a.point_to_t(0-20j), 0.5))
+        assert(a.point_to_t(10+0j) == 1.0)
+        assert(a.point_to_t(0+20j) == None)
+        assert(a.point_to_t(-5+5j) == None)
+        assert(a.point_to_t(0+5j) == None)
+        assert(a.point_to_t(1+0j) == None)
+        assert(a.point_to_t(0-1j) == None)
+        assert(a.point_to_t(0+11j) == None)
+
+        a = Arc(start=(100.834+27.987j), radius=(60.6+60.6j), rotation=0.0, large_arc=False, sweep=False, end=(40.234-32.613j))
+        assert(a.point_to_t(100.834+27.987j) == 0.0)
+        assert(np.isclose(a.point_to_t(96.2210993246+4.7963831644j), 0.25))
+        assert(np.isclose(a.point_to_t(83.0846703014-14.8636715784j), 0.50))
+        assert(np.isclose(a.point_to_t(63.4246151671-28.0001000158j), 0.75))
+        assert(a.point_to_t(40.234-32.613j) == 1.00)
+        assert(a.point_to_t(-10+0j) == None)
+        assert(a.point_to_t(0+0j) == None)
+
+        a = Arc(start=(423.049961698-41.3779390229j), radius=(904.283878032+597.298520765j), rotation=0.0, large_arc=True, sweep=False, end=(548.984030235-312.385118044j))
+        orig_t = 0.854049465076
+        p = a.point(orig_t)
+        computed_t = a.point_to_t(p)
+        assert(np.isclose(orig_t, computed_t))
+
+        a = Arc(start=(-1-750j), radius=(750+750j), rotation=0.0, large_arc=True, sweep=False, end=1-750j)
+        assert(np.isclose(a.point_to_t(730.5212132777968+169.8191111892562j), 0.71373858))
+        assert(a.point_to_t(730.5212132777968+169j) == None)
+        assert(a.point_to_t(730.5212132777968+171j) == None)
+
+        random.seed()
+        for arc_index in range(100):
+            a = random_arc()
+            print(a)
+            for t_index in range(100):
+                orig_t = random.random()
+                p = a.point(orig_t)
+                computed_t = a.point_to_t(p)
+                print("t:", orig_t)
+                print("p:", p)
+                print("computed t:", computed_t)
+                assert(np.isclose(orig_t, computed_t))
 
 
 class TestPath(unittest.TestCase):
