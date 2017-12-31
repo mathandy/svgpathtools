@@ -1528,6 +1528,12 @@ class Arc(object):
         to let me know if you're interested in such a feature -- or even better
         please submit an implementation if you want to code one."""
 
+        # If the bounding boxes don't overlap, there's no intersection.
+        (self_left, self_right, self_bottom, self_top) = self.bbox()
+        (other_left, other_right, other_bottom, other_top) = other_seg.bbox()
+        if (self_left > other_right) or (self_right < other_left) or (self_top < other_bottom) or (self_bottom > other_top):
+            return []
+
         if is_bezier_segment(other_seg):
             u1poly = self.u1transform(other_seg.poly())
             u1poly_mag2 = real(u1poly)**2 + imag(u1poly)**2
