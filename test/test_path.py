@@ -47,6 +47,17 @@ def random_arc():
     return Arc(start=start, radius=radius, rotation=0.0, large_arc=large_arc, sweep=sweep, end=end)
 
 
+def assert_intersections(a_seg, b_seg, intersections, count):
+    if count != None:
+        assert(len(intersections) == count)
+    for i in intersections:
+        assert(i[0] >= 0.0)
+        assert(i[0] <= 1.0)
+        assert(i[1] >= 0.0)
+        assert(i[1] <= 1.0)
+        assert(isclose(a_seg.point(i[0]), b_seg.point(i[1])))
+
+
 class LineTest(unittest.TestCase):
 
     def test_lines(self):
@@ -1154,6 +1165,87 @@ class Test_intersect(unittest.TestCase):
             self.assertTrue(len(xiy), 1)
             self.assertTrue(len(yix), 1)
         ###################################################################
+
+
+    def test_arc_line(self):
+        l = Line(start=(-20+1j), end=(20+1j))
+        a = Arc(start=(-10+0), radius=(10+10j), rotation=0.0, large_arc=True, sweep=False, end=(10+0j))
+        intersections = a.intersect(l)
+        assert_intersections(a, l, intersections, 2)
+
+        l = Line(start=(-20-1j), end=(20-1j))
+        a = Arc(start=(-10+0), radius=(10+10j), rotation=0.0, large_arc=True, sweep=False, end=(10+0j))
+        intersections = a.intersect(l)
+        assert_intersections(a, l, intersections, 0)
+
+        l = Line(start=(-20+1j), end=(20+1j))
+        a = Arc(start=(-10+0), radius=(10+10j), rotation=0.0, large_arc=True, sweep=True, end=(10+0j))
+        intersections = a.intersect(l)
+        assert_intersections(a, l, intersections, 0)
+
+        l = Line(start=(-20-1j), end=(20-1j))
+        a = Arc(start=(-10+0), radius=(10+10j), rotation=0.0, large_arc=True, sweep=True, end=(10+0j))
+        intersections = a.intersect(l)
+        assert_intersections(a, l, intersections, 2)
+
+        l = Line(start=(-20+0j), end=(20+0j))
+        a = Arc(start=(-10+0), radius=(10+10j), rotation=0.0, large_arc=True, sweep=True, end=(10+0j))
+        intersections = a.intersect(l)
+        assert_intersections(a, l, intersections, 2)
+
+        l = Line(start=(-20+0j), end=(20+0j))
+        a = Arc(start=(-10+0), radius=(10+10j), rotation=0.0, large_arc=True, sweep=False, end=(10+0j))
+        intersections = a.intersect(l)
+        assert_intersections(a, l, intersections, 2)
+
+        l = Line(start=(-20+10j), end=(20+10j))
+        a = Arc(start=(-10+0), radius=(10+10j), rotation=0.0, large_arc=True, sweep=False, end=(10+0j))
+        intersections = a.intersect(l)
+        assert_intersections(a, l, intersections, 1)
+
+        l = Line(start=(229.226097475-282.403591377j), end=(751.681212592+188.907748894j))
+        a = Arc(start=(-1-750j), radius=(750+750j), rotation=0.0, large_arc=True, sweep=False, end=(1-750j))
+        intersections = a.intersect(l)
+        assert_intersections(a, l, intersections, 1)
+
+        # end of arc touches start of horizontal line
+        l = Line(start=(40.234-32.613j), end=(12.7-32.613j))
+        a = Arc(start=(100.834+27.987j), radius=(60.6+60.6j), rotation=0.0, large_arc=False, sweep=False, end=(40.234-32.613j))
+        intersections = a.intersect(l)
+        assert_intersections(a, l, intersections, 1)
+
+        # vertical line, intersects half-arc once
+        l = Line(start=(1-100j), end=(1+100j))
+        a = Arc(start=(10.0+0j), radius=(10+10j), rotation=0, large_arc=False, sweep=True, end=(-10.0+0j))
+        intersections = a.intersect(l)
+        assert_intersections(a, l, intersections, 1)
+
+        # vertical line, intersects nearly-full arc twice
+        l = Line(start=(1-100j), end=(1+100j))
+        a = Arc(start=(0.1-10j), radius=(10+10j), rotation=0, large_arc=True, sweep=True, end=(-0.1-10j))
+        intersections = a.intersect(l)
+        assert_intersections(a, l, intersections, 2)
+
+        # vertical line, start of line touches end of arc
+        l = Line(start=(15.4+100j), end=(15.4+90.475j))
+        a = Arc(start=(25.4+90j), radius=(10+10j), rotation=0, large_arc=False, sweep=True, end=(15.4+100j))
+        intersections = a.intersect(l)
+        assert_intersections(a, l, intersections, 1)
+
+        l = Line(start=(100-60.913j), end=(40+59j))
+        a = Arc(start=(100.834+27.987j), radius=(60.6+60.6j), rotation=0.0, large_arc=False, sweep=False, end=(40.234-32.613j))
+        intersections = a.intersect(l)
+        assert_intersections(a, l, intersections, 1)
+
+        random.seed()
+        for arc_index in range(50):
+            a = random_arc()
+            print(a)
+            for line_index in range(100):
+                l = random_line()
+                print(l)
+                intersections = a.intersect(l)
+                assert_intersections(a, l, intersections, None)
 
 
 class TestPathTools(unittest.TestCase):
