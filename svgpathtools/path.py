@@ -612,9 +612,9 @@ class Line(object):
         """If the point lies on the Line, returns its `t` parameter.
         If the point does not lie on the Line, returns None."""
 
-        if np.isclose(point, self.start, rtol=0):
+        if np.isclose(point, self.start, rtol=0, atol=1e-6):
             return 0.0
-        elif np.isclose(point, self.end, rtol=0):
+        elif np.isclose(point, self.end, rtol=0, atol=1e-6):
             return 1.0
 
         p = self.poly()
@@ -1382,9 +1382,9 @@ class Arc(object):
         def in_range(min, max, val):
             return (min <= val) and (max >= val)
 
-        if np.isclose(point, self.start, rtol=0.0):
+        if np.isclose(point, self.start, rtol=0.0, atol=1e-6):
             return 0.0
-        elif np.isclose(point, self.end, rtol=0.0):
+        elif np.isclose(point, self.end, rtol=0.0, atol=1e-6):
             return 1.0
 
         if self.rotation != 0.0:
