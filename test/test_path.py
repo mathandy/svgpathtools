@@ -1513,6 +1513,108 @@ class Test_intersect(unittest.TestCase):
         self.assertEqual(i, [])
 
 
+    def test_arc_arc_0(self):
+        # These arcs cross at a single point.
+        a0 = Arc(start=(114.648+27.4280898219j), radius=(22+22j), rotation=0, large_arc=False, sweep=True, end=(118.542+39.925j))
+        a1 = Arc(start=(118.542+15.795j), radius=(22+22j), rotation=0, large_arc=False, sweep=True, end=(96.542+37.795j))
+        intersections = a0.intersect(a1)
+        assert_intersections(a0, a1, intersections, 1)
+
+    def test_arc_arc_1(self):
+        # These touch at an endpoint, and are *nearly* segments of a larger arc.
+        a0 = Arc(start=(-12.8272110776+72.6464538932j), radius=(44.029+44.029j), rotation=0.0, large_arc=False, sweep=False, end=(-60.6807543328+75.3104334473j))
+        a1 = Arc(start=(-60.6807101078+75.3104011248j), radius=(44.029+44.029j), rotation=0.0, large_arc=False, sweep=False, end=(-77.7490636234+120.096609353j))
+        intersections = a0.intersect(a1)
+        print("intersections: %s" % intersections)
+        assert_intersections(a0, a1, intersections, 1)
+
+    def test_arc_arc_2(self):
+        # These arcs cross at a single point.
+        a0 = Arc(start=(112.648+5j), radius=(24+24j), rotation=0, large_arc=False, sweep=True, end=(136.648+29j))
+        a1 = Arc(start=(112.648+6.33538520071j), radius=(24+24j), rotation=0, large_arc=False, sweep=True, end=(120.542+5j))
+        intersections = a0.intersect(a1)
+        assert_intersections(a0, a1, intersections, 1)
+
+    # The Arcs in this test are part of the same circle.
+    def test_arc_arc_same_circle(self):
+        # These touch at one endpoint, and go in the same direction.
+        a0 = Arc(start=(0+0j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=False, end=(-10+10j))
+        a1 = Arc(start=(-10+10j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=False, end=(0+20j))
+        intersections = a0.intersect(a1)
+        assert_intersections(a0, a1, intersections, 1)
+
+        # These touch at both endpoints, and go in the same direction.
+        a0 = Arc(start=(0+0j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=False, end=(-10+10j))
+        a1 = Arc(start=(-10+10j), radius=(10+10j), rotation=0.0, large_arc=True, sweep=False, end=(0+0j))
+        intersections = a0.intersect(a1)
+        assert_intersections(a0, a1, intersections, 2)
+
+        # These touch at one endpoint, and go in opposite directions.
+        a0 = Arc(start=(0+0j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=False, end=(0+20j))
+        a1 = Arc(start=(0+20j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=True, end=(-10+10j))
+        intersections = a0.intersect(a1)
+        assert_intersections(a0, a1, intersections, 0)
+
+        # These touch at both endpoints, and go in opposite directions.
+        a0 = Arc(start=(0+0j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=False, end=(-10+10j))
+        a1 = Arc(start=(-10+10j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=True, end=(0+0j))
+        intersections = a0.intersect(a1)
+        assert_intersections(a0, a1, intersections, 0)
+
+        # These are totally disjoint.
+        a0 = Arc(start=(0+0j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=False, end=(-10+10j))
+        a1 = Arc(start=(0+20j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=False, end=(10+10j))
+        intersections = a0.intersect(a1)
+        assert_intersections(a0, a1, intersections, 0)
+
+        # These overlap at one end and don't touch at the other.
+        a0 = Arc(start=(0+0j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=False, end=(0+20j))
+        a1 = Arc(start=(-10+10j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=False, end=(10+10j))
+        intersections = a0.intersect(a1)
+        assert_intersections(a0, a1, intersections, 0)
+
+        # These overlap at one end and touch at the other.
+        a0 = Arc(start=(0+0j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=False, end=(0+20j))
+        a1 = Arc(start=(-10+10j), radius=(10+10j), rotation=0.0, large_arc=True, sweep=False, end=(0+0j))
+        intersections = a0.intersect(a1)
+        assert_intersections(a0, a1, intersections, 0)
+
+    # The Arcs in this test are part of tangent circles, outside each other.
+    def test_arc_arc_tangent_circles_outside(self):
+        a0 = Arc(start=(0+0j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=False, end=(0+20j))
+        a1 = Arc(start=(-20+0j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=True, end=(-20+20j))
+        intersections = a0.intersect(a1)
+        assert_intersections(a0, a1, intersections, 1)
+
+        a0 = Arc(start=(0+0j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=False, end=(0+20j))
+        a1 = Arc(start=(-20+0j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=False, end=(-20+20j))
+        intersections = a0.intersect(a1)
+        assert_intersections(a0, a1, intersections, 0)
+
+        a0 = Arc(start=(10-10j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=False, end=(10+10j))
+        a1 = Arc(start=(-10-0j), radius=(5+5j), rotation=0.0, large_arc=True, sweep=True, end=(-5+5j))
+        intersections = a0.intersect(a1)
+        assert_intersections(a0, a1, intersections, 1)
+
+    # The Arcs in this test are part of tangent circles, one inside the other.
+    def test_arc_arc_tangent_circles_inside(self):
+        a0 = Arc(start=(10-10j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=False, end=(10+10j))
+        a1 = Arc(start=(10-0j), radius=(5+5j), rotation=0.0, large_arc=True, sweep=True, end=(5+5j))
+        intersections = a0.intersect(a1)
+        assert_intersections(a0, a1, intersections, 1)
+
+        a0 = Arc(start=(10-10j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=False, end=(10+10j))
+        a1 = Arc(start=(10-0j), radius=(5+5j), rotation=0.0, large_arc=True, sweep=False, end=(5+5j))
+        intersections = a0.intersect(a1)
+        assert_intersections(a0, a1, intersections, 1)
+
+        a0 = Arc(start=(10-10j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=False, end=(10+10j))
+        a1 = Arc(start=(10-0j), radius=(5+5j), rotation=0.0, large_arc=False, sweep=False, end=(5+5j))
+        intersections = a0.intersect(a1)
+        assert_intersections(a0, a1, intersections, 0)
+
+
+
 class TestPathTools(unittest.TestCase):
     # moved from test_pathtools.py
 
