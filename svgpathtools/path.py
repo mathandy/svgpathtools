@@ -1432,6 +1432,10 @@ class Arc(object):
         max_angle = max(self.theta, end_angle)
 
         acos_arg = (x - self.center.real) / self.radius.real
+        if acos_arg > 1.0:
+            acos_arg = 1.0
+        elif acos_arg < -1.0:
+            acos_arg = -1.0
 
         x_angle_0 = degrees(acos(acos_arg))
         while x_angle_0 < min_angle:
@@ -1449,6 +1453,10 @@ class Arc(object):
         t_x_1 = (x_angle_1 - self.theta) / self.delta
 
         asin_arg = (y - self.center.imag) / self.radius.imag
+        if asin_arg > 1.0:
+            asin_arg = 1.0
+        elif asin_arg < -1.0:
+            asin_arg = -1.0
 
         y_angle_0 = degrees(asin(asin_arg))
         while y_angle_0 < min_angle:
