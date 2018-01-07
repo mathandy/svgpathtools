@@ -991,6 +991,12 @@ class Test_intersect(unittest.TestCase):
             self.assertTrue(len(yix), 1)
         ###################################################################
 
+    def test_line_line(self):
+        l0 = Line(start=(25.389999999999997+99.989999999999995j), end=(25.389999999999997+90.484999999999999j))
+        l1 = Line(start=(25.390000000000001+84.114999999999995j), end=(25.389999999999997+74.604202137430320j))
+        i = l0.intersect(l1)
+        assert(len(i)) == 0
+
 
 class TestPathTools(unittest.TestCase):
     # moved from test_pathtools.py
