@@ -1237,6 +1237,11 @@ class Test_intersect(unittest.TestCase):
         intersections = a.intersect(l)
         assert_intersections(a, l, intersections, 1)
 
+        l = Line(start=(128.57143 + 380.93364j), end=(300.00001 + 389.505069j))
+        a = Arc(start=(214.28572 + 598.07649j), radius=(85.714287 + 108.57143j), rotation=0.0, large_arc=False, sweep=True, end=(128.57143 + 489.50507j))
+        intersections = a.intersect(l)
+        assert_intersections(a, l, intersections, 0)
+
         random.seed()
         for arc_index in range(50):
             a = random_arc()
