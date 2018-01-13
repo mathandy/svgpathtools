@@ -1482,6 +1482,8 @@ class Arc(object):
             t = (t_x_1 + t_y_0) / 2.0
         elif np.isclose(t_x_1, t_y_1):
             t = (t_x_1 + t_y_1) / 2.0
+        else:
+            return None
 
         if (t >= 0.0) and (t <= 1.0):
             return t
