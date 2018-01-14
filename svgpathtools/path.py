@@ -617,12 +617,10 @@ class Line(object):
         elif np.isclose(point, self.end, rtol=0, atol=1e-6):
             return 1.0
 
-        p = self.poly()
-        # p(t) = (p_1 * t) + p_0 = point
-        # t = (point - p_0) / p_1
-        t = (point - p[0]) / p[1]
-        if np.isclose(t.imag, 0) and (t.real >= 0.0) and (t.real <= 1.0):
-            return t.real
+        (near_d, near_t), (far_d, far_t) = self.radialrange(point)
+        if np.isclose(near_d, 0, rtol=0, atol=1e-6):
+            return near_t
+
         return None
 
     def cropped(self, t0, t1):
