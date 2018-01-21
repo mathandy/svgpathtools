@@ -572,7 +572,7 @@ class Line(object):
             d = (other_seg.start.imag, other_seg.end.imag)
             denom = ((a[1] - a[0])*(d[0] - d[1]) -
                      (b[1] - b[0])*(c[0] - c[1]))
-            if denom < 1e-9:
+            if abs(denom) < 1e-9:
                 return []
             t1 = (c[0]*(b[0] - d[1]) -
                   c[1]*(b[0] - d[0]) -
