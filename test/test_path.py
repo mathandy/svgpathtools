@@ -997,6 +997,13 @@ class Test_intersect(unittest.TestCase):
         i = l0.intersect(l1)
         assert(len(i)) == 0
 
+    def test_line_line_1(self):
+        l0 = Line(start=(-124.705378549+327.696674827j), end=(12.4926214511+121.261674827j))
+        l1 = Line(start=(-12.4926214511+121.261674827j), end=(124.705378549+327.696674827j))
+        i = l0.intersect(l1)
+        assert(len(i)) == 1
+        assert(abs(l0.point(i[0][0])-l1.point(i[0][1])) < 1e-9)
+
 
 class TestPathTools(unittest.TestCase):
     # moved from test_pathtools.py
