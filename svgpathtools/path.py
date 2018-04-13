@@ -2060,7 +2060,7 @@ class Path(MutableSequence):
         if np.isclose(t, 0) and (seg_idx != 0 or self.end==self.start):
             previous_seg_in_path = self._segments[
                 (seg_idx - 1) % len(self._segments)]
-            if not seg.joins_smoothl_with(previous_seg_in_path):
+            if not seg.joins_smoothly_with(previous_seg_in_path):
                 return float('inf')
         elif np.isclose(t, 1) and (seg_idx != len(self) - 1 or self.end==self.start):
             next_seg_in_path = self._segments[
