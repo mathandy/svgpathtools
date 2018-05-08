@@ -572,7 +572,7 @@ class Line(object):
             d = (other_seg.start.imag, other_seg.end.imag)
             denom = ((a[1] - a[0])*(d[0] - d[1]) -
                      (b[1] - b[0])*(c[0] - c[1]))
-            if denom == 0:
+            if np.isclose(denom, 0):
                 return []
             t1 = (c[0]*(b[0] - d[1]) -
                   c[1]*(b[0] - d[0]) -
@@ -1300,10 +1300,13 @@ class Arc(object):
         # delta is the angular distance of the arc (w.r.t the circle)
         # theta is the angle between the positive x'-axis and the start point
         # on the circle
+        u1_real_rounded = u1.real
+        if u1.real > 1 or u1.real < -1:
+            u1_real_rounded = round(u1.real)
         if u1.imag > 0:
-            self.theta = degrees(acos(u1.real))
+            self.theta = degrees(acos(u1_real_rounded))
         elif u1.imag < 0:
-            self.theta = -degrees(acos(u1.real))
+            self.theta = -degrees(acos(u1_real_rounded))
         else:
             if u1.real > 0:  # start is on pos u_x axis
                 self.theta = 0
@@ -2060,7 +2063,7 @@ class Path(MutableSequence):
         if np.isclose(t, 0) and (seg_idx != 0 or self.end==self.start):
             previous_seg_in_path = self._segments[
                 (seg_idx - 1) % len(self._segments)]
-            if not seg.joins_smoothl_with(previous_seg_in_path):
+            if not seg.joins_smoothly_with(previous_seg_in_path):
                 return float('inf')
         elif np.isclose(t, 1) and (seg_idx != len(self) - 1 or self.end==self.start):
             next_seg_in_path = self._segments[

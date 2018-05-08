@@ -8,8 +8,8 @@ to make it easy to contribute.
 We need better automated testing coverage.  Please, submit unittests!  See the 
 Testing Style section below for info.
 
-Here's a list of things that need (more) unittests
-* OK, well... maybe you could help by filling out this list
+Here's a list of things that need (more) unittests:
+* TBA (feel free to help)
 
 ## Submitting Bugs
 If you find a bug, please submit an issue along with an **easily reproducible 

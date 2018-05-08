@@ -353,6 +353,18 @@ class QuadraticBezierTest(unittest.TestCase):
 
 class ArcTest(unittest.TestCase):
 
+    def test_trusting_acos(self):
+        """`u1.real` is > 1 in this arc due to numerical error."""
+        try:
+            a1 = Arc(start=(160.197+102.925j), 
+                     radius=(0.025+0.025j), 
+                     rotation=0.0, 
+                     large_arc=False, 
+                     sweep=True, 
+                     end=(160.172+102.95j))
+        except ValueError:
+            self.fail("Arc() raised ValueError unexpectedly!")
+
     def test_points(self):
         arc1 = Arc(0j, 100 + 50j, 0, 0, 0, 100 + 50j)
         self.assertAlmostEqual(arc1.center, 100 + 0j)
@@ -978,6 +990,19 @@ class Test_intersect(unittest.TestCase):
             self.assertTrue(len(xiy), 1)
             self.assertTrue(len(yix), 1)
         ###################################################################
+
+    def test_line_line_0(self):
+        l0 = Line(start=(25.389999999999997+99.989999999999995j), end=(25.389999999999997+90.484999999999999j))
+        l1 = Line(start=(25.390000000000001+84.114999999999995j), end=(25.389999999999997+74.604202137430320j))
+        i = l0.intersect(l1)
+        assert(len(i)) == 0
+
+    def test_line_line_1(self):
+        l0 = Line(start=(-124.705378549+327.696674827j), end=(12.4926214511+121.261674827j))
+        l1 = Line(start=(-12.4926214511+121.261674827j), end=(124.705378549+327.696674827j))
+        i = l0.intersect(l1)
+        assert(len(i)) == 1
+        assert(abs(l0.point(i[0][0])-l1.point(i[0][1])) < 1e-9)
 
 
 class TestPathTools(unittest.TestCase):
