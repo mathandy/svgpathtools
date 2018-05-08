@@ -74,11 +74,17 @@ CONVERSIONS = {'path': path2pathd,
                'rect': rect2pathd}
 
 
-def flatten_paths(group, return_attribs = False, group_filter = lambda x: True, path_filter = lambda x: True,
-                  path_conversions = CONVERSIONS):
-    """Returns the paths inside a group (recursively), expressing the paths in the root coordinates
+def flatten_paths(group, return_attribs=False,
+                  group_filter=lambda x: True,
+                  path_filter=lambda x: True,
+                  path_conversions=CONVERSIONS):
+    """Returns the paths inside a group (recursively), expressing the paths in the root coordinates.
 
-    @param group is an Element"""
+    Args:
+        group is an Element
+        path_conversions (dict): A dictionary to convert from an SVG element to a path data string. Any element tags
+                                that are not included in this dictionary will be ignored (including the `path` tag).
+    """
     if not isinstance(group, Element):
         raise TypeError('Must provide an xml.etree.Element object')
 
@@ -86,57 +92,57 @@ def flatten_paths(group, return_attribs = False, group_filter = lambda x: True, 
     if not group_filter(group):
         return []
 
-    def get_relevant_children(parent):
-        return filter(group_filter, parent.findall('g'))
-
     # To handle the transforms efficiently, we'll traverse the tree of groups depth-first using a stack of tuples.
-    # The first entry in the tuple is the group element, the second entry is its transform, the third is its
-    # list of child elements, and the fourth is the index of the next child to traverse for that element.
-    StackElement = collections.namedtuple('StackElement', ['group', 'transform', 'children', 'next_child_index'])
+    # The first entry in the tuple is a group element and the second entry is its transform. As we pop each entry in
+    # the stack, we will add all its child group elements to the stack.
+    StackElement = collections.namedtuple('StackElement', ['group', 'transform'])
 
-    def new_stack_element(element):
-        return StackElement(element, parse_transform(element.get('transform')), get_relevant_children(element), 0)
+    def new_stack_element(element, last_tf):
+        return StackElement(element, last_tf * parse_transform(element.get('transform')))
 
-    stack = [new_stack_element(group)]
+    def get_relevant_children(parent, last_tf):
+        children = []
+        for elem in filter(group_filter, parent.iterfind('g')):
+            children.append(new_stack_element(elem, last_tf))
+        return children
+
+    stack = [new_stack_element(group, np.identity(3))]
 
     paths = []
-    if return_attribs: path_attribs = []
+    path_attribs = []
 
     while stack:
-        top = stack[-1]
+        top = stack.pop()
 
-        for key in path_conversions:
+        # For each element type that we know how to convert into path data, parse the element after confirming that
+        # the path_filter accepts it.
+        for key, converter in path_conversions:
             for path_elem in filter(path_filter, top.group.iterfind(key)):
-                pass  # TODO: Finish this
+                paths.append(transform(parse_path(converter(path_elem)), top.transform))
+                if return_attribs:
+                    path_attribs.append(path_elem.attrib)
 
+        stack.extend(get_relevant_children(top.group, top.transform))
 
-
-
-
+        if return_attribs:
+            return paths, path_attribs
+        else:
+            return paths
 
 
 class Document:
-    def __init__(self, filename, conversions=False, transform_paths=True):
-        """(EXPERIMENTAL) A container for a DOM-style document.
+    def __init__(self, filename):
+        """A container for a DOM-style SVG document.
 
         The `Document` class provides a simple interface to modify and analyze 
         the path elements in a DOM-style document.  The DOM-style document is 
-        parsed into an ElementTree object (stored in the `tree` attribute) and
-        all SVG-Path (and, optionally, Path-like) elements are extracted into a 
-        list of svgpathtools Path objects. For more information on "Path-like"
-        objects, see the below explanation of the `conversions` argument.
+        parsed into an ElementTree object (stored in the `tree` attribute).
+
+        This class provides functions for extracting SVG data into Path objects.
+        The Path output objects will be transformed based on their parent groups.
         
         Args:
-            merge_transforms (object): 
             filename (str): The filename of the DOM-style object.
-                conversions (bool or dict): If true, automatically converts 
-                circle, ellipse, line, polyline, polygon, and rect elements 
-                into path elements.  These changes are saved in the ElementTree 
-                object.  For custom conversions, a dictionary can be passed in instead whose 
-                keys are the element tags that are to be converted and whose values 
-                are the corresponding conversion functions.  Conversion 
-                functions should both take in and return an ElementTree.element
-                object.
         """
 
         # remember location of original svg file
@@ -157,6 +163,35 @@ class Document:
             self._prefix = ''
         # etree.register_namespace('', prefix)
 
+    def flatten_paths(self, return_attribs=False,
+                      group_filter=lambda x: True,
+                      path_filter=lambda x: True,
+                      path_conversions=CONVERSIONS):
+        paths = []
+        path_attribs = []
+
+        # We don't need to worry about transforming any paths that lack a group.
+        # We can just append them to the list of paths and grab their attributes.
+        for key, converter in path_conversions:
+            for path_elem in filter(path_filter, self.tree.getroot().iterfind(key)):
+                paths.append(parse_path(converter(path_elem)))
+                if return_attribs:
+                    path_attribs.append(path_elem.attrib)
+
+        for group_elem in filter(group_filter, self.tree.getroot().iterfind('g')):
+            if return_attribs:
+                new_paths, new_attribs = flatten_paths(group_elem, return_attribs,
+                                                       group_filter, path_filter, path_conversions)
+                path_attribs.extend(new_attribs)
+            else:
+                new_paths = flatten_paths(group_elem, return_attribs,
+                                          group_filter, path_filter, path_conversions)
+            paths.extend(new_paths)
+
+        if return_attribs:
+            return new_paths, new_attribs
+        else:
+            return new_paths
 
     def get_elements_by_tag(self, tag):
         """Returns a generator of all elements with the given tag. 

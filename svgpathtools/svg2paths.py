@@ -10,7 +10,7 @@ import xml.etree.cElementTree as etree
 from .parser import parse_path
 
 def path2pathd(path):
-    return path.get('d', None)
+    return path.get('d', '')
 
 def ellipse2pathd(ellipse):
     """converts the parameters from an ellipse or a circle to a string 
