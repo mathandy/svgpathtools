@@ -51,19 +51,22 @@ A Big Problem:
 # External dependencies
 from __future__ import division, absolute_import, print_function
 import os
+import collections
 import xml.etree.cElementTree as etree
 import xml.etree.ElementTree.Element as Element
 import xml.etree.ElementTree.SubElement as SubElement
 
 # Internal dependencies
 from .parser import parse_path
-from .svg2paths import (ellipse2pathd, line2pathd, polyline2pathd,
+from .parser import parse_transform
+from .svg2paths import (path2pathd, ellipse2pathd, line2pathd, polyline2pathd,
                         polygon2pathd, rect2pathd)
 from .misctools import open_in_browser
 from .path import *
 
-# THESE MUST BE WRAPPED TO OUPUT ElementTree.element objects
-CONVERSIONS = {'circle': ellipse2pathd,
+# THESE MUST BE WRAPPED TO OUTPUT ElementTree.element objects
+CONVERSIONS = {'path': path2pathd,
+               'circle': ellipse2pathd,
                'ellipse': ellipse2pathd,
                'line': line2pathd,
                'polyline': polyline2pathd,
@@ -71,10 +74,43 @@ CONVERSIONS = {'circle': ellipse2pathd,
                'rect': rect2pathd}
 
 
-def flatten_group_transforms(group):
-    """Returns a 3x3 matrix which can transform points on a path from a group frame to the root frame"""
+def flatten_paths(group, return_attribs = False, group_filter = lambda x: True, path_filter = lambda x: True,
+                  path_conversions = CONVERSIONS):
+    """Returns the paths inside a group (recursively), expressing the paths in the root coordinates
+
+    @param group is an Element"""
     if not isinstance(group, Element):
         raise TypeError('Must provide an xml.etree.Element object')
+
+    # Stop right away if the group_selector rejects this group
+    if not group_filter(group):
+        return []
+
+    def get_relevant_children(parent):
+        return filter(group_filter, parent.findall('g'))
+
+    # To handle the transforms efficiently, we'll traverse the tree of groups depth-first using a stack of tuples.
+    # The first entry in the tuple is the group element, the second entry is its transform, the third is its
+    # list of child elements, and the fourth is the index of the next child to traverse for that element.
+    StackElement = collections.namedtuple('StackElement', ['group', 'transform', 'children', 'next_child_index'])
+
+    def new_stack_element(element):
+        return StackElement(element, parse_transform(element.get('transform')), get_relevant_children(element), 0)
+
+    stack = [new_stack_element(group)]
+
+    paths = []
+    if return_attribs: path_attribs = []
+
+    while stack:
+        top = stack[-1]
+
+        for key in path_conversions:
+            for path_elem in filter(path_filter, top.group.iterfind(key)):
+                pass  # TODO: Finish this
+
+
+
 
 
 
