@@ -5,6 +5,8 @@ Note: This file was taken (nearly) as is from the svg.path module (v 2.0)."""
 # External dependencies
 from __future__ import division, absolute_import, print_function
 import re
+import numpy as np
+import warnings
 
 # Internal dependencies
 from .path import Path, Line, QuadraticBezier, CubicBezier, Arc
@@ -197,3 +199,83 @@ def parse_path(pathdef, current_pos=0j, tree_element=None):
             current_pos = end
 
     return segments
+
+
+def _check_num_parsed_values(values, allowed):
+    if not any( num == len(values) for num in allowed):
+        if len(allowed) > 1:
+            warnings.warn('Expected one of the following number of values {0}, found {1}: {2}'
+                          .format(allowed, len(values), values))
+        elif allowed != 1:
+            warnings.warn('Expected {0} values, found {1}: {2}'.format(allowed, len(values), values))
+        else:
+            warnings.warn('Expected 1 value, found {0}: {1}'.format(len(values), values))
+
+
+def _parse_transform_substr(transform_substr):
+    value_str = transform_substr.split('(')[1]
+    values = list(map(float, value_str.split(',')))
+    transform = np.identity(3)
+    if 'matrix' in transform_substr:
+        _check_num_parsed_values(values, 6)
+
+        transform[0:2, 0:3] = np.matrix([values[0:3], values[3:6]])
+
+    elif 'translate' in transform_substr:
+        _check_num_parsed_values(values, [1, 2])
+
+        transform[0, 2] = values[0]
+        if len(values) > 1:
+            transform[1, 2] = values[1]
+
+    elif 'scale' in transform_substr:
+        _check_num_parsed_values(values, [1, 2])
+
+        x_scale = values[0]
+        if len(values) > 1:
+            y_scale = values[1]
+        else:
+            y_scale = x_scale  # y_scale is assumed to equal x_scale if only one value is provided
+        transform[0, 0] = x_scale
+        transform[1, 1] = y_scale
+
+    elif 'rotate' in transform_substr:
+        _check_num_parsed_values(values, [1, 3])
+
+        angle = values[0]
+        if len(values) == 3:
+            x_offset = values[1]
+            y_offset = values[2]
+        else:
+            x_offset = 0
+            y_offset = 0
+        T_offset = np.identity(3)
+        T_offset[0:2, 2] = np.matrix([[x_offset], [y_offset]])
+        T_rotate = np.identity(3)
+        T_rotate[0:2, 0:2] = np.matrix([np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)])
+
+        transform = T_offset * T_rotate * (-T_offset)
+
+    elif 'skewX' in transform_substr:
+        _check_num_parsed_values(values, 1)
+        transform[0, 1] = np.tan(values[0])
+
+    elif 'skewY' in transform_substr:
+        _check_num_parsed_values(values, 1)
+        transform[1, 0] = np.tan(values[0])
+
+    return transform
+
+
+def parse_transform(transform_str):
+    """Converts a valid SVG tranformation string into a 3x3 matrix.
+    If the string is empty or null, this returns a 3x3 identity matrix"""
+    if not transform_str:
+        return np.identity(3)
+    elif not isinstance(transform_str, basestring):
+        raise TypeError('Must provide a string to parse')
+
+    total_transform = np.identity(3)
+    transform_substrs = transform_str.split(')')
+    for substr in transform_substrs:
+        total_transform *= _parse_transform_substr(substr)
