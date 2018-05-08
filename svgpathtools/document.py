@@ -52,12 +52,15 @@ A Big Problem:
 from __future__ import division, absolute_import, print_function
 import os
 import xml.etree.cElementTree as etree
+import xml.etree.ElementTree.Element as Element
+import xml.etree.ElementTree.SubElement as SubElement
 
 # Internal dependencies
 from .parser import parse_path
 from .svg2paths import (ellipse2pathd, line2pathd, polyline2pathd,
                         polygon2pathd, rect2pathd)
 from .misctools import open_in_browser
+from .path import *
 
 # THESE MUST BE WRAPPED TO OUPUT ElementTree.element objects
 CONVERSIONS = {'circle': ellipse2pathd,
@@ -68,13 +71,21 @@ CONVERSIONS = {'circle': ellipse2pathd,
                'rect': rect2pathd}
 
 
+def flatten_group_transforms(group):
+    """Returns a 3x3 matrix which can transform points on a path from a group frame to the root frame"""
+    if not isinstance(group, Element):
+        raise TypeError('Must provide an xml.etree.Element object')
+
+
+
+
 class Document:
     def __init__(self, filename, conversions=False, transform_paths=True):
         """(EXPERIMENTAL) A container for a DOM-style document.
 
         The `Document` class provides a simple interface to modify and analyze 
         the path elements in a DOM-style document.  The DOM-style document is 
-        parsed into an ElementTree object (stored in the `tree` attribute and 
+        parsed into an ElementTree object (stored in the `tree` attribute) and
         all SVG-Path (and, optionally, Path-like) elements are extracted into a 
         list of svgpathtools Path objects. For more information on "Path-like"
         objects, see the below explanation of the `conversions` argument.
@@ -110,7 +121,6 @@ class Document:
             self._prefix = ''
         # etree.register_namespace('', prefix)
 
-        self.paths = self._get_paths(conversions)
 
     def get_elements_by_tag(self, tag):
         """Returns a generator of all elements with the given tag. 
@@ -119,23 +129,6 @@ class Document:
         `tree` attribute (an ElementTree object).
         """
         return self.tree.iter(tag=self._prefix + tag)
-
-    def _get_paths(self, conversions):
-        paths = []
-
-        # Get d-strings for SVG-Path elements
-        paths += [el.attrib for el in self.get_elements_by_tag('path')]
-        d_strings = [el['d'] for el in paths]
-        attribute_dictionary_list = paths
-
-        # Convert path-like elements to d-strings and attribute dicts
-        if conversions:
-            for tag, fcn in conversions.items():
-                attributes = [l.attrib for l in self.get_elements_by_tag(tag)]
-                d_strings += [fcn(d) for d in attributes]
-
-        path_list = [parse_path(d) for d in d_strings]
-        return path_list
 
     def convert_pathlike_elements_to_paths(self, conversions=CONVERSIONS):
         raise NotImplementedError
@@ -148,14 +141,63 @@ class Document:
         """To help with backwards compatibility."""
         return [p.tree_element.attrib for p in self.paths]
 
-    def add(self, path, attribs={}, parent=None):
+    def add_path(self, path, attribs={}, group=None):
         """Add a new path to the SVG."""
-        if parent is None:
-            parent = self.tree.getroot()
-        # just get root
-        # then add new path
-        # then record element_tree object in path
-        raise NotImplementedError
+
+        # If we are not given a parent, assume that the path does not have a group
+        if group is None:
+            group = self.tree.getroot()
+
+        # If we are given a list of strings (one or more), assume it represents a sequence of nested group names
+        elif all(isinstance(elem, basestring) for elem in group):
+            group = self.get_or_add_group(group)
+
+        elif not isinstance(group, Element):
+            raise TypeError('Must provide a list of strings or an xml.etree.Element object')
+
+        # TODO: If the user passes in an xml.etree.Element object, should we check to make sure that it actually
+        #       belongs to this Document object?
+
+        if isinstance(path, Path):
+            path_svg = path.d()
+        elif is_path_segment(path):
+            path_svg = Path(path).d()
+        elif isinstance(path, basestring):
+            # Assume this is a valid d-string TODO: Should we sanity check the input string?
+            path_svg = path
+
+        return SubElement(group, 'path', {'d': path_svg})
+
+    def get_or_add_group(self, nested_names):
+        """Get a group from the tree, or add a new one with the given name structure.
+
+        *nested_names* is a list of strings which represent group names. Each group name will be nested inside of the
+        previous group name.
+
+        Returns the requested group. If the requested group did not exist, this function will create it, as well as all
+        parent groups that it requires. All created groups will be left with blank attributes.
+
+        """
+        group = self.tree.getroot()
+        # Drill down through the names until we find the desired group
+        while nested_names:
+            prev_group = group
+            next_name = nested_names.pop(0)
+            for elem in group.iter():
+                if elem.get('id') == next_name:
+                    group = elem
+
+            if prev_group is group:
+                # The group we're looking for does not exist, so let's create the group structure
+                nested_names.insert(0, next_name)
+
+                while nested_names:
+                    next_name = nested_names.pop(0)
+                    group = self.add_group({'id': next_name}, group)
+
+                # Now nested_names will be empty, so the topmost while-loop will end
+
+        return group
 
     def add_group(self, group_attribs={}, parent=None):
         """Add an empty group element to the SVG."""
