@@ -114,6 +114,7 @@ CONVERSIONS = {'circle': ellipse2pathd,
                'polygon': polygon2pathd,
                'rect': rect2pathd}
 
+
 def svg2paths(svg_file_location, return_svg_attributes=False,
               conversions=CONVERSIONS, return_tree=False):
     """Converts SVG to list of Path objects and attribute dictionaries.

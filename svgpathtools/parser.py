@@ -213,10 +213,10 @@ def _check_num_parsed_values(values, allowed):
 
 
 def _parse_transform_substr(transform_substr):
-    value_str = transform_substr.split('(')[1]
+    type_str, value_str = transform_substr.split('(')
     values = list(map(float, value_str.split(',')))
     transform = np.identity(3)
-    if 'matrix' in transform_substr:
+    if 'matrix' in type_str:
         _check_num_parsed_values(values, 6)
 
         transform[0:2, 0:3] = np.matrix([values[0:3], values[3:6]])
@@ -232,25 +232,20 @@ def _parse_transform_substr(transform_substr):
         _check_num_parsed_values(values, [1, 2])
 
         x_scale = values[0]
-        if len(values) > 1:
-            y_scale = values[1]
-        else:
-            y_scale = x_scale  # y_scale is assumed to equal x_scale if only one value is provided
+        y_scale = values[1] if (len(values) > 1) else x_scale
         transform[0, 0] = x_scale
         transform[1, 1] = y_scale
 
     elif 'rotate' in transform_substr:
         _check_num_parsed_values(values, [1, 3])
 
-        angle = values[0]
+        angle = values[0] * np.pi / 180.0
         if len(values) == 3:
-            x_offset = values[1]
-            y_offset = values[2]
+            offset = values[1:3]
         else:
-            x_offset = 0
-            y_offset = 0
+            offset = (0, 0)
         T_offset = np.identity(3)
-        T_offset[0:2, 2] = np.matrix([[x_offset], [y_offset]])
+        T_offset[0:2, 2] = np.matrix([[offset[0]], [offset[1]]])
         T_rotate = np.identity(3)
         T_rotate[0:2, 0:2] = np.matrix([np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)])
 
@@ -258,17 +253,20 @@ def _parse_transform_substr(transform_substr):
 
     elif 'skewX' in transform_substr:
         _check_num_parsed_values(values, 1)
-        transform[0, 1] = np.tan(values[0])
+        transform[0, 1] = np.tan(values[0] * np.pi / 180.0)
 
     elif 'skewY' in transform_substr:
         _check_num_parsed_values(values, 1)
-        transform[1, 0] = np.tan(values[0])
+        transform[1, 0] = np.tan(values[0] * np.pi / 180.0)
+    else:
+        # Return an identity matrix if the type of transform is unknown, and warn the user
+        warnings.warn('Unknown SVG transform type: {0})'.format(type_str))
 
     return transform
 
 
 def parse_transform(transform_str):
-    """Converts a valid SVG tranformation string into a 3x3 matrix.
+    """Converts a valid SVG transformation string into a 3x3 matrix.
     If the string is empty or null, this returns a 3x3 identity matrix"""
     if not transform_str:
         return np.identity(3)
