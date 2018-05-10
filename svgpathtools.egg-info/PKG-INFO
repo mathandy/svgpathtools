@@ -7,7 +7,6 @@ Author: Andy Port
 Author-email: AndyAPort@gmail.com
 License: MIT
 Download-URL: http://github.com/mathandy/svgpathtools/tarball/1.3.2
-Description-Content-Type: UNKNOWN
 Description: 
         svgpathtools
         ============
@@ -595,9 +594,8 @@ Description:
                 of the 'parallel' offset curve."""
                 nls = []
                 for seg in path:
-                    ct = 1
                     for k in range(steps):
-                        t = k / steps
+                        t = k / float(steps)
                         offset_vector = offset_distance * seg.normal(t)
                         nl = Line(seg.point(t), seg.point(t) + offset_vector)
                         nls.append(nl)

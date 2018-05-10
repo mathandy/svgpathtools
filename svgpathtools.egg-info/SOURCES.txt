@@ -15,6 +15,7 @@ test.svg
 vectorframes.svg
 svgpathtools/__init__.py
 svgpathtools/bezier.py
+svgpathtools/document.py
 svgpathtools/misctools.py
 svgpathtools/parser.py
 svgpathtools/path.py
@@ -29,11 +30,13 @@ svgpathtools.egg-info/requires.txt
 svgpathtools.egg-info/top_level.txt
 test/circle.svg
 test/ellipse.svg
+test/groups.svg
 test/polygons.svg
 test/rects.svg
 test/test.svg
 test/test_bezier.py
 test/test_generation.py
+test/test_groups.py
 test/test_parsing.py
 test/test_path.py
 test/test_polytools.py

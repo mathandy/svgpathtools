@@ -52,9 +52,8 @@ A Big Problem:
 from __future__ import division, absolute_import, print_function
 import os
 import collections
-import xml.etree.cElementTree as etree
-import xml.etree.ElementTree.Element as Element
-import xml.etree.ElementTree.SubElement as SubElement
+import xml.etree.ElementTree as etree
+from xml.etree.ElementTree import Element, SubElement, register_namespace, _namespace_map
 import warnings
 
 # Internal dependencies
@@ -65,6 +64,11 @@ from .svg2paths import (path2pathd, ellipse2pathd, line2pathd, polyline2pathd,
 from .misctools import open_in_browser
 from .path import *
 
+# Let xml.etree.ElementTree know about the SVG namespace
+print('   ------------------   about to register the svg namespace')
+register_namespace('svg', 'http://www.w3.org/2000/svg')
+print('namespace map: {0}'.format(_namespace_map))
+
 # THESE MUST BE WRAPPED TO OUTPUT ElementTree.element objects
 CONVERSIONS = {'path': path2pathd,
                'circle': ellipse2pathd,
@@ -74,12 +78,15 @@ CONVERSIONS = {'path': path2pathd,
                'polygon': polygon2pathd,
                'rect': rect2pathd}
 
+ONLY_PATHS = {'path': path2pathd}
+
 
 def flatten_all_paths(
         group,
         group_filter=lambda x: True,
         path_filter=lambda x: True,
-        path_conversions=CONVERSIONS):
+        path_conversions=CONVERSIONS,
+        search_xpath='{http://www.w3.org/2000/svg}g'):
     """Returns the paths inside a group (recursively), expressing the paths in the base coordinates.
 
     Note that if the group being passed in is nested inside some parent group(s), we cannot take the parent group(s)
@@ -92,7 +99,8 @@ def flatten_all_paths(
                                 that are not included in this dictionary will be ignored (including the `path` tag).
     """
     if not isinstance(group, Element):
-        raise TypeError('Must provide an xml.etree.Element object')
+        raise TypeError('Must provide an xml.etree.Element object. Instead you provided {0} : compared to {1}'
+                        .format(type(group), type(Element('some tag'))))
 
     # Stop right away if the group_selector rejects this group
     if not group_filter(group):
@@ -108,7 +116,7 @@ def flatten_all_paths(
 
     def get_relevant_children(parent, last_tf):
         children = []
-        for elem in filter(group_filter, parent.iterfind('g')):
+        for elem in filter(group_filter, parent.iterfind(search_xpath)):
             children.append(new_stack_element(elem, last_tf))
         return children
 
@@ -120,10 +128,13 @@ def flatten_all_paths(
     while stack:
         top = stack.pop()
 
+        print('popping group {0}'.format(top.group.attrib))
+        print('has children: {0}'.format(list(elem.tag for elem in top.group.iter())))
+
         # For each element type that we know how to convert into path data, parse the element after confirming that
         # the path_filter accepts it.
-        for key, converter in path_conversions:
-            for path_elem in filter(path_filter, top.group.iterfind(key)):
+        for key, converter in path_conversions.iteritems():
+            for path_elem in filter(path_filter, top.group.iterfind('{http://www.w3.org/2000/svg}'+key)):
                 path_tf = top.transform * parse_transform(path_elem.get('transform'))
                 path = transform(parse_path(converter(path_elem)), path_tf)
                 paths.append(FlattenedPath(path, path_elem.attrib, path_tf))
@@ -139,7 +150,8 @@ def flatten_group(
         recursive=True,
         group_filter=lambda x: True,
         path_filter=lambda x: True,
-        path_conversions=CONVERSIONS):
+        path_conversions=CONVERSIONS,
+        search_xpath='g'):
     """Flatten all the paths in a specific group.
 
     The paths will be flattened into the 'root' frame. Note that root needs to be
@@ -150,7 +162,7 @@ def flatten_group(
         # We will shortcut here, because it is impossible for any paths to be returned anyhow.
         return []
 
-    # We create a set of the unique IDs of each group object that we want to flatten.
+    # We create a set of the unique IDs of each element that we wish to flatten, if those elements are groups.
     # Any groups outside of this set will be skipped while we flatten the paths.
     desired_groups = set()
     if recursive:
@@ -162,7 +174,7 @@ def flatten_group(
     def desired_group_filter(x):
         return (id(x) in desired_groups) and group_filter(x)
 
-    return flatten_all_paths(root, desired_group_filter, path_filter, path_conversions)
+    return flatten_all_paths(root, desired_group_filter, path_filter, path_conversions, search_xpath)
 
 
 class Document:
@@ -190,14 +202,6 @@ class Document:
         self.tree = etree.parse(filename)
         self.root = self.tree.getroot()
 
-        # get URI namespace (only necessary in OS X?)
-        root_tag = self.tree.getroot().tag
-        if root_tag[0] == "{":
-            self._prefix = root_tag[:root_tag.find('}') + 1]
-        else:
-            self._prefix = ''
-        # etree.register_namespace('', prefix)
-
     def flatten_all_paths(self,
                           group_filter=lambda x: True,
                           path_filter=lambda x: True,
@@ -215,7 +219,7 @@ class Document:
             group = self.get_or_add_group(group)
         elif not isinstance(group, Element):
             raise TypeError('Must provide a list of strings that represent a nested group name, '
-                            'or provide an xml.etree.Element object')
+                            'or provide an xml.etree.Element object. Instead you provided {0}'.format(group))
 
         return flatten_group(group, self.tree.getroot(), recursive, group_filter, path_filter, path_conversions)
 
@@ -247,7 +251,8 @@ class Document:
             group = self.get_or_add_group(group)
 
         elif not isinstance(group, Element):
-            raise TypeError('Must provide a list of strings or an xml.etree.Element object')
+            raise TypeError('Must provide a list of strings or an xml.etree.Element object. '
+                            'Instead you provided {0}'.format(group))
 
         else:
             # Make sure that the group belongs to this Document object
@@ -262,7 +267,8 @@ class Document:
             # Assume this is a valid d-string. TODO: Should we sanity check the input string?
             path_svg = path
         else:
-            raise TypeError('Must provide a Path, a path segment type, or a valid SVG path d-string')
+            raise TypeError('Must provide a Path, a path segment type, or a valid SVG path d-string. '
+                            'Instead you provided {0}'.format(path))
 
         if attribs is None:
             attribs = {}
@@ -313,7 +319,7 @@ class Document:
         if parent is None:
             parent = self.tree.getroot()
         elif not self.contains_group(parent):
-            warnings.warn('The requested group does not belong to this Document')
+            warnings.warn('The requested group {0} does not belong to this Document'.format(parent))
 
         if group_attribs is None:
             group_attribs = {}

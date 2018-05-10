@@ -206,30 +206,38 @@ def _check_num_parsed_values(values, allowed):
         if len(allowed) > 1:
             warnings.warn('Expected one of the following number of values {0}, found {1}: {2}'
                           .format(allowed, len(values), values))
-        elif allowed != 1:
-            warnings.warn('Expected {0} values, found {1}: {2}'.format(allowed, len(values), values))
+        elif allowed[0] != 1:
+            warnings.warn('Expected {0} values, found {1}: {2}'.format(allowed[0], len(values), values))
         else:
             warnings.warn('Expected 1 value, found {0}: {1}'.format(len(values), values))
+        return False
+    return True
 
 
 def _parse_transform_substr(transform_substr):
+
     type_str, value_str = transform_substr.split('(')
-    values = list(map(float, value_str.split(',')))
+    value_str = value_str.replace(',', ' ')
+    values = list(map(float, filter(None, value_str.split(' '))))
+
     transform = np.identity(3)
     if 'matrix' in type_str:
-        _check_num_parsed_values(values, 6)
+        if not _check_num_parsed_values(values, [6]):
+            return transform
 
         transform[0:2, 0:3] = np.matrix([values[0:6:2], values[1:6:2]])
 
     elif 'translate' in transform_substr:
-        _check_num_parsed_values(values, [1, 2])
+        if not _check_num_parsed_values(values, [1, 2]):
+            return transform
 
         transform[0, 2] = values[0]
         if len(values) > 1:
             transform[1, 2] = values[1]
 
     elif 'scale' in transform_substr:
-        _check_num_parsed_values(values, [1, 2])
+        if not _check_num_parsed_values(values, [1, 2]):
+            return transform
 
         x_scale = values[0]
         y_scale = values[1] if (len(values) > 1) else x_scale
@@ -237,26 +245,31 @@ def _parse_transform_substr(transform_substr):
         transform[1, 1] = y_scale
 
     elif 'rotate' in transform_substr:
-        _check_num_parsed_values(values, [1, 3])
+        if not _check_num_parsed_values(values, [1, 3]):
+            return transform
 
         angle = values[0] * np.pi / 180.0
         if len(values) == 3:
             offset = values[1:3]
         else:
             offset = (0, 0)
-        T_offset = np.identity(3)
-        T_offset[0:2, 2] = np.matrix([[offset[0]], [offset[1]]])
-        T_rotate = np.identity(3)
-        T_rotate[0:2, 0:2] = np.matrix([np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)])
+        tf_offset = np.identity(3)
+        tf_offset[0:2, 2:3] = np.matrix([[offset[0]], [offset[1]]])
+        tf_rotate = np.identity(3)
+        tf_rotate[0:2, 0:2] = np.matrix([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])
 
-        transform = T_offset * T_rotate * (-T_offset)
+        transform = tf_offset * tf_rotate * (-tf_offset)
 
     elif 'skewX' in transform_substr:
-        _check_num_parsed_values(values, 1)
+        if not _check_num_parsed_values(values, [1]):
+            return transform
+
         transform[0, 1] = np.tan(values[0] * np.pi / 180.0)
 
     elif 'skewY' in transform_substr:
-        _check_num_parsed_values(values, 1)
+        if not _check_num_parsed_values(values, [1]):
+            return transform
+
         transform[1, 0] = np.tan(values[0] * np.pi / 180.0)
     else:
         # Return an identity matrix if the type of transform is unknown, and warn the user
@@ -274,6 +287,8 @@ def parse_transform(transform_str):
         raise TypeError('Must provide a string to parse')
 
     total_transform = np.identity(3)
-    transform_substrs = transform_str.split(')')
+    transform_substrs = transform_str.split(')')[:-1]  # Skip the last element, because it should be empty
     for substr in transform_substrs:
         total_transform *= _parse_transform_substr(substr)
+
+    return total_transform

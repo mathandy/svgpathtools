@@ -5,13 +5,11 @@
     viewBox="0 0 365 365"
     height="100%"
     width="100%"
-    xmlns="http://www.w3.org/2000/svg"
-    xmlns:ev="http://www.w3.org/2001/xml-events"
-    xmlns:xlink="http://www.w3.org/1999/xlink">
+    xmlns="http://www.w3.org/2000/svg">
   <defs/>
   <g
       id="matrix group"
-      transform="matrix(1.5 0 0 0.5 -40.0 20.0)">
+      transform="matrix(1.5 0.0 0.0 0.5 -40.0 20.0)">
 
     <path
         d="M 183,183 l 0,-50"
