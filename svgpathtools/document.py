@@ -74,10 +74,11 @@ CONVERSIONS = {'path': path2pathd,
                'rect': rect2pathd}
 
 
-def flatten_paths(group, return_attribs=False,
-                  group_filter=lambda x: True,
-                  path_filter=lambda x: True,
-                  path_conversions=CONVERSIONS):
+def flatten_all_paths(
+        group,
+        group_filter=lambda x: True,
+        path_filter=lambda x: True,
+        path_conversions=CONVERSIONS):
     """Returns the paths inside a group (recursively), expressing the paths in the root coordinates.
 
     Args:
@@ -108,8 +109,8 @@ def flatten_paths(group, return_attribs=False,
 
     stack = [new_stack_element(group, np.identity(3))]
 
+    FlattenedPath = collections.namedtuple('FlattenedPath', ['path', 'attributes', 'transform'])
     paths = []
-    path_attribs = []
 
     while stack:
         top = stack.pop()
@@ -118,16 +119,13 @@ def flatten_paths(group, return_attribs=False,
         # the path_filter accepts it.
         for key, converter in path_conversions:
             for path_elem in filter(path_filter, top.group.iterfind(key)):
-                paths.append(transform(parse_path(converter(path_elem)), top.transform))
-                if return_attribs:
-                    path_attribs.append(path_elem.attrib)
+                path_tf = top.transform * parse_transform(path_elem.get('transform'))
+                path = transform(parse_path(converter(path_elem)), path_tf)
+                paths.append(FlattenedPath(path, path_elem.attrib, path_tf))
 
         stack.extend(get_relevant_children(top.group, top.transform))
 
-        if return_attribs:
-            return paths, path_attribs
-        else:
-            return paths
+    return paths
 
 
 class Document:
@@ -163,35 +161,11 @@ class Document:
             self._prefix = ''
         # etree.register_namespace('', prefix)
 
-    def flatten_paths(self, return_attribs=False,
-                      group_filter=lambda x: True,
-                      path_filter=lambda x: True,
-                      path_conversions=CONVERSIONS):
-        paths = []
-        path_attribs = []
-
-        # We don't need to worry about transforming any paths that lack a group.
-        # We can just append them to the list of paths and grab their attributes.
-        for key, converter in path_conversions:
-            for path_elem in filter(path_filter, self.tree.getroot().iterfind(key)):
-                paths.append(parse_path(converter(path_elem)))
-                if return_attribs:
-                    path_attribs.append(path_elem.attrib)
-
-        for group_elem in filter(group_filter, self.tree.getroot().iterfind('g')):
-            if return_attribs:
-                new_paths, new_attribs = flatten_paths(group_elem, return_attribs,
-                                                       group_filter, path_filter, path_conversions)
-                path_attribs.extend(new_attribs)
-            else:
-                new_paths = flatten_paths(group_elem, return_attribs,
-                                          group_filter, path_filter, path_conversions)
-            paths.extend(new_paths)
-
-        if return_attribs:
-            return new_paths, new_attribs
-        else:
-            return new_paths
+    def flatten_all_paths(self,
+                          group_filter=lambda x: True,
+                          path_filter=lambda x: True,
+                          path_conversions=CONVERSIONS):
+        return flatten_all_paths(self.tree.getroot(), group_filter, path_filter, path_conversions)
 
     def get_elements_by_tag(self, tag):
         """Returns a generator of all elements with the given tag. 

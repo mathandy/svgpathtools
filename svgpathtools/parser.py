@@ -219,7 +219,7 @@ def _parse_transform_substr(transform_substr):
     if 'matrix' in type_str:
         _check_num_parsed_values(values, 6)
 
-        transform[0:2, 0:3] = np.matrix([values[0:3], values[3:6]])
+        transform[0:2, 0:3] = np.matrix([values[0:6:2], values[1:6:2]])
 
     elif 'translate' in transform_substr:
         _check_num_parsed_values(values, [1, 2])
