@@ -65,9 +65,8 @@ from .misctools import open_in_browser
 from .path import *
 
 # Let xml.etree.ElementTree know about the SVG namespace
-print('   ------------------   about to register the svg namespace')
+SVG_NAMESPACE = {'svg': 'http://www.w3.org/2000/svg'}
 register_namespace('svg', 'http://www.w3.org/2000/svg')
-print('namespace map: {0}'.format(_namespace_map))
 
 # THESE MUST BE WRAPPED TO OUTPUT ElementTree.element objects
 CONVERSIONS = {'path': path2pathd,
@@ -78,7 +77,9 @@ CONVERSIONS = {'path': path2pathd,
                'polygon': polygon2pathd,
                'rect': rect2pathd}
 
-ONLY_PATHS = {'path': path2pathd}
+CONVERT_ONLY_PATHS = {'path': path2pathd}
+
+SVG_GROUP_TAG = 'svg:g'
 
 
 def flatten_all_paths(
@@ -86,7 +87,7 @@ def flatten_all_paths(
         group_filter=lambda x: True,
         path_filter=lambda x: True,
         path_conversions=CONVERSIONS,
-        search_xpath='{http://www.w3.org/2000/svg}g'):
+        group_search_xpath=SVG_GROUP_TAG):
     """Returns the paths inside a group (recursively), expressing the paths in the base coordinates.
 
     Note that if the group being passed in is nested inside some parent group(s), we cannot take the parent group(s)
@@ -96,11 +97,11 @@ def flatten_all_paths(
     Args:
         group is an Element
         path_conversions (dict): A dictionary to convert from an SVG element to a path data string. Any element tags
-                                that are not included in this dictionary will be ignored (including the `path` tag).
+                                 that are not included in this dictionary will be ignored (including the `path` tag).
+                                 To only convert explicit path elements, pass in path_conversions=CONVERT_ONLY_PATHS.
     """
     if not isinstance(group, Element):
-        raise TypeError('Must provide an xml.etree.Element object. Instead you provided {0} : compared to {1}'
-                        .format(type(group), type(Element('some tag'))))
+        raise TypeError('Must provide an xml.etree.Element object. Instead you provided {0}'.format(type(group)))
 
     # Stop right away if the group_selector rejects this group
     if not group_filter(group):
@@ -116,7 +117,7 @@ def flatten_all_paths(
 
     def get_relevant_children(parent, last_tf):
         children = []
-        for elem in filter(group_filter, parent.iterfind(search_xpath)):
+        for elem in filter(group_filter, parent.iterfind(group_search_xpath, SVG_NAMESPACE)):
             children.append(new_stack_element(elem, last_tf))
         return children
 
@@ -128,13 +129,10 @@ def flatten_all_paths(
     while stack:
         top = stack.pop()
 
-        print('popping group {0}'.format(top.group.attrib))
-        print('has children: {0}'.format(list(elem.tag for elem in top.group.iter())))
-
         # For each element type that we know how to convert into path data, parse the element after confirming that
         # the path_filter accepts it.
         for key, converter in path_conversions.iteritems():
-            for path_elem in filter(path_filter, top.group.iterfind('{http://www.w3.org/2000/svg}'+key)):
+            for path_elem in filter(path_filter, top.group.iterfind('svg:'+key, SVG_NAMESPACE)):
                 path_tf = top.transform * parse_transform(path_elem.get('transform'))
                 path = transform(parse_path(converter(path_elem)), path_tf)
                 paths.append(FlattenedPath(path, path_elem.attrib, path_tf))
@@ -151,7 +149,7 @@ def flatten_group(
         group_filter=lambda x: True,
         path_filter=lambda x: True,
         path_conversions=CONVERSIONS,
-        search_xpath='g'):
+        group_search_xpath=SVG_GROUP_TAG):
     """Flatten all the paths in a specific group.
 
     The paths will be flattened into the 'root' frame. Note that root needs to be
@@ -174,7 +172,7 @@ def flatten_group(
     def desired_group_filter(x):
         return (id(x) in desired_groups) and group_filter(x)
 
-    return flatten_all_paths(root, desired_group_filter, path_filter, path_conversions, search_xpath)
+    return flatten_all_paths(root, desired_group_filter, path_filter, path_conversions, group_search_xpath)
 
 
 class Document:
@@ -297,7 +295,7 @@ class Document:
         while nested_names:
             prev_group = group
             next_name = nested_names.pop(0)
-            for elem in group.iterfind('g'):
+            for elem in group.iterfind('svg:g', SVG_NAMESPACE):
                 if elem.get('id') == next_name:
                     group = elem
                     break
