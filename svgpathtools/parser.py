@@ -80,7 +80,6 @@ def parse_path(pathdef, current_pos=0j):
                 segments.append(Line(current_pos, start_pos))
             segments.closed = True
             current_pos = start_pos
-            start_pos = None
             command = None  # You can't have implicit commands after closing.
 
         elif command == 'L':
