@@ -4,6 +4,7 @@ import unittest
 from math import sqrt, pi
 from operator import itemgetter
 from numpy import poly1d
+from numpy import linspace
 
 # Internal dependencies
 from svgpathtools import *
@@ -700,6 +701,72 @@ class TestPath(unittest.TestCase):
             p_open.cropped(1, .25)
         with self.assertRaises(AssertionError):
             p_open.cropped(1, 0)
+
+    def test_transform_scale(self):
+        line1 = Line(600 + 350j, 650 + 325j)
+        arc1 = Arc(650 + 325j, 25 + 25j, -30, 0, 1, 700 + 300j)
+        cub1 = CubicBezier(650 + 325j, 25 + 25j, -30, 700 + 300j)
+        cub2 = CubicBezier(700 + 300j, 800 + 400j, 750 + 200j, 600 + 100j)
+        quad3 = QuadraticBezier(600 + 100j, 600, 600 + 300j)
+        linez = Line(600 + 300j, 600 + 350j)
+
+        bezpath = Path(line1, cub1, cub2, quad3)
+        bezpathz = Path(line1, cub1, cub2, quad3, linez)
+        path = Path(line1, arc1, cub2, quad3)
+        pathz = Path(line1, arc1, cub2, quad3, linez)
+        lpath = Path(linez)
+        qpath = Path(quad3)
+        cpath = Path(cub1)
+        apath = Path(arc1)
+
+        test_paths = [
+            bezpath,
+            bezpathz,
+            path,
+            pathz,
+            lpath,
+            qpath,
+            cpath,
+            apath,
+        ]
+
+        for path_orig in test_paths:
+
+            # scale by 2 around (100, 100)
+            path_trns = path_orig.scaled(2.0, complex(100, 100))
+
+            # expected length
+            len_orig = path_orig.length()
+            len_trns = path_trns.length()
+            self.assertAlmostEqual(len_orig * 2.0, len_trns)
+
+            # expected positions
+            for T in linspace(0.0, 1.0, num=100):
+                pt_orig = path_orig.point(T)
+                pt_trns = path_trns.point(T)
+                pt_xpct = (pt_orig - complex(100, 100)) * 2.0 + complex(100, 100)
+                self.assertAlmostEqual(pt_xpct, pt_trns)
+
+        for path_orig in test_paths:
+
+            # scale by 0.3 around (0, -100)
+            # the 'almost equal' test fails at the 7th decimal place for some length and position tests here.
+            path_trns = path_orig.scaled(0.3, complex(0, -100))
+
+            # expected length
+            len_orig = path_orig.length()
+            len_trns = path_trns.length()
+            self.assertAlmostEqual(len_orig * 0.3, len_trns, delta = 0.000001)
+
+            # expected positions
+            for T in linspace(0.0, 1.0, num=100):
+                pt_orig = path_orig.point(T)
+                pt_trns = path_trns.point(T)
+                pt_xpct = (pt_orig - complex(0, -100)) * 0.3 + complex(0, -100)
+                self.assertAlmostEqual(pt_xpct, pt_trns, delta = 0.000001)
+
+
+
 
 
 class Test_ilength(unittest.TestCase):
