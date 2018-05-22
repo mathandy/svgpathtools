@@ -206,6 +206,28 @@ def translate(curve, z0):
         raise TypeError("Input `curve` should be a Path, Line, "
                         "QuadraticBezier, CubicBezier, or Arc object.")
 
+def scale(curve, s, origin=None):
+    """Scales the curve by the factor s around the origin such that
+    scale(curve, s, origin).point(t) = ((curve.point(t) - origin) * s) + origin"""
+
+    def _scale_point(z, s, origin):
+        return ((z - origin) * s) + origin
+
+    if origin == None:
+        origin = 0 + 0j
+    if isinstance(curve, Path):
+        return Path(*[scale(seg, s, origin) for seg in curve])
+    elif is_bezier_segment(curve):
+        return bpoints2bezier([_scale_point(bpt, s, origin) for bpt in curve.bpoints()])
+    elif isinstance(curve, Arc):
+        new_start = _scale_point(curve.start, s, origin)
+        new_end = _scale_point(curve.end, s, origin)
+        return Arc(new_start, radius=curve.radius * s, rotation=curve.rotation,
+                   large_arc=curve.large_arc, sweep=curve.sweep, end=new_end)
+    else:
+        raise TypeError("Input `curve` should be a Path, Line, "
+                        "QuadraticBezier, CubicBezier, or Arc object.")
+
 
 def bezier_unit_tangent(seg, t):
     """Returns the unit tangent of the segment at t.
@@ -637,6 +659,10 @@ class Line(object):
         that self.translated(z0).point(t) = self.point(t) + z0 for any t."""
         return translate(self, z0)
 
+    def scaled(self, factor, origin=None):
+        """Returns a copy of self scaled by the scalar `factor`, about the complex point `origin`."""
+        return scale(self, factor, origin=origin)
+
 
 class QuadraticBezier(object):
     # For compatibility with old pickle files.
@@ -881,6 +907,10 @@ class QuadraticBezier(object):
         that self.translated(z0).point(t) = self.point(t) + z0 for any t."""
         return translate(self, z0)
 
+    def scaled(self, factor, origin=None):
+        """Returns a copy of self scaled by the scalar `factor`, about the complex point `origin`."""
+        return scale(self, factor, origin=origin)
+
 
 class CubicBezier(object):
     # For compatibility with old pickle files.
@@ -1120,6 +1150,10 @@ class CubicBezier(object):
         """Returns a copy of self shifted by the complex quantity `z0` such
         that self.translated(z0).point(t) = self.point(t) + z0 for any t."""
         return translate(self, z0)
+
+    def scaled(self, factor, origin=None):
+        """Returns a copy of self scaled by the scalar `factor`, about the complex point `origin`."""
+        return scale(self, factor, origin=origin)
 
 
 class Arc(object):
@@ -1686,6 +1720,9 @@ class Arc(object):
         that self.translated(z0).point(t) = self.point(t) + z0 for any t."""
         return translate(self, z0)
 
+    def scaled(self, factor, origin=None):
+        """Returns a copy of self scaled by the scalar `factor`, about the complex point `origin`."""
+        return scale(self, factor, origin=origin)
 
 def is_bezier_segment(x):
     return (isinstance(x, Line) or
@@ -2242,3 +2279,7 @@ class Path(MutableSequence):
         """Returns a copy of self shifted by the complex quantity `z0` such
         that self.translated(z0).point(t) = self.point(t) + z0 for any t."""
         return translate(self, z0)
+
+    def scaled(self, factor, origin=None):
+        """Returns a copy of self scaled by the scalar `factor`, about the complex point `origin`."""
+        return scale(self, factor, origin=origin)
