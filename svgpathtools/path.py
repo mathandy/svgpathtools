@@ -169,7 +169,7 @@ def rotate(curve, degs, origin=None):
     def transform(z):
         return exp(1j*radians(degs))*(z - origin) + origin
 
-    if origin == None:
+    if origin is None:
         if isinstance(curve, Arc):
             origin = curve.center
         else:
@@ -206,23 +206,25 @@ def translate(curve, z0):
         raise TypeError("Input `curve` should be a Path, Line, "
                         "QuadraticBezier, CubicBezier, or Arc object.")
 
-def scale(curve, s, origin=None):
-    """Scales the curve by the factor s around the origin such that
-    scale(curve, s, origin).point(t) = ((curve.point(t) - origin) * s) + origin"""
+
+def scale(curve, factor, origin=0j):
+    """Scales `curve` by scalar `factor` around `origin`.
+     
+     Note: scale(curve, s, origin).point(t) == 
+            ((curve.point(t) - origin) * factor) + origin
+    """
 
     def _scale_point(z, s, origin):
         return ((z - origin) * s) + origin
 
-    if origin == None:
-        origin = 0 + 0j
     if isinstance(curve, Path):
-        return Path(*[scale(seg, s, origin) for seg in curve])
+        return Path(*[scale(seg, factor, origin) for seg in curve])
     elif is_bezier_segment(curve):
-        return bpoints2bezier([_scale_point(bpt, s, origin) for bpt in curve.bpoints()])
+        return bpoints2bezier([_scale_point(bpt, factor, origin) for bpt in curve.bpoints()])
     elif isinstance(curve, Arc):
-        new_start = _scale_point(curve.start, s, origin)
-        new_end = _scale_point(curve.end, s, origin)
-        return Arc(new_start, radius=curve.radius * s, rotation=curve.rotation,
+        new_start = _scale_point(curve.start, factor, origin)
+        new_end = _scale_point(curve.end, factor, origin)
+        return Arc(new_start, radius=curve.radius * factor, rotation=curve.rotation,
                    large_arc=curve.large_arc, sweep=curve.sweep, end=new_end)
     else:
         raise TypeError("Input `curve` should be a Path, Line, "
@@ -660,7 +662,7 @@ class Line(object):
         return translate(self, z0)
 
     def scaled(self, factor, origin=None):
-        """Returns a copy of self scaled by the scalar `factor`, about the complex point `origin`."""
+        """Returns copy of self scaled by `factor` about `origin`."""
         return scale(self, factor, origin=origin)
 
 
@@ -908,7 +910,7 @@ class QuadraticBezier(object):
         return translate(self, z0)
 
     def scaled(self, factor, origin=None):
-        """Returns a copy of self scaled by the scalar `factor`, about the complex point `origin`."""
+        """Returns copy of self scaled by `factor` about `origin`."""
         return scale(self, factor, origin=origin)
 
 
@@ -1152,7 +1154,7 @@ class CubicBezier(object):
         return translate(self, z0)
 
     def scaled(self, factor, origin=None):
-        """Returns a copy of self scaled by the scalar `factor`, about the complex point `origin`."""
+        """Returns copy of self scaled by `factor` about `origin`."""
         return scale(self, factor, origin=origin)
 
 
@@ -1721,8 +1723,9 @@ class Arc(object):
         return translate(self, z0)
 
     def scaled(self, factor, origin=None):
-        """Returns a copy of self scaled by the scalar `factor`, about the complex point `origin`."""
+        """Returns copy of self scaled by `factor` about `origin`."""
         return scale(self, factor, origin=origin)
+
 
 def is_bezier_segment(x):
     return (isinstance(x, Line) or
@@ -2281,5 +2284,5 @@ class Path(MutableSequence):
         return translate(self, z0)
 
     def scaled(self, factor, origin=None):
-        """Returns a copy of self scaled by the scalar `factor`, about the complex point `origin`."""
+        """Returns copy of self scaled by `factor` about `origin`."""
         return scale(self, factor, origin=origin)
