@@ -48,12 +48,12 @@ class LineTest(unittest.TestCase):
         # This is to test the __eq__ and __ne__ methods, so we can't use
         # assertEqual and assertNotEqual
         line = Line(0j, 400 + 0j)
+        cubic = CubicBezier(600 + 500j, 600 + 350j, 900 + 650j, 900 + 500j)
         self.assertTrue(line == Line(0, 400))
         self.assertTrue(line != Line(100, 400))
         self.assertFalse(line == str(line))
         self.assertTrue(line != str(line))
-        self.assertFalse(
-            CubicBezier(600 + 500j, 600 + 350j, 900 + 650j, 900 + 500j) == line)
+        self.assertFalse(cubic == line)
 
 
 class CubicBezierTest(unittest.TestCase):
@@ -233,8 +233,9 @@ class CubicBezierTest(unittest.TestCase):
 
         self.assertAlmostEqual(cub.length(), sqrt(2 * 100 * 100))
 
-        # A quarter circle large_arc with radius 100:
-        kappa = 4 * (sqrt(2) - 1) / 3  # http://www.whizkidtech.redprince.net/bezier/circle/
+        # A quarter circle large_arc with radius 100
+        # http://www.whizkidtech.redprince.net/bezier/circle/
+        kappa = 4 * (sqrt(2) - 1) / 3  
 
         cub = CubicBezier(
             complex(0, 0),
@@ -270,9 +271,9 @@ class CubicBezierTest(unittest.TestCase):
                               complex(900, 650), complex(900, 500))
 
         self.assertTrue(segment ==
-                        CubicBezier(600 + 500j, 600 + 350j, 900 + 650j, 900 + 500j))
+                CubicBezier(600 + 500j, 600 + 350j, 900 + 650j, 900 + 500j))
         self.assertTrue(segment !=
-                        CubicBezier(600 + 501j, 600 + 350j, 900 + 650j, 900 + 500j))
+                CubicBezier(600 + 501j, 600 + 350j, 900 + 650j, 900 + 500j))
         self.assertTrue(segment != Line(0, 400))
 
 
@@ -345,8 +346,10 @@ class QuadraticBezierTest(unittest.TestCase):
         # This is to test the __eq__ and __ne__ methods, so we can't use
         # assertEqual and assertNotEqual
         segment = QuadraticBezier(200 + 300j, 400 + 50j, 600 + 300j)
-        self.assertTrue(segment == QuadraticBezier(200 + 300j, 400 + 50j, 600 + 300j))
-        self.assertTrue(segment != QuadraticBezier(200 + 301j, 400 + 50j, 600 + 300j))
+        self.assertTrue(segment == 
+            QuadraticBezier(200 + 300j, 400 + 50j, 600 + 300j))
+        self.assertTrue(segment != 
+            QuadraticBezier(200 + 301j, 400 + 50j, 600 + 300j))
         self.assertFalse(segment == Arc(0j, 100 + 50j, 0, 0, 0, 100 + 50j))
         self.assertTrue(Arc(0j, 100 + 50j, 0, 0, 0, 100 + 50j) != segment)
 
@@ -439,16 +442,26 @@ class ArcTest(unittest.TestCase):
                    225.6910319606926, 1, 1,
                    (-624.6375539637027+896.5483089399895j))
         self.assertAlmostEqual(arc5.point(0.0), (725.307482226-915.554819928j))
-        self.assertAlmostEqual(arc5.point(0.0909090909091), (1023.47397369-597.730444283j))
-        self.assertAlmostEqual(arc5.point(0.181818181818), (1242.80253007-232.251400124j))
-        self.assertAlmostEqual(arc5.point(0.272727272727), (1365.52445614+151.273373978j))
-        self.assertAlmostEqual(arc5.point(0.363636363636), (1381.69755131+521.772981736j))
-        self.assertAlmostEqual(arc5.point(0.454545454545), (1290.01156757+849.231748376j))
-        self.assertAlmostEqual(arc5.point(0.545454545455), (1097.89435807+1107.12091209j))
-        self.assertAlmostEqual(arc5.point(0.636363636364), (820.910116547+1274.54782658j))
-        self.assertAlmostEqual(arc5.point(0.727272727273), (481.49845896+1337.94855893j))
-        self.assertAlmostEqual(arc5.point(0.818181818182), (107.156499251+1292.18675889j))
-        self.assertAlmostEqual(arc5.point(0.909090909091), (-271.788803303+1140.96977533j))
+        self.assertAlmostEqual(arc5.point(0.0909090909091), 
+                               (1023.47397369-597.730444283j))
+        self.assertAlmostEqual(arc5.point(0.181818181818), 
+                               (1242.80253007-232.251400124j))
+        self.assertAlmostEqual(arc5.point(0.272727272727), 
+                               (1365.52445614+151.273373978j))
+        self.assertAlmostEqual(arc5.point(0.363636363636), 
+                               (1381.69755131+521.772981736j))
+        self.assertAlmostEqual(arc5.point(0.454545454545), 
+                               (1290.01156757+849.231748376j))
+        self.assertAlmostEqual(arc5.point(0.545454545455), 
+                               (1097.89435807+1107.12091209j))
+        self.assertAlmostEqual(arc5.point(0.636363636364), 
+                               (820.910116547+1274.54782658j))
+        self.assertAlmostEqual(arc5.point(0.727272727273), 
+                               (481.49845896+1337.94855893j))
+        self.assertAlmostEqual(arc5.point(0.818181818182), 
+                               (107.156499251+1292.18675889j))
+        self.assertAlmostEqual(arc5.point(0.909090909091), 
+                               (-271.788803303+1140.96977533j))
 
     def test_length(self):
         # I'll test the length calculations by making a circle, in two parts.
@@ -485,26 +498,31 @@ class TestPath(unittest.TestCase):
         path = Path(Line(300 + 200j, 150 + 200j),
                     Arc(150 + 200j, 150 + 150j, 0, 1, 0, 300 + 50j),
                     Line(300 + 50j, 300 + 200j))
-        # The points and length for this path are calculated and not regression tests.
+        # The points and length for this path are calculated and not 
+        # regression tests.
         self.assertAlmostEqual(path.point(0.0), (300 + 200j))
         self.assertAlmostEqual(path.point(0.14897825542), (150 + 200j))
         self.assertAlmostEqual(path.point(0.5), (406.066017177 + 306.066017177j))
         self.assertAlmostEqual(path.point(1 - 0.14897825542), (300 + 50j))
         self.assertAlmostEqual(path.point(1.0), (300 + 200j))
-        # The errors seem to accumulate. Still 6 decimal places is more than good enough.
+        # The errors seem to accumulate. Still 6 decimal places is more 
+        # than good enough.
         self.assertAlmostEqual(path.length(), pi * 225 + 300, places=6)
 
         # Little pie: M275,175 v-150 a150,150 0 0,0 -150,150 z
         path = Path(Line(275 + 175j, 275 + 25j),
                     Arc(275 + 25j, 150 + 150j, 0, 0, 0, 125 + 175j),
                     Line(125 + 175j, 275 + 175j))
-        # The points and length for this path are calculated and not regression tests.
+        # The points and length for this path are calculated and not 
+        # regression tests.
         self.assertAlmostEqual(path.point(0.0), (275 + 175j))
         self.assertAlmostEqual(path.point(0.2800495767557787), (275 + 25j))
-        self.assertAlmostEqual(path.point(0.5), (168.93398282201787 + 68.93398282201787j))
+        self.assertAlmostEqual(path.point(0.5), 
+                               (168.93398282201787 + 68.93398282201787j))
         self.assertAlmostEqual(path.point(1 - 0.2800495767557787), (125 + 175j))
         self.assertAlmostEqual(path.point(1.0), (275 + 175j))
-        # The errors seem to accumulate. Still 6 decimal places is more than good enough.
+        # The errors seem to accumulate. Still 6 decimal places is more 
+        # than good enough.
         self.assertAlmostEqual(path.length(), pi * 75 + 300, places=6)
 
         # Bumpy path: M600,350 l 50,-25
@@ -531,14 +549,17 @@ class TestPath(unittest.TestCase):
         # self.assertAlmostEqual(path.point(0.5), (827.730749264+147.824157418j))
         # self.assertAlmostEqual(path.point(0.9), (971.284357806+106.302352605j))
         # self.assertAlmostEqual(path.point(1), (1050+125j))
-        # # The errors seem to accumulate. Still 6 decimal places is more than good enough.
+        # # The errors seem to accumulate. Still 6 decimal places is more 
+        # # than good enough.
         # self.assertAlmostEqual(path.length(), 928.3886394081095)
 
     def test_repr(self):
         path = Path(
             Line(start=600 + 350j, end=650 + 325j),
-            Arc(start=650 + 325j, radius=25 + 25j, rotation=-30, large_arc=0, sweep=1, end=700 + 300j),
-            CubicBezier(start=700 + 300j, control1=800 + 400j, control2=750 + 200j, end=600 + 100j),
+            Arc(start=650 + 325j, radius=25 + 25j, rotation=-30, 
+                large_arc=0, sweep=1, end=700 + 300j),
+            CubicBezier(start=700 + 300j, control1=800 + 400j, 
+                control2=750 + 200j, end=600 + 100j),
             QuadraticBezier(start=600 + 100j, control=600, end=600 + 300j))
         self.assertEqual(eval(repr(path)), path)
 
@@ -547,13 +568,17 @@ class TestPath(unittest.TestCase):
         # assertEqual and assertNotEqual
         path1 = Path(
             Line(start=600 + 350j, end=650 + 325j),
-            Arc(start=650 + 325j, radius=25 + 25j, rotation=-30, large_arc=0, sweep=1, end=700 + 300j),
-            CubicBezier(start=700 + 300j, control1=800 + 400j, control2=750 + 200j, end=600 + 100j),
+            Arc(start=650 + 325j, radius=25 + 25j, rotation=-30, 
+                large_arc=0, sweep=1, end=700 + 300j),
+            CubicBezier(start=700 + 300j, control1=800 + 400j, 
+                control2=750 + 200j, end=600 + 100j),
             QuadraticBezier(start=600 + 100j, control=600, end=600 + 300j))
         path2 = Path(
             Line(start=600 + 350j, end=650 + 325j),
-            Arc(start=650 + 325j, radius=25 + 25j, rotation=-30, large_arc=0, sweep=1, end=700 + 300j),
-            CubicBezier(start=700 + 300j, control1=800 + 400j, control2=750 + 200j, end=600 + 100j),
+            Arc(start=650 + 325j, radius=25 + 25j, rotation=-30, 
+                large_arc=0, sweep=1, end=700 + 300j),
+            CubicBezier(start=700 + 300j, control1=800 + 400j, 
+                control2=750 + 200j, end=600 + 100j),
             QuadraticBezier(start=600 + 100j, control=600, end=600 + 300j))
 
         self.assertTrue(path1 == path2)
@@ -749,7 +774,8 @@ class TestPath(unittest.TestCase):
         for path_orig in test_paths:
 
             # scale by 0.3 around (0, -100)
-            # the 'almost equal' test fails at the 7th decimal place for some length and position tests here.
+            # the 'almost equal' test fails at the 7th decimal place for 
+            # some length and position tests here.
             path_trns = path_orig.scaled(0.3, complex(0, -100))
 
             # expected length
@@ -1058,14 +1084,18 @@ class Test_intersect(unittest.TestCase):
         ###################################################################
 
     def test_line_line_0(self):
-        l0 = Line(start=(25.389999999999997+99.989999999999995j), end=(25.389999999999997+90.484999999999999j))
-        l1 = Line(start=(25.390000000000001+84.114999999999995j), end=(25.389999999999997+74.604202137430320j))
+        l0 = Line(start=(25.389999999999997+99.989999999999995j), 
+                  end=(25.389999999999997+90.484999999999999j))
+        l1 = Line(start=(25.390000000000001+84.114999999999995j), 
+                  end=(25.389999999999997+74.604202137430320j))
         i = l0.intersect(l1)
         assert(len(i)) == 0
 
     def test_line_line_1(self):
-        l0 = Line(start=(-124.705378549+327.696674827j), end=(12.4926214511+121.261674827j))
-        l1 = Line(start=(-12.4926214511+121.261674827j), end=(124.705378549+327.696674827j))
+        l0 = Line(start=(-124.705378549+327.696674827j), 
+                  end=(12.4926214511+121.261674827j))
+        l1 = Line(start=(-12.4926214511+121.261674827j), 
+                  end=(124.705378549+327.696674827j))
         i = l0.intersect(l1)
         assert(len(i)) == 1
         assert(abs(l0.point(i[0][0])-l1.point(i[0][1])) < 1e-9)
