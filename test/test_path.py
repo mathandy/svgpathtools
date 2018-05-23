@@ -3,8 +3,7 @@ from __future__ import division, absolute_import, print_function
 import unittest
 from math import sqrt, pi
 from operator import itemgetter
-from numpy import poly1d
-from numpy import linspace
+from numpy import poly1d, linspace
 
 # Internal dependencies
 from svgpathtools import *
