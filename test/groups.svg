@@ -5,7 +5,8 @@
     viewBox="0 0 365 365"
     height="100%"
     width="100%"
-    xmlns="http://www.w3.org/2000/svg">
+    xmlns="http://www.w3.org/2000/svg"
+    xmlns:test="some://testuri">
   <defs/>
   <g
       id="matrix group"
@@ -15,7 +16,8 @@
         d="M 183,183 l 0,-50"
         fill="black"
         stroke="black"
-        stroke-width="3"/>
+        stroke-width="3"
+        test:name="path00"/>
 
     <g
         id="scale group"
@@ -25,7 +27,8 @@
             d="M 122,320 l -50,0"
             fill="black"
             stroke="black"
-            stroke-width="3"/>
+            stroke-width="3"
+            test:name="path01"/>
 
       <g
           id="nested group - empty transform"
@@ -35,7 +38,8 @@
             d="M 150,200 l -50,25"
             fill="black"
             stroke="black"
-            stroke-width="3"/>
+            stroke-width="3"
+            test:name="path02"/>
 
       </g>
 
@@ -46,7 +50,8 @@
             d="M 150,200 l -50,25"
             fill="black"
             stroke="black"
-            stroke-width="3"/>
+            stroke-width="3"
+            test:name="path03"/>
 
       </g>
 
@@ -58,7 +63,8 @@
             d="M 150,200 l -50,25"
             fill="black"
             stroke="black"
-            stroke-width="3"/>
+            stroke-width="3"
+            test:name="path04"/>
 
       </g>
 
@@ -70,7 +76,8 @@
             d="M 150,200 l -50,25"
             fill="black"
             stroke="black"
-            stroke-width="3"/>
+            stroke-width="3"
+            test:name="path05"/>
 
       </g>
 
@@ -84,7 +91,8 @@
           d="M 122,320 l -50,0"
           fill="black"
           stroke="black"
-          stroke-width="3"/>
+          stroke-width="3"
+          test:name="path06"/>
 
     </g>
 
@@ -96,7 +104,8 @@
           d="M 183,183 l 0,30"
           fill="black"
           stroke="black"
-          stroke-width="3"/>
+          stroke-width="3"
+          test:name="path07"/>
 
     </g>
 
@@ -108,7 +117,8 @@
           d="M 183,183 l 0,30"
           fill="black"
           stroke="black"
-          stroke-width="3"/>
+          stroke-width="3"
+          test:name="path08"/>
 
     </g>
 
@@ -120,7 +130,8 @@
           d="M 183,183 l 40,40"
           fill="black"
           stroke="black"
-          stroke-width="3"/>
+          stroke-width="3"
+          test:name="path09"/>
 
     </g>
 
@@ -132,7 +143,8 @@
           d="M 183,183 l 40,40"
           fill="black"
           stroke="black"
-          stroke-width="3"/>
+          stroke-width="3"
+          test:name="path10"/>
 
     </g>
 
