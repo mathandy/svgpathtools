@@ -113,7 +113,7 @@ def flatten_all_paths(
     StackElement = collections.namedtuple('StackElement', ['group', 'transform'])
 
     def new_stack_element(element, last_tf):
-        return StackElement(element, last_tf * parse_transform(element.get('transform')))
+        return StackElement(element, last_tf.dot(parse_transform(element.get('transform'))))
 
     def get_relevant_children(parent, last_tf):
         children = []
@@ -133,7 +133,7 @@ def flatten_all_paths(
         # the path_filter accepts it.
         for key, converter in path_conversions.iteritems():
             for path_elem in filter(path_filter, top.group.iterfind('svg:'+key, SVG_NAMESPACE)):
-                path_tf = top.transform * parse_transform(path_elem.get('transform'))
+                path_tf = top.transform.dot(parse_transform(path_elem.get('transform')))
                 path = transform(parse_path(converter(path_elem)), path_tf)
                 paths.append(FlattenedPath(path, path_elem.attrib, path_tf))
 

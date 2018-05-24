@@ -257,8 +257,10 @@ def _parse_transform_substr(transform_substr):
         tf_offset[0:2, 2:3] = np.matrix([[offset[0]], [offset[1]]])
         tf_rotate = np.identity(3)
         tf_rotate[0:2, 0:2] = np.matrix([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])
+        tf_offset_neg = np.identity(3)
+        tf_offset_neg[0:2, 2:3] = np.matrix([[-offset[0]], [-offset[1]]])
 
-        transform = tf_offset * tf_rotate * (-tf_offset)
+        transform = tf_offset.dot(tf_rotate).dot(tf_offset_neg)
 
     elif 'skewX' in transform_substr:
         if not _check_num_parsed_values(values, [1]):
@@ -289,6 +291,6 @@ def parse_transform(transform_str):
     total_transform = np.identity(3)
     transform_substrs = transform_str.split(')')[:-1]  # Skip the last element, because it should be empty
     for substr in transform_substrs:
-        total_transform *= _parse_transform_substr(substr)
+        total_transform = total_transform.dot(_parse_transform_substr(substr))
 
     return total_transform
