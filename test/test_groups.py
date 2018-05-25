@@ -42,10 +42,13 @@ class TestGroups(unittest.TestCase):
 
     def test_group_flatten(self):
         # Test the Document.flatten_all_paths() function against the groups.svg test file.
+        # There are 12 paths in that file, with various levels of being nested inside of group transforms.
+        # The check_line function is used to reduce the boilerplate, since all the tests are very similar.
+        # This test covers each of the different types of transforms that are specified by the SVG standard.
         doc = Document(join(dirname(__file__), 'groups.svg'))
 
         result = doc.flatten_all_paths()
-        self.assertEqual(11, len(result))
+        self.assertEqual(12, len(result))
 
         tf_matrix_group = np.matrix([[1.5, 0.0, -40.0], [0.0, 0.5, 20.0], [0.0, 0.0, 1.0]])
 
@@ -119,4 +122,14 @@ class TestGroups(unittest.TestCase):
                         [183, 183], [40, 40],
                         'path10', result)
 
-        # TODO: Add a test where a path element has a transform attribute
+        # This last test is for handling transforms that are defined as attributes of a <path> element.
+        a_11 = -40*np.pi/180.0
+        tf_path11_R = np.matrix([[np.cos(a_11), -np.sin(a_11), 0],
+                                 [np.sin(a_11),  np.cos(a_11), 0],
+                                 [0, 0, 1]])
+        tf_path11_T = np.matrix([[1, 0, 100], [0, 1, 100], [0, 0, 1]])
+        tf_path11 = tf_path11_T.dot(tf_path11_R).dot(np.linalg.inv(tf_path11_T))
+
+        self.check_line(tf_matrix_group.dot(tf_skew_y_group).dot(tf_path11),
+                        [180, 20], [-70, 80],
+                        'path11', result)

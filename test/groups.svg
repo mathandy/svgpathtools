@@ -146,6 +146,14 @@
           stroke-width="3"
           test:name="path10"/>
 
+      <path
+          d="M 180,20 l -70,80"
+          fill="black"
+          stroke="black"
+          stroke-width="4"
+          transform="rotate(-40, 100, 100)"
+          test:name="path11"/>
+
     </g>
 
   </g>
