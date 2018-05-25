@@ -123,7 +123,7 @@ def flatten_all_paths(
 
     stack = [new_stack_element(group, np.identity(3))]
 
-    FlattenedPath = collections.namedtuple('FlattenedPath', ['path', 'attributes', 'transform'])
+    FlattenedPath = collections.namedtuple('FlattenedPath', ['path', 'element', 'transform'])
     paths = []
 
     while stack:
@@ -135,7 +135,7 @@ def flatten_all_paths(
             for path_elem in filter(path_filter, top.group.iterfind('svg:'+key, SVG_NAMESPACE)):
                 path_tf = top.transform.dot(parse_transform(path_elem.get('transform')))
                 path = transform(parse_path(converter(path_elem)), path_tf)
-                paths.append(FlattenedPath(path, path_elem.attrib, path_tf))
+                paths.append(FlattenedPath(path, path_elem, path_tf))
 
         stack.extend(get_relevant_children(top.group, top.transform))
 
