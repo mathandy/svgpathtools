@@ -137,3 +137,7 @@ class TestParser(unittest.TestCase):
 
     def test_errors(self):
         self.assertRaises(ValueError, parse_path, 'M 100 100 L 200 200 Z 100 200')
+
+    def test_transform(self):
+        # TODO: Write these tests
+        pass
