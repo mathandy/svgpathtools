@@ -88,7 +88,7 @@ def disvg(paths=None, colors=None,
           openinbrowser=True, timestamp=False,
           margin_size=0.1, mindim=600, dimensions=None,
           viewbox=None, text=None, text_path=None, font_size=None,
-          attributes=None, svg_attributes=None):
+          attributes=None, svg_attributes=None, svgwrite_debug=False):
     """Takes in a list of paths and creates an SVG file containing said paths.
     REQUIRED INPUTS:
         :param paths - a list of paths
@@ -152,14 +152,22 @@ def disvg(paths=None, colors=None,
         paths.  Note: This will override any other conflicting settings.
 
         :param svg_attributes - a dictionary of attributes for output svg.
-        Note 1: This will override any other conflicting settings.
-        Note 2: Setting `svg_attributes={'debug': False}` may result in a 
-        significant increase in speed.
+        
+        :param svgwrite_debug - This parameter turns on/off `svgwrite`'s 
+        debugging mode.  By default svgwrite_debug=False.  This increases 
+        speed and also prevents `svgwrite` from raising of an error when not 
+        all `svg_attributes` key-value pairs are understood.
 
     NOTES:
-        -The unit of length here is assumed to be pixels in all variables.
+        * The `svg_attributes` parameter will override any other conflicting 
+        settings.
 
-        -If this function is used multiple times in quick succession to
+        * Any `extra` parameters that `svgwrite.Drawing()` accepts can be 
+        controlled by passing them in through `svg_attributes`.
+
+        * The unit of length here is assumed to be pixels in all variables.
+
+        * If this function is used multiple times in quick succession to
         display multiple SVGs (all using the default filename), the
         svgviewer/browser will likely fail to load some of the SVGs in time.
         To fix this, use the timestamp attribute, or give the files unique
@@ -277,12 +285,15 @@ def disvg(paths=None, colors=None,
                 szy = str(mindim) + 'px'
 
     # Create an SVG file
-    if svg_attributes:
+    if svg_attributes is not None:
         szx = svg_attributes.get("width", szx)
         szy = svg_attributes.get("height", szy)
-        dwg = Drawing(filename=filename, size=(szx, szy), **svg_attributes)
+        debug = svg_attributes.get("debug", svgwrite_debug)
+        dwg = Drawing(filename=filename, size=(szx, szy), debug=debug,
+                      **svg_attributes)
     else:
-        dwg = Drawing(filename=filename, size=(szx, szy), viewBox=viewbox)
+        dwg = Drawing(filename=filename, size=(szx, szy), debug=svgwrite_debug,
+                      viewBox=viewbox)
 
     # add paths
     if paths:
@@ -377,7 +388,7 @@ def wsvg(paths=None, colors=None,
           openinbrowser=False, timestamp=False,
           margin_size=0.1, mindim=600, dimensions=None,
           viewbox=None, text=None, text_path=None, font_size=None,
-          attributes=None, svg_attributes=None):
+          attributes=None, svg_attributes=None, svgwrite_debug=False):
     """Convenience function; identical to disvg() except that
     openinbrowser=False by default.  See disvg() docstring for more info."""
     disvg(paths, colors=colors, filename=filename,
@@ -386,4 +397,5 @@ def wsvg(paths=None, colors=None,
           openinbrowser=openinbrowser, timestamp=timestamp,
           margin_size=margin_size, mindim=mindim, dimensions=dimensions,
           viewbox=viewbox, text=text, text_path=text_path, font_size=font_size,
-          attributes=attributes, svg_attributes=svg_attributes)
+          attributes=attributes, svg_attributes=svg_attributes,
+          svgwrite_debug=svgwrite_debug)

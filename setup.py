@@ -3,7 +3,7 @@ import codecs
 import os
 
 
-VERSION = '1.3.2beta'
+VERSION = '1.3.2'
 AUTHOR_NAME = 'Andy Port'
 AUTHOR_EMAIL = 'AndyAPort@gmail.com'
 
@@ -31,7 +31,7 @@ setup(name='svgpathtools',
       download_url = 'http://github.com/mathandy/svgpathtools/tarball/'+VERSION,
       license='MIT',
       
-      # install_requires=['numpy', 'svgwrite'],
+      install_requires=['numpy', 'svgwrite'],
       platforms="OS Independent",
       # test_suite='tests',
       requires=['numpy', 'svgwrite'],
