@@ -275,7 +275,7 @@ def _parse_transform_substr(transform_substr):
         transform[1, 0] = np.tan(values[0] * np.pi / 180.0)
     else:
         # Return an identity matrix if the type of transform is unknown, and warn the user
-        warnings.warn('Unknown SVG transform type: {0})'.format(type_str))
+        warnings.warn('Unknown SVG transform type: {0}'.format(type_str))
 
     return transform
 
