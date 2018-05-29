@@ -6,7 +6,6 @@ from __future__ import division, absolute_import, print_function
 from xml.dom.minidom import parse
 from os import path as os_path, getcwd
 import re
-import xml.etree.cElementTree as etree
 
 # Internal dependencies
 from .parser import parse_path
