@@ -10,11 +10,13 @@ import re
 # Internal dependencies
 from .parser import parse_path
 
+
 COORD_PAIR_TMPLT = re.compile(
     r'([\+-]?\d*[\.\d]\d*[eE][\+-]?\d+|[\+-]?\d*[\.\d]\d*)' +
     r'(?:\s*,\s*|\s+|(?=-))' +
     r'([\+-]?\d*[\.\d]\d*[eE][\+-]?\d+|[\+-]?\d*[\.\d]\d*)'
 )
+
 
 def ellipse2pathd(ellipse):
     """converts the parameters from an ellipse or a circle to a string for a 
@@ -63,18 +65,19 @@ def polyline2pathd(polyline_d, is_polygon=False):
 
 
 def polygon2pathd(polyline_d):
-    """converts the string from a polygon points-attribute to a string for a
-    Path object d-attribute.
+    """converts the string from a polygon points-attribute to a string 
+    for a Path object d-attribute.
     Note:  For a polygon made from n points, the resulting path will be
-    composed of n lines (even if some of these lines have length zero)."""
+    composed of n lines (even if some of these lines have length zero).
+    """
     return polyline2pathd(polyline_d, True)
 
 
 def rect2pathd(rect):
     """Converts an SVG-rect element to a Path d-string.
     
-    The rectangle will start at the (x,y) coordinate specified by the rectangle 
-    object and proceed counter-clockwise."""
+    The rectangle will start at the (x,y) coordinate specified by the 
+    rectangle object and proceed counter-clockwise."""
     x0, y0 = float(rect.get('x', 0)), float(rect.get('y', 0))
     w, h = float(rect["width"]), float(rect["height"])
     x1, y1 = x0 + w, y0
