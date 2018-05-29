@@ -20,9 +20,9 @@ class TestSVG2Paths(unittest.TestCase):
 
         # triangular quadrilateral (with a redundant 4th "closure" point)
         path = paths[1]
-        path_correct = Path(Line(0+0j, 0+100j),
-                            Line(0+100j, 100+100j),
-                            Line(100+100j, 0+0j),
+        path_correct = Path(Line(0+0j, 0-100j),
+                            Line(0-100j, 0.1-100j),
+                            Line(0.1-100j, 0+0j),
                             Line(0+0j, 0+0j)  # result of redundant point
                             )
         self.assertTrue(path.isclosed())
