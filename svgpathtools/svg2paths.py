@@ -45,8 +45,8 @@ def ellipse2pathd(ellipse):
 
 
 def polyline2pathd(polyline_d, is_polygon=False):
-    """converts the string from a polyline points-attribute to a string for a
-    Path object d-attribute"""
+    """converts the string from a polyline points-attribute to a string 
+    for a Path object d-attribute"""
     points = COORD_PAIR_TMPLT.findall(polyline_d)
     closed = (float(points[0][0]) == float(points[-1][0]) and
               float(points[0][1]) == float(points[-1][1]))
@@ -67,7 +67,8 @@ def polygon2pathd(polyline_d):
     """converts the string from a polygon points-attribute to a string 
     for a Path object d-attribute.
     Note:  For a polygon made from n points, the resulting path will be
-    composed of n lines (even if some of these lines have length zero)."""
+    composed of n lines (even if some of these lines have length zero).
+    """
     return polyline2pathd(polyline_d, True)
 
 
