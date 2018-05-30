@@ -726,7 +726,7 @@ class TestPath(unittest.TestCase):
         with self.assertRaises(AssertionError):
             p_open.cropped(1, 0)
 
-    def test_transform_scale(self):
+    def test_transform_scale_uniform(self):
         line1 = Line(600 + 350j, 650 + 325j)
         arc1 = Arc(650 + 325j, 25 + 25j, -30, 0, 1, 700 + 300j)
         cub1 = CubicBezier(650 + 325j, 25 + 25j, -30, 700 + 300j)
@@ -757,7 +757,7 @@ class TestPath(unittest.TestCase):
         for path_orig in test_paths:
 
             # scale by 2 around (100, 100)
-            path_trns = path_orig.scaled(2.0, complex(100, 100))
+            path_trns = path_orig.scaled_uniform(2.0, complex(100, 100))
 
             # expected length
             len_orig = path_orig.length()
@@ -776,7 +776,7 @@ class TestPath(unittest.TestCase):
             # scale by 0.3 around (0, -100)
             # the 'almost equal' test fails at the 7th decimal place for 
             # some length and position tests here.
-            path_trns = path_orig.scaled(0.3, complex(0, -100))
+            path_trns = path_orig.scaled_uniform(0.3, complex(0, -100))
 
             # expected length
             len_orig = path_orig.length()

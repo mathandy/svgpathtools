@@ -207,10 +207,10 @@ def translate(curve, z0):
                         "QuadraticBezier, CubicBezier, or Arc object.")
 
 
-def scale(curve, factor, origin=0j):
-    """Scales `curve` by scalar `factor` around `origin`.
+def scale_uniform(curve, factor, origin=0j):
+    """Uniformly scales `curve` by scalar `factor` around `origin`.
      
-     Note: scale(curve, s, origin).point(t) == 
+     Note: scale_uniform(curve, s, origin).point(t) ==
             ((curve.point(t) - origin) * factor) + origin
     """
 
@@ -218,7 +218,7 @@ def scale(curve, factor, origin=0j):
         return ((z - origin) * s) + origin
 
     if isinstance(curve, Path):
-        return Path(*[scale(seg, factor, origin) for seg in curve])
+        return Path(*[scale_uniform(seg, factor, origin) for seg in curve])
     elif is_bezier_segment(curve):
         return bpoints2bezier([_scale_point(bpt, factor, origin) for bpt in curve.bpoints()])
     elif isinstance(curve, Arc):
@@ -661,9 +661,9 @@ class Line(object):
         that self.translated(z0).point(t) = self.point(t) + z0 for any t."""
         return translate(self, z0)
 
-    def scaled(self, factor, origin=None):
+    def scaled_uniform(self, factor, origin=None):
         """Returns copy of self scaled by `factor` about `origin`."""
-        return scale(self, factor, origin=origin)
+        return scale_uniform(self, factor, origin=origin)
 
 
 class QuadraticBezier(object):
@@ -909,9 +909,9 @@ class QuadraticBezier(object):
         that self.translated(z0).point(t) = self.point(t) + z0 for any t."""
         return translate(self, z0)
 
-    def scaled(self, factor, origin=None):
+    def scaled_uniform(self, factor, origin=None):
         """Returns copy of self scaled by `factor` about `origin`."""
-        return scale(self, factor, origin=origin)
+        return scale_uniform(self, factor, origin=origin)
 
 
 class CubicBezier(object):
@@ -1153,9 +1153,9 @@ class CubicBezier(object):
         that self.translated(z0).point(t) = self.point(t) + z0 for any t."""
         return translate(self, z0)
 
-    def scaled(self, factor, origin=None):
+    def scaled_uniform(self, factor, origin=None):
         """Returns copy of self scaled by `factor` about `origin`."""
-        return scale(self, factor, origin=origin)
+        return scale_uniform(self, factor, origin=origin)
 
 
 class Arc(object):
@@ -1722,9 +1722,9 @@ class Arc(object):
         that self.translated(z0).point(t) = self.point(t) + z0 for any t."""
         return translate(self, z0)
 
-    def scaled(self, factor, origin=None):
+    def scaled_uniform(self, factor, origin=None):
         """Returns copy of self scaled by `factor` about `origin`."""
-        return scale(self, factor, origin=origin)
+        return scale_uniform(self, factor, origin=origin)
 
 
 def is_bezier_segment(x):
@@ -2283,6 +2283,6 @@ class Path(MutableSequence):
         that self.translated(z0).point(t) = self.point(t) + z0 for any t."""
         return translate(self, z0)
 
-    def scaled(self, factor, origin=None):
+    def scaled_uniform(self, factor, origin=None):
         """Returns copy of self scaled by `factor` about `origin`."""
-        return scale(self, factor, origin=origin)
+        return scale_uniform(self, factor, origin=origin)
