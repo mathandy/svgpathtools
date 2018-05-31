@@ -726,9 +726,10 @@ class TestPath(unittest.TestCase):
         with self.assertRaises(AssertionError):
             p_open.cropped(1, 0)
 
-    def test_transform_scale_uniform(self):
-        line1 = Line(600 + 350j, 650 + 325j)
+    def test_transform_scale(self):
+        line1 = Line(600.5 + 350.5j, 650.5 + 325.5j)
         arc1 = Arc(650 + 325j, 25 + 25j, -30, 0, 1, 700 + 300j)
+        arc2 = Arc(650 + 325j, 30 + 25j, -30, 0, 0, 700 + 300j)
         cub1 = CubicBezier(650 + 325j, 25 + 25j, -30, 700 + 300j)
         cub2 = CubicBezier(700 + 300j, 800 + 400j, 750 + 200j, 600 + 100j)
         quad3 = QuadraticBezier(600 + 100j, 600, 600 + 300j)
@@ -741,23 +742,15 @@ class TestPath(unittest.TestCase):
         lpath = Path(linez)
         qpath = Path(quad3)
         cpath = Path(cub1)
-        apath = Path(arc1)
+        apath = Path(arc1, arc2)
 
-        test_paths = [
-            bezpath,
-            bezpathz,
-            path,
-            pathz,
-            lpath,
-            qpath,
-            cpath,
-            apath,
-        ]
+        test_curves = ([bezpath, bezpathz, path, pathz, lpath, qpath, cpath, apath] + 
+	                   [line1, arc1, arc2, cub1, cub2, quad3, linez])
 
-        for path_orig in test_paths:
+        for path_orig in test_curves:
 
             # scale by 2 around (100, 100)
-            path_trns = path_orig.scaled_uniform(2.0, complex(100, 100))
+            path_trns = path_orig.scaled(2.0, complex(100, 100))
 
             # expected length
             len_orig = path_orig.length()
@@ -771,12 +764,12 @@ class TestPath(unittest.TestCase):
                 pt_xpct = (pt_orig - complex(100, 100)) * 2.0 + complex(100, 100)
                 self.assertAlmostEqual(pt_xpct, pt_trns)
 
-        for path_orig in test_paths:
+        for path_orig in test_curves:
 
             # scale by 0.3 around (0, -100)
             # the 'almost equal' test fails at the 7th decimal place for 
             # some length and position tests here.
-            path_trns = path_orig.scaled_uniform(0.3, complex(0, -100))
+            path_trns = path_orig.scaled(0.3, complex(0, -100))
 
             # expected length
             len_orig = path_orig.length()
@@ -789,10 +782,7 @@ class TestPath(unittest.TestCase):
                 pt_trns = path_trns.point(T)
                 pt_xpct = (pt_orig - complex(0, -100)) * 0.3 + complex(0, -100)
                 self.assertAlmostEqual(pt_xpct, pt_trns, delta = 0.000001)
-
-
-
-
+                
 
 class Test_ilength(unittest.TestCase):
     # See svgpathtools.notes.inv_arclength.py for information on how these
