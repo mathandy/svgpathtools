@@ -14,6 +14,6 @@ from .misctools import hex2rgb, rgb2hex
 from .smoothing import smoothed_path, smoothed_joint, is_differentiable, kinks
 
 try:
-    from .svg2paths import svg2paths, svg2paths2
+    from .svg_to_paths import svg2paths, svg2paths2
 except ImportError:
     pass
