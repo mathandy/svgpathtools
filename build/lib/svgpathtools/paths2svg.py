@@ -5,7 +5,6 @@ segments."""
 from __future__ import division, absolute_import, print_function
 from math import ceil
 from os import getcwd, path as os_path, makedirs
-from xml.dom.minidom import parse as md_xml_parse
 from svgwrite import Drawing, text as txt
 from time import time
 from warnings import warn
@@ -153,7 +152,7 @@ def disvg(paths=None, colors=None,
 
         :param svg_attributes - a dictionary of attributes for output svg.
         Note 1: This will override any other conflicting settings.
-        Note 2: Setting `svg_attributes={'debug': False}` may result in a 
+        Note 2: Setting `svg_attributes={'debug': False}` may result in a
         significant increase in speed.
 
     NOTES:
@@ -353,12 +352,7 @@ def disvg(paths=None, colors=None,
     # save svg
     if not os_path.exists(os_path.dirname(filename)):
         makedirs(os_path.dirname(filename))
-    dwg.save()
-
-    # re-open the svg, make the xml pretty, and save it again
-    xmlstring = md_xml_parse(filename).toprettyxml()
-    with open(filename, 'w') as f:
-        f.write(xmlstring)
+    dwg.save(pretty=True)
 
     # try to open in web browser
     if openinbrowser:
