@@ -224,25 +224,25 @@ def scale(curve, sx, sy=None, origin=0j):
     else:
         isy = 1j*sy
 
-    def transform(z, sx=sx, sy=sy, origin=origin):
+    def transform(z, origin=origin):
         zeta = z - origin
-        return x*zeta.real + isy*zeta.imag + origin
+        return sx*zeta.real + isy*zeta.imag + origin
 
     if isinstance(curve, Path):
         return Path(*[scale(seg, sx, sy, origin) for seg in curve])
     elif is_bezier_segment(curve):
         return bpoints2bezier([transform(z) for z in curve.bpoints()])
     elif isinstance(curve, Arc):
-        if y is None or y == x:
+        if sy is None or sy == sx:
             return Arc(start=transform(curve.start), 
-                       radius=transform(radius, origin=0), 
+                       radius=transform(curve.radius, origin=0),
                        rotation=curve.rotation, 
                        large_arc=curve.large_arc, 
                        sweep=curve.sweep, 
                        end=transform(curve.end))
         else:
-            raise Excpetion("For `Arc` objects, only scale transforms "
-                            "with sx==sy are implemenented.")
+            raise Exception("For `Arc` objects, only scale transforms "
+                            "with sx==sy are implemented.")
     else:
         raise TypeError("Input `curve` should be a Path, Line, "
                         "QuadraticBezier, CubicBezier, or Arc object.")
@@ -2042,9 +2042,9 @@ class Path(MutableSequence):
                 0) == previous.unit_tangent(1)
 
     def T2t(self, T):
-        """returns the segment index, seg_idx, and segment parameter, t,
-        corresponding to the path parameter T.  In other words, this is the
-        inverse of the Path.t2T() method."""
+        """returns the segment index, `seg_idx`, and segment parameter, `t`,
+        corresponding to the path parameter `T`.  In other words, this is the
+        inverse of the `Path.t2T()` method."""
         if T == 1:
             return len(self)-1, 1
         if T == 0:

@@ -3,7 +3,7 @@ from __future__ import division, absolute_import, print_function
 import unittest
 from math import sqrt, pi
 from operator import itemgetter
-from numpy import poly1d, linspace
+import numpy as np
 
 # Internal dependencies
 from svgpathtools import *
@@ -727,6 +727,7 @@ class TestPath(unittest.TestCase):
             p_open.cropped(1, 0)
 
     def test_transform_scale(self):
+
         line1 = Line(600.5 + 350.5j, 650.5 + 325.5j)
         arc1 = Arc(650 + 325j, 25 + 25j, -30, 0, 1, 700 + 300j)
         arc2 = Arc(650 + 325j, 30 + 25j, -30, 0, 0, 700 + 300j)
@@ -744,44 +745,105 @@ class TestPath(unittest.TestCase):
         cpath = Path(cub1)
         apath = Path(arc1, arc2)
 
-        test_curves = ([bezpath, bezpathz, path, pathz, lpath, qpath, cpath, apath] + 
-	                   [line1, arc1, arc2, cub1, cub2, quad3, linez])
+        test_curves = [bezpath, bezpathz, path, pathz, lpath, qpath, cpath,
+                       apath, line1, arc1, arc2, cub1, cub2, quad3, linez]
 
-        for path_orig in test_curves:
+        def scale_a_point(pt, sx, sy=None, origin=0j):
 
+            if sy is None:
+                sy = sx
+
+            zeta = pt - origin
+            pt_vec = [[zeta.real],
+                      [zeta.imag],
+                      [1]]
+            transform = [[sx, 0, origin.real],
+                         [0, sy, origin.imag]]
+
+            return complex(*np.dot(transform, pt_vec).ravel())
+
+        for curve in test_curves:
+            # generate a random point and a random scaling
+            t = np.random.rand()
+            pt = curve.point(t)
+
+            # random diagonal transformation
+            sx = 2 * np.random.rand()
+            sy = 2 * np.random.rand()
+
+            # random origin
+            origin = (10  * (np.random.rand() - 0.5) +
+                      10j * (np.random.rand() - 0.5))
+
+            # Note: `sx != sy` cases are not implemented for `Arc` objects
+            has_arc = (isinstance(curve, Arc) or
+                       isinstance(curve, Path) and
+                       any(isinstance(seg, Arc) for seg in curve))
+
+            # case where no `sy` and no `origin` given
+            ans = scale_a_point(pt, sx, None)
+            self.assertAlmostEqual(ans, curve.scaled(sx).point(t))
+
+            # case where no `sy` and random `origin` given
+            ans = scale_a_point(pt, sx, None, origin)
+            self.assertAlmostEqual(ans,
+                                   curve.scaled(sx, origin=origin).point(t))
+
+            # the cases with sx != sy are not yet imp
+            if isinstance(curve, Arc):
+                continue
+
+            # case where `sx != sy`, and no `origin` given
+            ans = scale_a_point(pt, sx, sy)
+            if has_arc:
+                self.assertRaises(Exception, curve.scaled(sx, sy).point(t))
+            else:
+                self.assertAlmostEqual(ans, curve.scaled(sx, sy).point(t))
+
+            # case where `sx != sy`, and random `origin` given
+            ans = scale_a_point(pt, sx, sy, origin)
+            if has_arc:
+                self.assertRaises(Exception,
+                                  curve.scaled(sx, sy, origin).point(t))
+            else:
+                self.assertAlmostEqual(ans,
+                                       curve.scaled(sx, sy, origin).point(t))
+
+        # more tests for scalar (i.e. `sx == sy`) case
+        for curve in test_curves:
             # scale by 2 around (100, 100)
-            path_trns = path_orig.scaled(2.0, complex(100, 100))
+            scaled_curve = curve.scaled(2.0, complex(100, 100))
 
             # expected length
-            len_orig = path_orig.length()
-            len_trns = path_trns.length()
+            len_orig = curve.length()
+            len_trns = scaled_curve.length()
             self.assertAlmostEqual(len_orig * 2.0, len_trns)
 
             # expected positions
-            for T in linspace(0.0, 1.0, num=100):
-                pt_orig = path_orig.point(T)
-                pt_trns = path_trns.point(T)
+            for T in np.linspace(0.0, 1.0, num=100):
+                pt_orig = curve.point(T)
+                pt_trns = scaled_curve.point(T)
                 pt_xpct = (pt_orig - complex(100, 100)) * 2.0 + complex(100, 100)
                 self.assertAlmostEqual(pt_xpct, pt_trns)
-
-        for path_orig in test_curves:
 
             # scale by 0.3 around (0, -100)
             # the 'almost equal' test fails at the 7th decimal place for 
             # some length and position tests here.
-            path_trns = path_orig.scaled(0.3, complex(0, -100))
+            scaled_curve = curve.scaled(0.3, complex(0, -100))
 
             # expected length
-            len_orig = path_orig.length()
-            len_trns = path_trns.length()
-            self.assertAlmostEqual(len_orig * 0.3, len_trns, delta = 0.000001)
+            len_orig = curve.length()
+            len_trns = scaled_curve.length()
+            self.assertAlmostEqual(len_orig * 0.3, len_trns, delta=0.000001)
 
             # expected positions
-            for T in linspace(0.0, 1.0, num=100):
-                pt_orig = path_orig.point(T)
-                pt_trns = path_trns.point(T)
+            for T in np.linspace(0.0, 1.0, num=100):
+                pt_orig = curve.point(T)
+                pt_trns = scaled_curve.point(T)
                 pt_xpct = (pt_orig - complex(0, -100)) * 0.3 + complex(0, -100)
-                self.assertAlmostEqual(pt_xpct, pt_trns, delta = 0.000001)
+                self.assertAlmostEqual(pt_xpct, pt_trns, delta=0.000001)
+
+
                 
 
 class Test_ilength(unittest.TestCase):
@@ -1136,10 +1198,10 @@ class TestPathTools(unittest.TestCase):
 
         # Case: Line
         pcoeffs = [(-1.7-2j), (6+2j)]
-        p = poly1d(pcoeffs)
+        p = np.poly1d(pcoeffs)
         correct_bpoints = [(6+2j), (4.3+0j)]
 
-        # Input poly1d object
+        # Input np.poly1d object
         bez = poly2bez(p)
         bpoints = bez.bpoints()
         self.assertAlmostEqual(distfcn(bpoints, correct_bpoints), 0)
@@ -1150,10 +1212,10 @@ class TestPathTools(unittest.TestCase):
 
         # Case: Quadratic
         pcoeffs = [(29.5+15.5j), (-31-19j), (7.5+5.5j)]
-        p = poly1d(pcoeffs)
+        p = np.poly1d(pcoeffs)
         correct_bpoints = [(7.5+5.5j), (-8-4j), (6+2j)]
 
-        # Input poly1d object
+        # Input np.poly1d object
         bez = poly2bez(p)
         bpoints = bez.bpoints()
         self.assertAlmostEqual(distfcn(bpoints, correct_bpoints), 0)
@@ -1164,10 +1226,10 @@ class TestPathTools(unittest.TestCase):
 
         # Case: Cubic
         pcoeffs = [(-18.5-12.5j), (34.5+16.5j), (-18-6j), (6+2j)]
-        p = poly1d(pcoeffs)
+        p = np.poly1d(pcoeffs)
         correct_bpoints = [(6+2j), 0j, (5.5+3.5j), (4+0j)]
 
-        # Input poly1d object
+        # Input np.poly1d object
         bez = poly2bez(p)
         bpoints = bez.bpoints()
         self.assertAlmostEqual(distfcn(bpoints, correct_bpoints), 0)
