@@ -2124,8 +2124,8 @@ class Path(MutableSequence):
                 (seg_idx + 1) % len(self._segments)]
             if not next_seg_in_path.joins_smoothly_with(seg):
                 return float('inf')
-        dz = self.derivative(t)
-        ddz = self.derivative(t, n=2)
+        dz = self.derivative(T)
+        ddz = self.derivative(T, n=2)
         dx, dy = dz.real, dz.imag
         ddx, ddy = ddz.real, ddz.imag
         return abs(dx*ddy - dy*ddx)/(dx*dx + dy*dy)**1.5
@@ -2269,7 +2269,6 @@ class Path(MutableSequence):
             if t_seg1 != 0:
                 new_path.append(seg1.cropped(0, t_seg1))
         return new_path
-
 
     def radialrange(self, origin, return_all_global_extrema=False):
         """returns the tuples (d_min, t_min, idx_min), (d_max, t_max, idx_max)
