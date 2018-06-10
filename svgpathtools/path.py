@@ -18,7 +18,8 @@ except:
 
 # Internal dependencies
 from .bezier import (bezier_intersections, bezier_bounding_box, split_bezier,
-                     bezier_by_line_intersections, polynomial2bezier)
+                     bezier_by_line_intersections, polynomial2bezier,
+                     bezier2polynomial)
 from .misctools import BugException
 from .polytools import rational_limit, polyroots, polyroots01, imag, real
 
