@@ -1727,7 +1727,123 @@ class Arc(object):
         to let me know if you're interested in such a feature -- or even better
         please submit an implementation if you want to code one."""
 
-        if is_bezier_segment(other_seg):
+        # This special case can be easily solved algebraically.
+        if (self.rotation == 0) and isinstance(other_seg, Line):
+            a = self.radius.real
+            b = self.radius.imag
+
+            # Ignore the ellipse's center point (to pretend that it's
+            # centered at the origin), and translate the Line to match.
+            l = Line(start=(other_seg.start-self.center), end=(other_seg.end-self.center))
+
+            # This gives us the translated Line as a parametric equation.
+            # s = p1 t + p0
+            p = l.poly()
+
+            if p[1].real == 0.0:
+                # The `x` value doesn't depend on `t`, the line is vertical.
+                c = p[0].real
+                x_values = [c]
+
+                # Substitute the line `x = c` into the equation for the
+                # (origin-centered) ellipse.
+                #
+                # x^2/a^2 + y^2/b^2 = 1
+                # c^2/a^2 + y^2/b^2 = 1
+                # y^2/b^2 = 1 - c^2/a^2
+                # y^2 = b^2(1 - c^2/a^2)
+                # y = +-b sqrt(1 - c^2/a^2)
+
+                discriminant = 1 - (c * c)/(a * a)
+                if discriminant < 0:
+                    return []
+                elif discriminant == 0:
+                    y_values = [0]
+                else:
+                    val = b * sqrt(discriminant)
+                    y_values = [val, -val]
+
+            else:
+                # This is a non-vertical line.
+                #
+                # Convert the Line's parametric equation to the "y = mx + c" format.
+                # x = p1.real t + p0.real
+                # y = p1.imag t + p0.imag
+                #
+                # t = (x - p0.real) / p1.real
+                # t = (y - p0.imag) / p1.imag
+                #
+                # (y - p0.imag) / p1.imag = (x - p0.real) / p1.real
+                # (y - p0.imag) = ((x - p0.real) * p1.imag) / p1.real
+                # y = ((x - p0.real) * p1.imag) / p1.real + p0.imag
+                # y = (x p1.imag - p0.real * p1.imag) / p1.real + p0.imag
+                # y = x p1.imag/p1.real - p0.real p1.imag / p1.real + p0.imag
+                # m = p1.imag/p1.real
+                # c = -m p0.real + p0.imag
+                m = p[1].imag / p[1].real
+                c = (-m * p[0].real) + p[0].imag
+
+                # Substitute the line's y(x) equation into the equation for
+                # the ellipse.  We can pretend the ellipse is centered at the
+                # origin, since we shifted the Line by the ellipse's center.
+                #
+                # x^2/a^2 + y^2/b^2 = 1
+                # x^2/a^2 + (mx+c)^2/b^2 = 1
+                # (b^2 x^2 + a^2 (mx+c)^2)/(a^2 b^2) = 1
+                # b^2 x^2 + a^2 (mx+c)^2 = a^2 b^2
+                # b^2 x^2 + a^2(m^2 x^2 + 2mcx + c^2) = a^2 b^2
+                # b^2 x^2 + a^2 m^2 x^2 + 2a^2 mcx + a^2 c^2 - a^2 b^2 = 0
+                # (a^2 m^2 + b^2)x^2 + 2a^2 mcx + a^2(c^2 - b^2) = 0
+                #
+                # The quadratic forumla tells us:  x = (-B +- sqrt(B^2 - 4AC)) / 2A
+                # Where:
+                #     A = a^2 m^2 + b^2
+                #     B = 2 a^2 mc
+                #     C = a^2(c^2 - b^2)
+                #
+                # The determinant is: B^2 - 4AC
+                #
+                # The solution simplifies to:
+                # x = (-a^2 mc +- a b sqrt(a^2 m^2 + b^2 - c^2)) / (a^2 m^2 + b^2)
+                #
+                # Solving the line for x(y) and substituting *that* into
+                # the equation for the ellipse gives this solution for y:
+                # y = (b^2 c +- abm sqrt(a^2 m^2 + b^2 - c^2)) / (a^2 m^2 + b^2)
+
+                denominator = (a * a * m * m) + (b * b)
+
+                discriminant = denominator - (c * c)
+                if discriminant < 0:
+                    return []
+
+                x_sqrt = a * b * sqrt(discriminant)
+                x1 = (-(a * a * m * c) + x_sqrt) / denominator 
+                x2 = (-(a * a * m * c) - x_sqrt) / denominator 
+                x_values = [x1]
+                if x1 != x2:
+                    x_values.append(x2)
+
+                y_sqrt = x_sqrt * m
+                y1 = ((b * b * c) + y_sqrt) / denominator
+                y2 = ((b * b * c) - y_sqrt) / denominator
+                y_values = [y1]
+                if y1 != y2:
+                    y_values.append(y2)
+
+            intersections = []
+            for x in x_values:
+                for y in y_values:
+                    p = complex(x, y) + self.center
+                    my_t = self.point_to_t(p)
+                    if my_t == None:
+                        continue
+                    other_t = other_seg.point_to_t(p)
+                    if other_t == None:
+                        continue
+                    intersections.append([my_t, other_t])
+            return intersections
+
+        elif is_bezier_segment(other_seg):
             u1poly = self.u1transform(other_seg.poly())
             u1poly_mag2 = real(u1poly)**2 + imag(u1poly)**2
             t2s = polyroots01(u1poly_mag2 - 1)
