@@ -225,25 +225,31 @@ def scale(curve, sx, sy=None, origin=0j):
     else:
         isy = 1j*sy
 
-    def transform(z, origin=origin):
-        zeta = z - origin
-        return sx*zeta.real + isy*zeta.imag + origin
+    def _scale(z):
+        if sy is None:
+            return sx*z
+        return sx*z.real + isy*z.imag          
+
+    def scale_bezier(bez):
+        p = [_scale(c) for c in bez2poly(bez)]
+        p[-1] += origin - _scale(origin)
+        return poly2bez(p)
 
     if isinstance(curve, Path):
         return Path(*[scale(seg, sx, sy, origin) for seg in curve])
     elif is_bezier_segment(curve):
-        return bpoints2bezier([transform(z) for z in curve.bpoints()])
+        return scale_bezier(curve)
     elif isinstance(curve, Arc):
         if sy is None or sy == sx:
-            return Arc(start=transform(curve.start), 
-                       radius=transform(curve.radius, origin=0),
+            return Arc(start=sx*(curve.start - origin) + origin,
+                       radius=sx*curve.radius,
                        rotation=curve.rotation, 
                        large_arc=curve.large_arc, 
                        sweep=curve.sweep, 
-                       end=transform(curve.end))
+                       end=sx*(curve.end - origin) + origin)
         else:
-            raise Exception("For `Arc` objects, only scale transforms "
-                            "with sx==sy are implemented.")
+            raise Exception("\nFor `Arc` objects, only scale transforms "
+                            "with sx==sy are implemented.\n")
     else:
         raise TypeError("Input `curve` should be a Path, Line, "
                         "QuadraticBezier, CubicBezier, or Arc object.")

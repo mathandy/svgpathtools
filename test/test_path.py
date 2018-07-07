@@ -7,6 +7,7 @@ import numpy as np
 
 # Internal dependencies
 from svgpathtools import *
+from svgpathtools.path import _NotImplemented4ArcException
 
 # An important note for those doing any debugging:
 # ------------------------------------------------
@@ -780,39 +781,86 @@ class TestPath(unittest.TestCase):
                        isinstance(curve, Path) and
                        any(isinstance(seg, Arc) for seg in curve))
 
+            # find seg which t lands on for failure reporting
+            seg = curve
+            if isinstance(curve, Path):
+                seg_idx, seg_t = curve.T2t(t)
+                seg = curve[seg_idx]
+            _fail_msg = "Failure!\nseg  {}\n".format(seg)
+
             # case where no `sy` and no `origin` given
+            curve_scaled = curve.scaled(sx)
+            # res = curve_scaled.point(t)
+            if isinstance(curve, Path):
+                res = curve_scaled[seg_idx].point(seg_t)
+            else:
+                res = curve_scaled.point(t)
             ans = scale_a_point(pt, sx, None)
-            self.assertAlmostEqual(ans, curve.scaled(sx).point(t))
+            fail_msg = _fail_msg + ("curve.scaled({}, {}, {}) = \n{}\n"
+                                    "".format(sx, None, None, curve_scaled))
+            # fail_msg += "curve.point({}) = {}".format(t, res)
+            fail_msg += "seg_scaled.point({}) = {}\n".format(seg_t, res)
+            fail_msg += "ans = {}".format(ans)
+            self.assertAlmostEqual(ans, res, places=4, msg=fail_msg)
 
-            # case where no `sy` and random `origin` given
+            # case where random `origin` given but no `sy`
             ans = scale_a_point(pt, sx, None, origin)
-            self.assertAlmostEqual(ans,
-                                   curve.scaled(sx, origin=origin).point(t))
-
-            # the cases with sx != sy are not yet imp
-            if isinstance(curve, Arc):
-                continue
+            curve_scaled = curve.scaled(sx, origin=origin)
+            # res = curve_scaled.point(t)
+            if isinstance(curve, Path):
+                res = curve_scaled[seg_idx].point(seg_t)
+            else:
+                res = curve_scaled.point(t)
+            fail_msg = _fail_msg + ("curve.scaled({}, {}, {}) = \n{}\n"
+                                    "".format(sx, None, origin, curve_scaled))
+            # fail_msg += "curve.point({}) = {}\n".format(t, res)
+            fail_msg += "seg_scaled.point({}) = {}\n".format(seg_t, res)
+            fail_msg += "ans = {}".format(ans)
+            self.assertAlmostEqual(ans, res, places=4, msg=fail_msg)
 
             # case where `sx != sy`, and no `origin` given
             ans = scale_a_point(pt, sx, sy)
-            if has_arc:
-                self.assertRaises(Exception, curve.scaled(sx, sy).point(t))
+            if has_arc:  # the cases with sx != sy are not yet imp for arcs
+                with self.assertRaises(Exception):
+                    curve.scaled(sx, sy).point(t)
             else:
-                self.assertAlmostEqual(ans, curve.scaled(sx, sy).point(t))
+                curve_scaled = curve.scaled(sx, sy)
+                seg_scaled = seg.scaled(sx, sy)
+                # res = curve_scaled.point(t)
+                if isinstance(curve, Path):
+                    res = curve_scaled[seg_idx].point(seg_t)
+                else:
+                    res = curve_scaled.point(t)
+                fail_msg = _fail_msg + ("curve.scaled({}, {}, {}) = \n{}\n"
+                                        "".format(sx, sy, None, curve_scaled))
+                # fail_msg += "curve.point({}) = {}\n".format(t, res)
+                fail_msg += "seg_scaled.point({}) = {}\n".format(seg_t, res)
+                fail_msg += "ans = {}".format(ans)
+                self.assertAlmostEqual(ans, res, places=4, msg=fail_msg)
 
             # case where `sx != sy`, and random `origin` given
             ans = scale_a_point(pt, sx, sy, origin)
-            if has_arc:
-                self.assertRaises(Exception,
-                                  curve.scaled(sx, sy, origin).point(t))
+            if has_arc:  # the cases with sx != sy are not yet imp for arcs
+                with self.assertRaises(Exception):
+                    curve.scaled(sx, sy, origin).point(t)
             else:
-                self.assertAlmostEqual(ans,
-                                       curve.scaled(sx, sy, origin).point(t))
+                curve_scaled = curve.scaled(sx, sy, origin)
+                # res = curve_scaled.point(t)
+                if isinstance(curve, Path):
+                    res = curve_scaled[seg_idx].point(seg_t)
+                else:
+                    res = curve_scaled.point(t)
+                fail_msg = _fail_msg + ("curve.scaled({}, {}, {}) = \n{}\n"
+                                        "".format(sx, sy, origin, curve_scaled))
+                # fail_msg += "curve.point({}) = {}\n".format(t, res)
+                fail_msg += "seg_scaled.point({}) = {}\n".format(seg_t, res)
+                fail_msg += "ans = {}".format(ans)
+                self.assertAlmostEqual(ans, res, places=4, msg=fail_msg)
 
         # more tests for scalar (i.e. `sx == sy`) case
         for curve in test_curves:
             # scale by 2 around (100, 100)
-            scaled_curve = curve.scaled(2.0, complex(100, 100))
+            scaled_curve = curve.scaled(2.0, origin=complex(100, 100))
 
             # expected length
             len_orig = curve.length()
@@ -829,7 +877,7 @@ class TestPath(unittest.TestCase):
             # scale by 0.3 around (0, -100)
             # the 'almost equal' test fails at the 7th decimal place for 
             # some length and position tests here.
-            scaled_curve = curve.scaled(0.3, complex(0, -100))
+            scaled_curve = curve.scaled(0.3, origin=complex(0, -100))
 
             # expected length
             len_orig = curve.length()
