@@ -790,7 +790,6 @@ class TestPath(unittest.TestCase):
 
             # case where no `sy` and no `origin` given
             curve_scaled = curve.scaled(sx)
-            # res = curve_scaled.point(t)
             if isinstance(curve, Path):
                 res = curve_scaled[seg_idx].point(seg_t)
             else:
@@ -798,7 +797,6 @@ class TestPath(unittest.TestCase):
             ans = scale_a_point(pt, sx, None)
             fail_msg = _fail_msg + ("curve.scaled({}, {}, {}) = \n{}\n"
                                     "".format(sx, None, None, curve_scaled))
-            # fail_msg += "curve.point({}) = {}".format(t, res)
             fail_msg += "seg_scaled.point({}) = {}\n".format(seg_t, res)
             fail_msg += "ans = {}".format(ans)
             self.assertAlmostEqual(ans, res, places=4, msg=fail_msg)
@@ -806,14 +804,12 @@ class TestPath(unittest.TestCase):
             # case where random `origin` given but no `sy`
             ans = scale_a_point(pt, sx, None, origin)
             curve_scaled = curve.scaled(sx, origin=origin)
-            # res = curve_scaled.point(t)
             if isinstance(curve, Path):
                 res = curve_scaled[seg_idx].point(seg_t)
             else:
                 res = curve_scaled.point(t)
             fail_msg = _fail_msg + ("curve.scaled({}, {}, {}) = \n{}\n"
                                     "".format(sx, None, origin, curve_scaled))
-            # fail_msg += "curve.point({}) = {}\n".format(t, res)
             fail_msg += "seg_scaled.point({}) = {}\n".format(seg_t, res)
             fail_msg += "ans = {}".format(ans)
             self.assertAlmostEqual(ans, res, places=4, msg=fail_msg)
@@ -826,14 +822,12 @@ class TestPath(unittest.TestCase):
             else:
                 curve_scaled = curve.scaled(sx, sy)
                 seg_scaled = seg.scaled(sx, sy)
-                # res = curve_scaled.point(t)
                 if isinstance(curve, Path):
                     res = curve_scaled[seg_idx].point(seg_t)
                 else:
                     res = curve_scaled.point(t)
                 fail_msg = _fail_msg + ("curve.scaled({}, {}, {}) = \n{}\n"
                                         "".format(sx, sy, None, curve_scaled))
-                # fail_msg += "curve.point({}) = {}\n".format(t, res)
                 fail_msg += "seg_scaled.point({}) = {}\n".format(seg_t, res)
                 fail_msg += "ans = {}".format(ans)
                 self.assertAlmostEqual(ans, res, places=4, msg=fail_msg)
@@ -845,14 +839,12 @@ class TestPath(unittest.TestCase):
                     curve.scaled(sx, sy, origin).point(t)
             else:
                 curve_scaled = curve.scaled(sx, sy, origin)
-                # res = curve_scaled.point(t)
                 if isinstance(curve, Path):
                     res = curve_scaled[seg_idx].point(seg_t)
                 else:
                     res = curve_scaled.point(t)
                 fail_msg = _fail_msg + ("curve.scaled({}, {}, {}) = \n{}\n"
                                         "".format(sx, sy, origin, curve_scaled))
-                # fail_msg += "curve.point({}) = {}\n".format(t, res)
                 fail_msg += "seg_scaled.point({}) = {}\n".format(seg_t, res)
                 fail_msg += "ans = {}".format(ans)
                 self.assertAlmostEqual(ans, res, places=4, msg=fail_msg)
