@@ -3,7 +3,6 @@ LICENSE2.txt
 MANIFEST.in
 README.rst
 decorated_ellipse.svg
-disvg_output.svg
 offset_curves.svg
 output1.svg
 output2.svg
@@ -21,7 +20,7 @@ svgpathtools/path.py
 svgpathtools/paths2svg.py
 svgpathtools/polytools.py
 svgpathtools/smoothing.py
-svgpathtools/svg2paths.py
+svgpathtools/svg_to_paths.py
 svgpathtools.egg-info/PKG-INFO
 svgpathtools.egg-info/SOURCES.txt
 svgpathtools.egg-info/dependency_links.txt
