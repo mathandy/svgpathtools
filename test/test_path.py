@@ -1112,7 +1112,19 @@ class Test_ilength(unittest.TestCase):
                  (apath, 1.0, 87.81018330500885)]
 
         for (c, t, s) in tests:
-            self.assertAlmostEqual(c.ilength(s), t, msg=str((c, t, s)))
+            try:
+                self.assertAlmostEqual(c.ilength(s), t, msg=str((c, t, s)))
+            except:
+                # These test case values were generated using a system
+                # with scipy installed -- if scipy is not installed, 
+                # then in cases where `t == 1`, `s` may be slightly 
+                # greater than the length computed previously. 
+                # Thus this try/except block exists as a workaround.
+                if c.length() < s:
+                    with self.assertRaises(ValueError):
+                        c.ilength(s)
+                else:
+                    raise
 
     # Exceptional Cases
     def test_ilength_exceptions(self):
