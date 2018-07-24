@@ -1356,17 +1356,18 @@ class Arc(object):
         u1 = (x1p - cp.real)/rx + 1j*(y1p - cp.imag)/ry  # transformed start
         u2 = (-x1p - cp.real)/rx + 1j*(-y1p - cp.imag)/ry  # transformed end
 
+        # clip in case of floating point error
+        u1 = np.clip(u1.real, -1, 1) + 1j*np.clip(u1.imag, -1, 1)
+        u2 = np.clip(u2.real, -1, 1) + 1j * np.clip(u2.imag, -1, 1)
+
         # Now compute theta and delta (we'll define them as we go)
         # delta is the angular distance of the arc (w.r.t the circle)
         # theta is the angle between the positive x'-axis and the start point
         # on the circle
-        u1_real_rounded = u1.real
-        if u1.real > 1 or u1.real < -1:
-            u1_real_rounded = round(u1.real)
         if u1.imag > 0:
-            self.theta = degrees(acos(u1_real_rounded))
+            self.theta = degrees(acos(u1.real))
         elif u1.imag < 0:
-            self.theta = -degrees(acos(u1_real_rounded))
+            self.theta = -degrees(acos(u1.real))
         else:
             if u1.real > 0:  # start is on pos u_x axis
                 self.theta = 0
