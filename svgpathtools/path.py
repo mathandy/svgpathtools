@@ -1380,8 +1380,8 @@ class Arc(object):
         det_uv = u1.real*u2.imag - u1.imag*u2.real
 
         acosand = u1.real*u2.real + u1.imag*u2.imag
-        if acosand > 1 or acosand < -1:
-            acosand = round(acosand)
+        acosand = np.clip(acosand.real, -1, 1) + np.clip(acosand.imag, -1, 1)
+        
         if det_uv > 0:
             self.delta = degrees(acos(acosand))
         elif det_uv < 0:
