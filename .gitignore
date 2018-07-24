@@ -1,5 +1,7 @@
 *.pyc
 .*
 /svgpathtools/nonunittests
+build
+svgpathtools.egg-info
 !.travis.yml
 !/.gitignore
