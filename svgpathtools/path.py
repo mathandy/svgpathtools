@@ -18,7 +18,8 @@ except:
 
 # Internal dependencies
 from .bezier import (bezier_intersections, bezier_bounding_box, split_bezier,
-                     bezier_by_line_intersections, polynomial2bezier)
+                     bezier_by_line_intersections, polynomial2bezier,
+                     bezier2polynomial)
 from .misctools import BugException
 from .polytools import rational_limit, polyroots, polyroots01, imag, real
 
@@ -169,7 +170,7 @@ def rotate(curve, degs, origin=None):
     def transform(z):
         return exp(1j*radians(degs))*(z - origin) + origin
 
-    if origin == None:
+    if origin is None:
         if isinstance(curve, Arc):
             origin = curve.center
         else:
@@ -202,6 +203,53 @@ def translate(curve, z0):
         new_end = curve.end + z0
         return Arc(new_start, radius=curve.radius, rotation=curve.rotation,
                    large_arc=curve.large_arc, sweep=curve.sweep, end=new_end)
+    else:
+        raise TypeError("Input `curve` should be a Path, Line, "
+                        "QuadraticBezier, CubicBezier, or Arc object.")
+
+
+def scale(curve, sx, sy=None, origin=0j):
+    """Scales `curve`, about `origin`, by diagonal matrix `[[sx,0],[0,sy]]`.
+
+    Notes:
+    ------
+    * If `sy` is not specified, it is assumed to be equal to `sx` and 
+    a scalar transformation of `curve` about `origin` will be returned.
+    I.e.
+        scale(curve, sx, origin).point(t) == 
+            ((curve.point(t) - origin) * sx) + origin
+    """
+
+    if sy is None:
+        isy = 1j*sx
+    else:
+        isy = 1j*sy
+
+    def _scale(z):
+        if sy is None:
+            return sx*z
+        return sx*z.real + isy*z.imag          
+
+    def scale_bezier(bez):
+        p = [_scale(c) for c in bez2poly(bez)]
+        p[-1] += origin - _scale(origin)
+        return poly2bez(p)
+
+    if isinstance(curve, Path):
+        return Path(*[scale(seg, sx, sy, origin) for seg in curve])
+    elif is_bezier_segment(curve):
+        return scale_bezier(curve)
+    elif isinstance(curve, Arc):
+        if sy is None or sy == sx:
+            return Arc(start=sx*(curve.start - origin) + origin,
+                       radius=sx*curve.radius,
+                       rotation=curve.rotation, 
+                       large_arc=curve.large_arc, 
+                       sweep=curve.sweep, 
+                       end=sx*(curve.end - origin) + origin)
+        else:
+            raise Exception("\nFor `Arc` objects, only scale transforms "
+                            "with sx==sy are implemented.\n")
     else:
         raise TypeError("Input `curve` should be a Path, Line, "
                         "QuadraticBezier, CubicBezier, or Arc object.")
@@ -663,6 +711,10 @@ class Line(object):
         that self.translated(z0).point(t) = self.point(t) + z0 for any t."""
         return translate(self, z0)
 
+    def scaled(self, sx, sy=None, origin=0j):
+        """Scale transform.  See `scale` function for further explanation."""
+        return scale(self, sx=sx, sy=sy, origin=origin)
+
 
 class QuadraticBezier(object):
     # For compatibility with old pickle files.
@@ -907,6 +959,10 @@ class QuadraticBezier(object):
         that self.translated(z0).point(t) = self.point(t) + z0 for any t."""
         return translate(self, z0)
 
+    def scaled(self, sx, sy=None, origin=0j):
+        """Scale transform.  See `scale` function for further explanation."""
+        return scale(self, sx=sx, sy=sy, origin=origin)
+
 
 class CubicBezier(object):
     # For compatibility with old pickle files.
@@ -1147,6 +1203,10 @@ class CubicBezier(object):
         that self.translated(z0).point(t) = self.point(t) + z0 for any t."""
         return translate(self, z0)
 
+    def scaled(self, sx, sy=None, origin=0j):
+        """Scale transform.  See `scale` function for further explanation."""
+        return scale(self, sx=sx, sy=sy, origin=origin)
+
 
 class Arc(object):
     def __init__(self, start, radius, rotation, large_arc, sweep, end,
@@ -1322,17 +1382,18 @@ class Arc(object):
         u1 = (x1p - cp.real)/rx + 1j*(y1p - cp.imag)/ry  # transformed start
         u2 = (-x1p - cp.real)/rx + 1j*(-y1p - cp.imag)/ry  # transformed end
 
+        # clip in case of floating point error
+        u1 = np.clip(u1.real, -1, 1) + 1j*np.clip(u1.imag, -1, 1)
+        u2 = np.clip(u2.real, -1, 1) + 1j * np.clip(u2.imag, -1, 1)
+
         # Now compute theta and delta (we'll define them as we go)
         # delta is the angular distance of the arc (w.r.t the circle)
         # theta is the angle between the positive x'-axis and the start point
         # on the circle
-        u1_real_rounded = u1.real
-        if u1.real > 1 or u1.real < -1:
-            u1_real_rounded = round(u1.real)
         if u1.imag > 0:
-            self.theta = degrees(acos(u1_real_rounded))
+            self.theta = degrees(acos(u1.real))
         elif u1.imag < 0:
-            self.theta = -degrees(acos(u1_real_rounded))
+            self.theta = -degrees(acos(u1.real))
         else:
             if u1.real > 0:  # start is on pos u_x axis
                 self.theta = 0
@@ -1345,8 +1406,8 @@ class Arc(object):
         det_uv = u1.real*u2.imag - u1.imag*u2.real
 
         acosand = u1.real*u2.real + u1.imag*u2.imag
-        if acosand > 1 or acosand < -1:
-            acosand = round(acosand)
+        acosand = np.clip(acosand.real, -1, 1) + np.clip(acosand.imag, -1, 1)
+        
         if det_uv > 0:
             self.delta = degrees(acos(acosand))
         elif det_uv < 0:
@@ -1712,6 +1773,10 @@ class Arc(object):
         that self.translated(z0).point(t) = self.point(t) + z0 for any t."""
         return translate(self, z0)
 
+    def scaled(self, sx, sy=None, origin=0j):
+        """Scale transform.  See `scale` function for further explanation."""
+        return scale(self, sx=sx, sy=sy, origin=origin)
+
 
 def is_bezier_segment(x):
     return (isinstance(x, Line) or
@@ -2014,9 +2079,9 @@ class Path(MutableSequence):
                 0) == previous.unit_tangent(1)
 
     def T2t(self, T):
-        """returns the segment index, seg_idx, and segment parameter, t,
-        corresponding to the path parameter T.  In other words, this is the
-        inverse of the Path.t2T() method."""
+        """returns the segment index, `seg_idx`, and segment parameter, `t`,
+        corresponding to the path parameter `T`.  In other words, this is the
+        inverse of the `Path.t2T()` method."""
         if T == 1:
             return len(self)-1, 1
         if T == 0:
@@ -2096,8 +2161,8 @@ class Path(MutableSequence):
                 (seg_idx + 1) % len(self._segments)]
             if not next_seg_in_path.joins_smoothly_with(seg):
                 return float('inf')
-        dz = self.derivative(t)
-        ddz = self.derivative(t, n=2)
+        dz = self.derivative(T)
+        ddz = self.derivative(T, n=2)
         dx, dy = dz.real, dz.imag
         ddx, ddy = ddz.real, ddz.imag
         return abs(dx*ddy - dy*ddx)/(dx*dx + dy*dy)**1.5
@@ -2242,7 +2307,6 @@ class Path(MutableSequence):
                 new_path.append(seg1.cropped(0, t_seg1))
         return new_path
 
-
     def radialrange(self, origin, return_all_global_extrema=False):
         """returns the tuples (d_min, t_min, idx_min), (d_max, t_max, idx_max)
         which minimize and maximize, respectively, the distance
@@ -2271,3 +2335,7 @@ class Path(MutableSequence):
         """Returns a copy of self shifted by the complex quantity `z0` such
         that self.translated(z0).point(t) = self.point(t) + z0 for any t."""
         return translate(self, z0)
+
+    def scaled(self, sx, sy=None, origin=0j):
+        """Scale transform.  See `scale` function for further explanation."""
+        return scale(self, sx=sx, sy=sy, origin=origin)

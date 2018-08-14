@@ -31,7 +31,7 @@ def rgb2hex(rgb):
     >>> rgb2hex((0,0,255))
     '#0000FF'
     """
-    return ('#%02x%02x%02x' % rgb).upper()
+    return ('#%02x%02x%02x' % tuple(rgb)).upper()
 
 
 def isclose(a, b, rtol=1e-5, atol=1e-8):
