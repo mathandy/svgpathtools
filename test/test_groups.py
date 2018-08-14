@@ -133,3 +133,60 @@ class TestGroups(unittest.TestCase):
         self.check_line(tf_matrix_group.dot(tf_skew_y_group).dot(tf_path11),
                         [180, 20], [-70, 80],
                         'path11', result)
+
+    def check_group_count(self, doc, expected_count):
+        count = 0
+        for group in doc.tree.getroot().iter('{{{0}}}g'.format(SVG_NAMESPACE['svg'])):
+            count += 1
+
+        self.assertEqual(expected_count, count)
+
+    def test_add_group(self):
+        # Test the Document.add_group() function and related Document functions.
+        doc = Document(None)
+        self.check_group_count(doc, 0)
+
+        base_group = doc.add_group()
+        base_group.set('id', 'base_group')
+        self.assertTrue(doc.contains_group(base_group))
+        self.check_group_count(doc, 1)
+
+        child_group = doc.add_group(parent=base_group)
+        child_group.set('id', 'child_group')
+        self.assertTrue(doc.contains_group(child_group))
+        self.check_group_count(doc, 2)
+
+        grandchild_group = doc.add_group(parent=child_group)
+        grandchild_group.set('id', 'grandchild_group')
+        self.assertTrue(doc.contains_group(grandchild_group))
+        self.check_group_count(doc, 3)
+
+        sibling_group = doc.add_group(parent=base_group)
+        sibling_group.set('id', 'sibling_group')
+        self.assertTrue(doc.contains_group(sibling_group))
+        self.check_group_count(doc, 4)
+
+        # Test that we can retrieve each new group from the document
+        self.assertEqual(base_group, doc.get_or_add_group(['base_group']))
+        self.assertEqual(child_group, doc.get_or_add_group(['base_group', 'child_group']))
+        self.assertEqual(grandchild_group, doc.get_or_add_group(['base_group', 'child_group', 'grandchild_group']))
+        self.assertEqual(sibling_group, doc.get_or_add_group(['base_group', 'sibling_group']))
+
+        # Create a new nested group
+        new_child = doc.get_or_add_group(['base_group', 'new_parent', 'new_child'])
+        self.check_group_count(doc, 6)
+        self.assertEqual(new_child, doc.get_or_add_group(['base_group', 'new_parent', 'new_child']))
+
+        new_leaf = doc.get_or_add_group(['base_group', 'new_parent', 'new_child', 'new_leaf'])
+        self.assertEqual(new_leaf, doc.get_or_add_group(['base_group', 'new_parent', 'new_child', 'new_leaf']))
+        self.check_group_count(doc, 7)
+
+        path_d = 'M 206.07112,858.41289 L 206.07112,-2.02031 C -50.738,-81.14814 -20.36402,-105.87055 ' \
+                 '52.52793,-101.01525 L 103.03556,0.0 L 0.0,111.11678'
+
+        svg_path = doc.add_path(path_d, group=new_leaf)
+        self.assertEqual(path_d, svg_path.get('d'))
+
+        path = parse_path(path_d)
+        svg_path = doc.add_path(path, group=new_leaf)
+        self.assertEqual(path_d, svg_path.get('d'))

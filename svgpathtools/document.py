@@ -195,8 +195,12 @@ class Document:
         else:
             self.original_filename = filename
 
-        # parse svg to ElementTree object
-        self.tree = etree.parse(filename)
+        if filename is not None:
+            # parse svg to ElementTree object
+            self.tree = etree.parse(filename)
+        else:
+            self.tree = etree.ElementTree(Element('svg'))
+
         self.root = self.tree.getroot()
 
     def flatten_all_paths(self,
@@ -241,6 +245,7 @@ class Document:
             if not self.contains_group(group):
                 warnings.warn('The requested group does not belong to this Document')
 
+        # TODO: It might be better to use duck-typing here with a try-except
         if isinstance(path, Path):
             path_svg = path.d()
         elif is_path_segment(path):
@@ -264,11 +269,14 @@ class Document:
     def contains_group(self, group):
         return any(group is owned for owned in self.tree.iter())
 
-    def get_or_add_group(self, nested_names):
+    def get_or_add_group(self, nested_names, name_attr='id'):
         """Get a group from the tree, or add a new one with the given name structure.
 
         *nested_names* is a list of strings which represent group names. Each group name will be nested inside of the
         previous group name.
+
+        *name_attr* is the group attribute that is being used to represent the group's name. Default is 'id', but some
+        SVGs may contain custom name labels, like 'inkscape:label'.
 
         Returns the requested group. If the requested group did not exist, this function will create it, as well as all
         parent groups that it requires. All created groups will be left with blank attributes.
@@ -276,11 +284,11 @@ class Document:
         """
         group = self.tree.getroot()
         # Drill down through the names until we find the desired group
-        while nested_names:
+        while len(nested_names):
             prev_group = group
             next_name = nested_names.pop(0)
-            for elem in group.iterfind('svg:g', SVG_NAMESPACE):
-                if elem.get('id') == next_name:
+            for elem in group.iterfind(SVG_GROUP_TAG, SVG_NAMESPACE):
+                if elem.get(name_attr) == next_name:
                     group = elem
                     break
 
@@ -291,7 +299,6 @@ class Document:
                 while nested_names:
                     next_name = nested_names.pop(0)
                     group = self.add_group({'id': next_name}, group)
-
                 # Now nested_names will be empty, so the topmost while-loop will end
 
         return group
@@ -308,7 +315,7 @@ class Document:
         else:
             group_attribs = group_attribs.copy()
 
-        return SubElement(parent, 'g', group_attribs)
+        return SubElement(parent, '{{{0}}}g'.format(SVG_NAMESPACE['svg']), group_attribs)
 
     def save(self, filename=None):
         if filename is None:
