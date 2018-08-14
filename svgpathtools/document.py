@@ -15,31 +15,17 @@ Example:
 
         >> from svgpathtools import *
         >> doc = Document('my_file.html')
-        >> for p in doc.paths:
-        >>     foo(p)  # do stuff using svgpathtools functionality
-        >> foo2(doc.tree)  # do stuff using ElementTree's functionality
+        >> results = doc.flatten_all_paths()
+        >> for result in results:
+        >>     path = result.path
+        >>     # Do something with the transformed Path object.
+        >>     element = result.element
+        >>     # Inspect the raw SVG element. This gives access to the path's attributes
+        >>     transform = result.transform
+        >>     # Use the transform that was applied to the path.
+        >> foo(doc.tree)  # do stuff using ElementTree's functionality
         >> doc.display()  # display doc in OS's default application
         >> doc.save('my_new_file.html')
-
-Todo: (please see contributor guidelines in CONTRIBUTING.md)
-    * Find some clever (and easy to implement) way to create a thorough 
-    set of unittests.
-    * Finish Documentation for each method (approximately following the 
-    Google Python Style Guide, see [1]_ for some nice examples).  
-    For nice style examples, see [1]_.
-
-Some thoughts on this module's direction:
-    * The `Document` class should ONLY grab path elements that are 
-    inside an SVG.  
-    * To handle transforms... there should be a "get_transform" 
-    function and also a "flatten_transforms" tool that removes any 
-    present transform attributes from all SVG-Path elements in the 
-    document (applying the transformations before to the svgpathtools 
-    Path objects).
-    Note: This ability to "flatten" will ignore CSS files (and any 
-    relevant files that are not parsed into the tree automatically by 
-    ElementTree)... that is unless you have any bright ideas on this.  
-    I really know very little about DOM-style documents.
 
 A Big Problem:  
     Derivatives and other functions may be messed up by 
