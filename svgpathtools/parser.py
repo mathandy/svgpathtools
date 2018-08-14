@@ -204,7 +204,7 @@ def parse_path(pathdef, current_pos=0j, tree_element=None):
 def _check_num_parsed_values(values, allowed):
     if not any(num == len(values) for num in allowed):
         if len(allowed) > 1:
-            warnings.warn('Expected one of the following number of values {0}, found {1}: {2}'
+            warnings.warn('Expected one of the following number of values {0}, but found {1} values instead: {2}'
                           .format(allowed, len(values), values))
         elif allowed[0] != 1:
             warnings.warn('Expected {0} values, found {1}: {2}'.format(allowed[0], len(values), values))
