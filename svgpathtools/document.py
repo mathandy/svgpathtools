@@ -22,7 +22,6 @@ Example:
         >> doc.save('my_new_file.html')
 
 Todo: (please see contributor guidelines in CONTRIBUTING.md)
-    * Finish "NotImplemented" methods.
     * Find some clever (and easy to implement) way to create a thorough 
     set of unittests.
     * Finish Documentation for each method (approximately following the 
@@ -204,6 +203,7 @@ class Document:
                           group_filter=lambda x: True,
                           path_filter=lambda x: True,
                           path_conversions=CONVERSIONS):
+        """Forward the tree of this document into the more general flatten_all_paths function and return the result."""
         return flatten_all_paths(self.tree.getroot(), group_filter, path_filter, path_conversions)
 
     def flatten_group(self,
@@ -220,22 +220,6 @@ class Document:
                             'or provide an xml.etree.Element object. Instead you provided {0}'.format(group))
 
         return flatten_group(group, self.tree.getroot(), recursive, group_filter, path_filter, path_conversions)
-
-    def get_elements_by_tag(self, tag):
-        """Returns a generator of all elements with the given tag. 
-
-        Note: for more advanced XML-related functionality, use the 
-        `tree` attribute (an ElementTree object).
-        """
-        return self.tree.iter(tag=self._prefix + tag)
-
-    def get_svg_attributes(self):
-        """To help with backwards compatibility."""
-        return self.get_elements_by_tag('svg')[0].attrib
-
-    def get_path_attributes(self):
-        """To help with backwards compatibility."""
-        return [p.tree_element.attrib for p in self.tree.getroot().iter('path')]
 
     def add_path(self, path, attribs=None, group=None):
         """Add a new path to the SVG."""
