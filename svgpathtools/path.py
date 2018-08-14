@@ -212,20 +212,20 @@ def transform(curve, tf):
     def to_point(p):
         return np.matrix([[p.real], [p.imag], [1.0]])
 
-    def to_vector(v):
-        return np.matrix([[v.real], [v.imag], [0.0]])
+    def to_vector(z):
+        return np.matrix([[z.real], [z.imag], [0.0]])
 
-    def to_complex(z):
-        return z[0] + 1j * z[1]
+    def to_complex(v):
+        return v.item(0) + 1j * v.item(1)
 
     if isinstance(curve, Path):
         return Path(*[transform(segment, tf) for segment in curve])
     elif is_bezier_segment(curve):
-        return bpoints2bezier([to_complex(tf*to_point(p)) for p in curve.bpoints()])
+        return bpoints2bezier([to_complex(tf.dot(to_point(p))) for p in curve.bpoints()])
     elif isinstance(curve, Arc):
-        new_start = to_complex(tf * to_point(curve.start))
-        new_end = to_complex(tf * to_point(curve.end))
-        new_radius = to_complex(tf * to_vector(curve.radius))
+        new_start = to_complex(tf.dot(to_point(curve.start)))
+        new_end = to_complex(tf.dot(to_point(curve.end)))
+        new_radius = to_complex(tf.dot(to_vector(curve.radius)))
         return Arc(new_start, radius=new_radius, rotation=curve.rotation,
                    large_arc=curve.large_arc, sweep=curve.sweep, end=new_end)
     else:
