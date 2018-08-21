@@ -49,6 +49,10 @@ from .svg_to_paths import (path2pathd, ellipse2pathd, line2pathd, polyline2pathd
 from .misctools import open_in_browser
 from .path import *
 
+# To maintain forward/backward compatibility
+from past.builtins import basestring
+from future.utils import iteritems
+
 # Let xml.etree.ElementTree know about the SVG namespace
 SVG_NAMESPACE = {'svg': 'http://www.w3.org/2000/svg'}
 register_namespace('svg', 'http://www.w3.org/2000/svg')
@@ -116,7 +120,7 @@ def flatten_all_paths(
 
         # For each element type that we know how to convert into path data, parse the element after confirming that
         # the path_filter accepts it.
-        for key, converter in path_conversions.iteritems():
+        for key, converter in iteritems(path_conversions):
             for path_elem in filter(path_filter, top.group.iterfind('svg:'+key, SVG_NAMESPACE)):
                 path_tf = top.transform.dot(parse_transform(path_elem.get('transform')))
                 path = transform(parse_path(converter(path_elem)), path_tf)

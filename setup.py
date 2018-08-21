@@ -34,7 +34,7 @@ setup(name='svgpathtools',
       install_requires=['numpy', 'svgwrite'],
       platforms="OS Independent",
       # test_suite='tests',
-      requires=['numpy', 'svgwrite'],
+      requires=['numpy', 'svgwrite', 'future'],
       keywords=['svg', 'svg path', 'svg.path', 'bezier', 'parse svg path', 'display svg'],
       classifiers = [
             "Development Status :: 4 - Beta",
