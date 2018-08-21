@@ -44,7 +44,7 @@ import warnings
 # Internal dependencies
 from .parser import parse_path
 from .parser import parse_transform
-from .svg2paths import (path2pathd, ellipse2pathd, line2pathd, polyline2pathd,
+from .svg_to_paths import (path2pathd, ellipse2pathd, line2pathd, polyline2pathd,
                         polygon2pathd, rect2pathd)
 from .misctools import open_in_browser
 from .path import *
