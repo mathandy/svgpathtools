@@ -50,9 +50,7 @@ from .misctools import open_in_browser
 from .path import *
 
 # To maintain forward/backward compatibility
-try:
-    from past.builtins import basestring
-
+from past.builtins import basestring
 from future.utils import iteritems
 
 # Let xml.etree.ElementTree know about the SVG namespace

@@ -11,6 +11,8 @@ import warnings
 # Internal dependencies
 from .path import Path, Line, QuadraticBezier, CubicBezier, Arc
 
+# To maintain forward/backward compatibility
+from past.builtins import basestring
 
 COMMANDS = set('MmZzLlHhVvCcSsQqTtAa')
 UPPERCASE = set('MZLHVCSQTA')
