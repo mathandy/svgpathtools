@@ -31,7 +31,7 @@ setup(name='svgpathtools',
       # download_url = 'http://github.com/mathandy/svgpathtools/tarball/'+VERSION,
       license='MIT',
       
-      install_requires=['numpy', 'svgwrite'],
+      install_requires=['numpy', 'svgwrite', 'future'],
       platforms="OS Independent",
       # test_suite='tests',
       requires=['numpy', 'svgwrite', 'future'],
