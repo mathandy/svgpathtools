@@ -210,8 +210,7 @@ class Document:
 
         self.root = self.tree.getroot()
 
-    def flatten_all_paths(self,
-                          group_filter=lambda x: True,
+    def flatten_all_paths(self, group_filter=lambda x: True,
                           path_filter=lambda x: True,
                           path_conversions=CONVERSIONS):
         """Forward the tree of this document into the more general
@@ -219,12 +218,8 @@ class Document:
         return flatten_all_paths(self.tree.getroot(), group_filter,
                                  path_filter, path_conversions)
 
-    def flatten_group(self,
-                      group,
-                      recursive=True,
-                      group_filter=lambda x: True,
-                      path_filter=lambda x: True,
-                      path_conversions=CONVERSIONS):
+    def flatten_group(self, group, recursive=True, group_filter=lambda x: True,
+                      path_filter=lambda x: True, path_conversions=CONVERSIONS):
         if all(isinstance(s, str) for s in group):
             # If we're given a list of strings, assume it represents a
             # nested sequence
@@ -342,10 +337,7 @@ class Document:
         return SubElement(parent, '{{{0}}}g'.format(
             SVG_NAMESPACE['svg']), group_attribs)
 
-    def save(self, filename=None):
-        if filename is None:
-            filename = self.original_filename
-
+    def save(self, filename):
         with open(filename, 'w') as output_svg:
             output_svg.write(etree.tostring(self.tree.getroot()))
 
