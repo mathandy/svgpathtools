@@ -38,10 +38,10 @@ def points_in_each_seg_slow(path, tvals):
 
 def points_in_each_seg(path, tvals):
     """Compute seg.point(t) for each seg in path and each t in tvals."""
-    A = np.matrix([[-1,  3, -3,  1], # transforms cubic bez to standard poly
-                   [ 3, -6,  3,  0],
-                   [-3,  3,  0,  0],
-                   [ 1,  0,  0,  0]])
+    A = np.array([[-1,  3, -3,  1], # transforms cubic bez to standard poly
+                  [ 3, -6,  3,  0],
+                  [-3,  3,  0,  0],
+                  [ 1,  0,  0,  0]])
     B = [seg.bpoints() for seg in path]
     return np.dot(B, np.dot(A, np.power(tvals, [[3],[2],[1],[0]])))
 

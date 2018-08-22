@@ -10,11 +10,11 @@ import numpy as np
 def construct_rotation_tf(a, x, y):
     a = a * np.pi / 180.0
     tf_offset = np.identity(3)
-    tf_offset[0:2, 2:3] = np.matrix([[x], [y]])
+    tf_offset[0:2, 2:3] = np.array([[x], [y]])
     tf_rotate = np.identity(3)
-    tf_rotate[0:2, 0:2] = np.matrix([[np.cos(a), -np.sin(a)], [np.sin(a), np.cos(a)]])
+    tf_rotate[0:2, 0:2] = np.array([[np.cos(a), -np.sin(a)], [np.sin(a), np.cos(a)]])
     tf_offset_neg = np.identity(3)
-    tf_offset_neg[0:2, 2:3] = np.matrix([[-x], [-y]])
+    tf_offset_neg[0:2, 2:3] = np.array([[-x], [-y]])
 
     return tf_offset.dot(tf_rotate).dot(tf_offset_neg)
 
@@ -157,7 +157,7 @@ class TestParser(unittest.TestCase):
 
         tf_matrix = svgpathtools.parser.parse_transform('matrix(1.0 2.0 3.0 4.0 5.0 6.0)')
         expected_tf_matrix = np.identity(3)
-        expected_tf_matrix[0:2, 0:3] = np.matrix([[1.0, 3.0, 5.0], [2.0, 4.0, 6.0]])
+        expected_tf_matrix[0:2, 0:3] = np.array([[1.0, 3.0, 5.0], [2.0, 4.0, 6.0]])
         self.assertTrue(np.array_equal(expected_tf_matrix, tf_matrix))
 
         # Try a test with no y specified

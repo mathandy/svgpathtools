@@ -258,10 +258,10 @@ def scale(curve, sx, sy=None, origin=0j):
 def transform(curve, tf):
     """Transforms the curve by the homogeneous transformation matrix tf"""
     def to_point(p):
-        return np.matrix([[p.real], [p.imag], [1.0]])
+        return np.array([[p.real], [p.imag], [1.0]])
 
     def to_vector(z):
-        return np.matrix([[z.real], [z.imag], [0.0]])
+        return np.array([[z.real], [z.imag], [0.0]])
 
     def to_complex(v):
         return v.item(0) + 1j * v.item(1)

@@ -9,13 +9,6 @@ def get_desired_path(name, paths):
     return next(p for p in paths if p.element.get('{some://testuri}name') == name)
 
 
-def column_vector(values):
-    input = []
-    for value in values:
-        input.append([value])
-    return np.matrix(input)
-
-
 class TestGroups(unittest.TestCase):
 
     def check_values(self, v, z):
@@ -32,8 +25,8 @@ class TestGroups(unittest.TestCase):
         # * paths is the output of doc.flatten_all_paths()
         v_s_vals.append(1.0)
         v_e_relative_vals.append(0.0)
-        v_s = column_vector(v_s_vals)
-        v_e = v_s + column_vector(v_e_relative_vals)
+        v_s = np.array(v_s_vals)
+        v_e = v_s + v_e_relative_vals
 
         actual = get_desired_path(name, paths)
 
@@ -50,13 +43,13 @@ class TestGroups(unittest.TestCase):
         result = doc.flatten_all_paths()
         self.assertEqual(12, len(result))
 
-        tf_matrix_group = np.matrix([[1.5, 0.0, -40.0], [0.0, 0.5, 20.0], [0.0, 0.0, 1.0]])
+        tf_matrix_group = np.array([[1.5, 0.0, -40.0], [0.0, 0.5, 20.0], [0.0, 0.0, 1.0]])
 
         self.check_line(tf_matrix_group,
                         [183, 183], [0.0, -50],
                         'path00', result)
 
-        tf_scale_group = np.matrix([[1.25, 0.0, 0.0], [0.0, 1.25, 0.0], [0.0, 0.0, 1.0]])
+        tf_scale_group = np.array([[1.25, 0.0, 0.0], [0.0, 1.25, 0.0], [0.0, 0.0, 1.0]])
 
         self.check_line(tf_matrix_group.dot(tf_scale_group),
                         [122, 320], [-50.0, 0.0],
@@ -70,26 +63,26 @@ class TestGroups(unittest.TestCase):
                         [150, 200], [-50, 25],
                         'path03', result)
 
-        tf_nested_translate_group = np.matrix([[1, 0, 20], [0, 1, 0], [0, 0, 1]])
+        tf_nested_translate_group = np.array([[1, 0, 20], [0, 1, 0], [0, 0, 1]])
 
         self.check_line(tf_matrix_group.dot(tf_scale_group).dot(tf_nested_translate_group),
                         [150, 200], [-50, 25],
                         'path04', result)
 
-        tf_nested_translate_xy_group = np.matrix([[1, 0, 20], [0, 1, 30], [0, 0, 1]])
+        tf_nested_translate_xy_group = np.array([[1, 0, 20], [0, 1, 30], [0, 0, 1]])
 
         self.check_line(tf_matrix_group.dot(tf_scale_group).dot(tf_nested_translate_xy_group),
                         [150, 200], [-50, 25],
                         'path05', result)
 
-        tf_scale_xy_group = np.matrix([[0.5, 0, 0], [0, 1.5, 0.0], [0, 0, 1]])
+        tf_scale_xy_group = np.array([[0.5, 0, 0], [0, 1.5, 0.0], [0, 0, 1]])
 
         self.check_line(tf_matrix_group.dot(tf_scale_xy_group),
                         [122, 320], [-50, 0],
                         'path06', result)
 
         a_07 = 20.0*np.pi/180.0
-        tf_rotate_group = np.matrix([[np.cos(a_07), -np.sin(a_07), 0],
+        tf_rotate_group = np.array([[np.cos(a_07), -np.sin(a_07), 0],
                                      [np.sin(a_07),  np.cos(a_07), 0],
                                      [0, 0, 1]])
 
@@ -98,10 +91,10 @@ class TestGroups(unittest.TestCase):
                         'path07', result)
 
         a_08 = 45.0*np.pi/180.0
-        tf_rotate_xy_group_R = np.matrix([[np.cos(a_08), -np.sin(a_08), 0],
+        tf_rotate_xy_group_R = np.array([[np.cos(a_08), -np.sin(a_08), 0],
                                           [np.sin(a_08),  np.cos(a_08), 0],
                                           [0, 0, 1]])
-        tf_rotate_xy_group_T = np.matrix([[1, 0, 183], [0, 1, 183], [0, 0, 1]])
+        tf_rotate_xy_group_T = np.array([[1, 0, 183], [0, 1, 183], [0, 0, 1]])
         tf_rotate_xy_group = tf_rotate_xy_group_T.dot(tf_rotate_xy_group_R).dot(np.linalg.inv(tf_rotate_xy_group_T))
 
         self.check_line(tf_matrix_group.dot(tf_rotate_xy_group),
@@ -109,14 +102,14 @@ class TestGroups(unittest.TestCase):
                         'path08', result)
 
         a_09 = 5.0*np.pi/180.0
-        tf_skew_x_group = np.matrix([[1, np.tan(a_09), 0], [0, 1, 0], [0, 0, 1]])
+        tf_skew_x_group = np.array([[1, np.tan(a_09), 0], [0, 1, 0], [0, 0, 1]])
 
         self.check_line(tf_matrix_group.dot(tf_skew_x_group),
                         [183, 183], [40, 40],
                         'path09', result)
 
         a_10 = 5.0*np.pi/180.0
-        tf_skew_y_group = np.matrix([[1, 0, 0], [np.tan(a_10), 1, 0], [0, 0, 1]])
+        tf_skew_y_group = np.array([[1, 0, 0], [np.tan(a_10), 1, 0], [0, 0, 1]])
 
         self.check_line(tf_matrix_group.dot(tf_skew_y_group),
                         [183, 183], [40, 40],
@@ -124,10 +117,10 @@ class TestGroups(unittest.TestCase):
 
         # This last test is for handling transforms that are defined as attributes of a <path> element.
         a_11 = -40*np.pi/180.0
-        tf_path11_R = np.matrix([[np.cos(a_11), -np.sin(a_11), 0],
+        tf_path11_R = np.array([[np.cos(a_11), -np.sin(a_11), 0],
                                  [np.sin(a_11),  np.cos(a_11), 0],
                                  [0, 0, 1]])
-        tf_path11_T = np.matrix([[1, 0, 100], [0, 1, 100], [0, 0, 1]])
+        tf_path11_T = np.array([[1, 0, 100], [0, 1, 100], [0, 0, 1]])
         tf_path11 = tf_path11_T.dot(tf_path11_R).dot(np.linalg.inv(tf_path11_T))
 
         self.check_line(tf_matrix_group.dot(tf_skew_y_group).dot(tf_path11),

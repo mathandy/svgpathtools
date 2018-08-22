@@ -229,7 +229,7 @@ def _parse_transform_substr(transform_substr):
         if not _check_num_parsed_values(values, [6]):
             return transform
 
-        transform[0:2, 0:3] = np.matrix([values[0:6:2], values[1:6:2]])
+        transform[0:2, 0:3] = np.array([values[0:6:2], values[1:6:2]])
 
     elif 'translate' in transform_substr:
         if not _check_num_parsed_values(values, [1, 2]):
@@ -258,11 +258,11 @@ def _parse_transform_substr(transform_substr):
         else:
             offset = (0, 0)
         tf_offset = np.identity(3)
-        tf_offset[0:2, 2:3] = np.matrix([[offset[0]], [offset[1]]])
+        tf_offset[0:2, 2:3] = np.array([[offset[0]], [offset[1]]])
         tf_rotate = np.identity(3)
-        tf_rotate[0:2, 0:2] = np.matrix([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])
+        tf_rotate[0:2, 0:2] = np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])
         tf_offset_neg = np.identity(3)
-        tf_offset_neg[0:2, 2:3] = np.matrix([[-offset[0]], [-offset[1]]])
+        tf_offset_neg[0:2, 2:3] = np.array([[-offset[0]], [-offset[1]]])
 
         transform = tf_offset.dot(tf_rotate).dot(tf_offset_neg)
 
