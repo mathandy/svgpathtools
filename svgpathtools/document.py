@@ -147,14 +147,10 @@ def flatten_all_paths(group, group_filter=lambda x: True,
     return paths
 
 
-def flatten_group(
-        group_to_flatten,
-        root,
-        recursive=True,
-        group_filter=lambda x: True,
-        path_filter=lambda x: True,
-        path_conversions=CONVERSIONS,
-        group_search_xpath=SVG_GROUP_TAG):
+def flatten_group(group_to_flatten, root, recursive=True,
+                  group_filter=lambda x: True, path_filter=lambda x: True,
+                  path_conversions=CONVERSIONS,
+                  group_search_xpath=SVG_GROUP_TAG):
     """Flatten all the paths in a specific group.
 
     The paths will be flattened into the 'root' frame. Note that root
