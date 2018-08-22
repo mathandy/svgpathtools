@@ -269,7 +269,8 @@ def transform(curve, tf):
     if isinstance(curve, Path):
         return Path(*[transform(segment, tf) for segment in curve])
     elif is_bezier_segment(curve):
-        return bpoints2bezier([to_complex(tf.dot(to_point(p))) for p in curve.bpoints()])
+        return bpoints2bezier([to_complex(tf.dot(to_point(p)))
+                               for p in curve.bpoints()])
     elif isinstance(curve, Arc):
         new_start = to_complex(tf.dot(to_point(curve.start)))
         new_end = to_complex(tf.dot(to_point(curve.end)))
@@ -458,12 +459,15 @@ def inv_arclength(curve, s, s_tol=ILENGTH_S_TOL, maxits=ILENGTH_MAXITS,
         return 1
 
     if isinstance(curve, Path):
-        seg_lengths = [seg.length(error=error, min_depth=min_depth) for seg in curve]
+        seg_lengths = [seg.length(error=error, min_depth=min_depth)
+                       for seg in curve]
         lsum = 0
         # Find which segment the point we search for is located on
         for k, len_k in enumerate(seg_lengths):
             if lsum <= s <= lsum + len_k:
-                t = inv_arclength(curve[k], s - lsum, s_tol=s_tol, maxits=maxits, error=error, min_depth=min_depth)
+                t = inv_arclength(curve[k], s - lsum, s_tol=s_tol,
+                                  maxits=maxits, error=error,
+                                  min_depth=min_depth)
                 return curve.t2T(k, t)
             lsum += len_k
         return 1
@@ -1694,7 +1698,6 @@ class Arc(object):
         xmin = max(xtrema)
         return min(xtrema), max(xtrema), min(ytrema), max(ytrema)
 
-
     def split(self, t):
         """returns two segments, whose union is this segment and which join
         at self.point(t)."""
@@ -1716,48 +1719,46 @@ class Arc(object):
         and maximize, respectively, the distance,
         d = |self.point(t)-origin|."""
 
-        u1orig = self.u1transform(origin)
-        if abs(u1orig) == 1:  # origin lies on ellipse
-            t = self.phase2t(phase(u1orig))
-            d_min = 0
-
-        # Transform to a coordinate system where the ellipse is centered
-        # at the origin and its axes are horizontal/vertical
-        zeta0 = self.centeriso(origin)
-        a, b = self.radius.real, self.radius.imag
-        x0, y0 = zeta0.real, zeta0.imag
-
-        # Find t s.t. z'(t)
-        a2mb2 = (a**2 - b**2)
-        if u1orig.imag:  # x != x0
-
-            coeffs = [a2mb2**2,
-                      2*a2mb2*b**2*y0,
-                      (-a**4 + (2*a**2 - b**2 + y0**2)*b**2 + x0**2)*b**2,
-                      -2*a2mb2*b**4*y0,
-                      -b**6*y0**2]
-            ys = polyroots(coeffs, realroots=True,
-                           condition=lambda r: -b <= r <= b)
-            xs = (a*sqrt(1 - y**2/b**2) for y in ys)
-
-
-
-            ts = [self.phase2t(phase(self.u1transform(self.icenteriso(
-                complex(x, y))))) for x, y in zip(xs, ys)]
-
-        else:  # This case is very similar, see notes and assume instead y0!=y
-            b2ma2 = (b**2 - a**2)
-            coeffs = [b2ma2**2,
-                      2*b2ma2*a**2*x0,
-                      (-b**4 + (2*b**2 - a**2 + x0**2)*a**2 + y0**2)*a**2,
-                      -2*b2ma2*a**4*x0,
-                      -a**6*x0**2]
-            xs = polyroots(coeffs, realroots=True,
-                           condition=lambda r: -a <= r <= a)
-            ys = (b*sqrt(1 - x**2/a**2) for x in xs)
-
-            ts = [self.phase2t(phase(self.u1transform(self.icenteriso(
-                complex(x, y))))) for x, y in zip(xs, ys)]
+        # u1orig = self.u1transform(origin)
+        # if abs(u1orig) == 1:  # origin lies on ellipse
+        #     t = self.phase2t(phase(u1orig))
+        #     d_min = 0
+        #
+        # # Transform to a coordinate system where the ellipse is centered
+        # # at the origin and its axes are horizontal/vertical
+        # zeta0 = self.centeriso(origin)
+        # a, b = self.radius.real, self.radius.imag
+        # x0, y0 = zeta0.real, zeta0.imag
+        #
+        # # Find t s.t. z'(t)
+        # a2mb2 = (a**2 - b**2)
+        # if u1orig.imag:  # x != x0
+        #
+        #     coeffs = [a2mb2**2,
+        #               2*a2mb2*b**2*y0,
+        #               (-a**4 + (2*a**2 - b**2 + y0**2)*b**2 + x0**2)*b**2,
+        #               -2*a2mb2*b**4*y0,
+        #               -b**6*y0**2]
+        #     ys = polyroots(coeffs, realroots=True,
+        #                    condition=lambda r: -b <= r <= b)
+        #     xs = (a*sqrt(1 - y**2/b**2) for y in ys)
+        #
+        #     ts = [self.phase2t(phase(self.u1transform(self.icenteriso(
+        #         complex(x, y))))) for x, y in zip(xs, ys)]
+        #
+        # else:  # This case is very similar, see notes and assume instead y0!=y
+        #     b2ma2 = (b**2 - a**2)
+        #     coeffs = [b2ma2**2,
+        #               2*b2ma2*a**2*x0,
+        #               (-b**4 + (2*b**2 - a**2 + x0**2)*a**2 + y0**2)*a**2,
+        #               -2*b2ma2*a**4*x0,
+        #               -a**6*x0**2]
+        #     xs = polyroots(coeffs, realroots=True,
+        #                    condition=lambda r: -a <= r <= a)
+        #     ys = (b*sqrt(1 - x**2/a**2) for x in xs)
+        #
+        #     ts = [self.phase2t(phase(self.u1transform(self.icenteriso(
+        #         complex(x, y))))) for x, y in zip(xs, ys)]
 
         raise _NotImplemented4ArcException
 
@@ -2156,7 +2157,8 @@ class Path(MutableSequence):
                 (seg_idx - 1) % len(self._segments)]
             if not seg.joins_smoothly_with(previous_seg_in_path):
                 return float('inf')
-        elif np.isclose(t, 1) and (seg_idx != len(self) - 1 or self.end==self.start):
+        elif np.isclose(t, 1) and (seg_idx != len(self) - 1 or
+                                   self.end == self.start):
             next_seg_in_path = self._segments[
                 (seg_idx + 1) % len(self._segments)]
             if not next_seg_in_path.joins_smoothly_with(seg):
@@ -2223,7 +2225,8 @@ class Path(MutableSequence):
         # redundant intersection.  This code block checks for and removes said
         # redundancies.
         if intersection_list:
-            pts = [seg1.point(_t1) for _T1, _seg1, _t1 in list(zip(*intersection_list))[0]]
+            pts = [seg1.point(_t1)
+                   for _T1, _seg1, _t1 in list(zip(*intersection_list))[0]]
             indices2remove = []
             for ind1 in range(len(pts)):
                 for ind2 in range(ind1 + 1, len(pts)):
