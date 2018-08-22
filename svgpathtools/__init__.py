@@ -12,6 +12,7 @@ from .paths2svg import disvg, wsvg
 from .polytools import polyroots, polyroots01, rational_limit, real, imag
 from .misctools import hex2rgb, rgb2hex
 from .smoothing import smoothed_path, smoothed_joint, is_differentiable, kinks
+from .document import Document, CONVERSIONS, CONVERT_ONLY_PATHS, SVG_GROUP_TAG, SVG_NAMESPACE
 
 try:
     from .svg_to_paths import svg2paths, svg2paths2

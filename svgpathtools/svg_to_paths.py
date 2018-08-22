@@ -17,6 +17,8 @@ COORD_PAIR_TMPLT = re.compile(
     r'([\+-]?\d*[\.\d]\d*[eE][\+-]?\d+|[\+-]?\d*[\.\d]\d*)'
 )
 
+def path2pathd(path):
+    return path.get('d', '')
 
 def ellipse2pathd(ellipse):
     """converts the parameters from an ellipse or a circle to a string for a 
@@ -79,7 +81,7 @@ def rect2pathd(rect):
     The rectangle will start at the (x,y) coordinate specified by the 
     rectangle object and proceed counter-clockwise."""
     x0, y0 = float(rect.get('x', 0)), float(rect.get('y', 0))
-    w, h = float(rect["width"]), float(rect["height"])
+    w, h = float(rect.get('width', 0)), float(rect.get('height', 0))
     x1, y1 = x0 + w, y0
     x2, y2 = x0 + w, y0 + h
     x3, y3 = x0, y0 + h
@@ -88,6 +90,8 @@ def rect2pathd(rect):
          "".format(x0, y0, x1, y1, x2, y2, x3, y3))
     return d
 
+def line2pathd(l):
+    return 'M' + l['x1'] + ' ' + l['y1'] + 'L' + l['x2'] + ' ' + l['y2']
 
 def svg2paths(svg_file_location,
               return_svg_attributes=False,

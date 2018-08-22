@@ -3,6 +3,6 @@ python:
   - "2.7"
   - "3.6"
 install:
-  - pip install numpy svgwrite
+  - pip install numpy svgwrite future
 script:
   - python -m unittest discover test

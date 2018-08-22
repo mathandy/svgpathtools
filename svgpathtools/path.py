@@ -255,6 +255,32 @@ def scale(curve, sx, sy=None, origin=0j):
                         "QuadraticBezier, CubicBezier, or Arc object.")
 
 
+def transform(curve, tf):
+    """Transforms the curve by the homogeneous transformation matrix tf"""
+    def to_point(p):
+        return np.matrix([[p.real], [p.imag], [1.0]])
+
+    def to_vector(z):
+        return np.matrix([[z.real], [z.imag], [0.0]])
+
+    def to_complex(v):
+        return v.item(0) + 1j * v.item(1)
+
+    if isinstance(curve, Path):
+        return Path(*[transform(segment, tf) for segment in curve])
+    elif is_bezier_segment(curve):
+        return bpoints2bezier([to_complex(tf.dot(to_point(p))) for p in curve.bpoints()])
+    elif isinstance(curve, Arc):
+        new_start = to_complex(tf.dot(to_point(curve.start)))
+        new_end = to_complex(tf.dot(to_point(curve.end)))
+        new_radius = to_complex(tf.dot(to_vector(curve.radius)))
+        return Arc(new_start, radius=new_radius, rotation=curve.rotation,
+                   large_arc=curve.large_arc, sweep=curve.sweep, end=new_end)
+    else:
+        raise TypeError("Input `curve` should be a Path, Line, "
+                        "QuadraticBezier, CubicBezier, or Arc object.")
+
+
 def bezier_unit_tangent(seg, t):
     """Returns the unit tangent of the segment at t.
 
@@ -1782,6 +1808,9 @@ class Path(MutableSequence):
         else:
             self._start = None
             self._end = None
+
+        if 'tree_element' in kw:
+            self._tree_element = kw['tree_element']
 
     def __getitem__(self, index):
         return self._segments[index]
