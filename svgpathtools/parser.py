@@ -12,7 +12,10 @@ import warnings
 from .path import Path, Line, QuadraticBezier, CubicBezier, Arc
 
 # To maintain forward/backward compatibility
-from past.builtins import basestring
+try:
+    str = basestring
+except NameError:
+    pass
 
 COMMANDS = set('MmZzLlHhVvCcSsQqTtAa')
 UPPERCASE = set('MZLHVCSQTA')
@@ -286,7 +289,7 @@ def parse_transform(transform_str):
     If the string is empty or null, this returns a 3x3 identity matrix"""
     if not transform_str:
         return np.identity(3)
-    elif not isinstance(transform_str, basestring):
+    elif not isinstance(transform_str, str):
         raise TypeError('Must provide a string to parse')
 
     total_transform = np.identity(3)

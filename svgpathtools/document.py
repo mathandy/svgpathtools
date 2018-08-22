@@ -50,8 +50,10 @@ from .misctools import open_in_browser
 from .path import *
 
 # To maintain forward/backward compatibility
-from past.builtins import basestring
-from future.utils import iteritems
+try:
+    str = basestring
+except NameError:
+    pass
 
 # Let xml.etree.ElementTree know about the SVG namespace
 SVG_NAMESPACE = {'svg': 'http://www.w3.org/2000/svg'}
@@ -120,7 +122,7 @@ def flatten_all_paths(
 
         # For each element type that we know how to convert into path data, parse the element after confirming that
         # the path_filter accepts it.
-        for key, converter in iteritems(path_conversions):
+        for key, converter in path_conversions.items():
             for path_elem in filter(path_filter, top.group.iterfind('svg:'+key, SVG_NAMESPACE)):
                 path_tf = top.transform.dot(parse_transform(path_elem.get('transform')))
                 path = transform(parse_path(converter(path_elem)), path_tf)
@@ -206,7 +208,7 @@ class Document:
                       group_filter=lambda x: True,
                       path_filter=lambda x: True,
                       path_conversions=CONVERSIONS):
-        if all(isinstance(s, basestring) for s in group):
+        if all(isinstance(s, str) for s in group):
             # If we're given a list of strings, assume it represents a nested sequence
             group = self.get_or_add_group(group)
         elif not isinstance(group, Element):
@@ -223,7 +225,7 @@ class Document:
             group = self.tree.getroot()
 
         # If we are given a list of strings (one or more), assume it represents a sequence of nested group names
-        elif all(isinstance(elem, basestring) for elem in group):
+        elif all(isinstance(elem, str) for elem in group):
             group = self.get_or_add_group(group)
 
         elif not isinstance(group, Element):
@@ -240,7 +242,7 @@ class Document:
             path_svg = path.d()
         elif is_path_segment(path):
             path_svg = Path(path).d()
-        elif isinstance(path, basestring):
+        elif isinstance(path, str):
             # Assume this is a valid d-string. TODO: Should we sanity check the input string?
             path_svg = path
         else:
