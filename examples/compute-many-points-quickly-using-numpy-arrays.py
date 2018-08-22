@@ -6,7 +6,7 @@ easily be generalized to paths containing `Line` and `QuadraticBezier` objects
 also.  
 Note: The relevant matrix transformation for quadratics can be found in the
 svgpathtools.bezier module."""
-
+from __future__ import print_function
 import numpy as np
 from svgpathtools import *
 
@@ -53,4 +53,4 @@ if __name__ == '__main__':
 
     pts = points_in_each_seg(testpath, tvals)
     pts_check = points_in_each_seg_slow(testpath, tvals)
-    print np.max(pts - pts_check)
+    print(np.max(pts - pts_check))
