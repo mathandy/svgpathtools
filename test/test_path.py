@@ -1439,5 +1439,33 @@ class TestPathTools(unittest.TestCase):
         #       openinbrowser=True)
 
 
+    def test_path_area(self):
+        cw_square = Path()
+        cw_square.append(Line((0+0j), (0+100j)))
+        cw_square.append(Line((0+100j), (100+100j)))
+        cw_square.append(Line((100+100j), (100+0j)))
+        cw_square.append(Line((100+0j), (0+0j)))
+        self.assertEqual(cw_square.area(), -10000.0)
+
+        ccw_square = Path()
+        ccw_square.append(Line((0+0j), (100+0j)))
+        ccw_square.append(Line((100+0j), (100+100j)))
+        ccw_square.append(Line((100+100j), (0+100j)))
+        ccw_square.append(Line((0+100j), (0+0j)))
+        self.assertEqual(ccw_square.area(), 10000.0)
+
+        cw_half_circle = Path()
+        cw_half_circle.append(Line((0+0j), (0+100j)))
+        cw_half_circle.append(Arc(start=(0+100j), radius=(50+50j), rotation=0, large_arc=False, sweep=False, end=(0+0j)))
+        self.assertAlmostEqual(cw_half_circle.area(), -3926.9908169872415, places=3)
+        self.assertAlmostEqual(cw_half_circle.area(chord_length=1e-3), -3926.9908169872415, places=6)
+
+        ccw_half_circle = Path()
+        ccw_half_circle.append(Line((0+100j), (0+0j)))
+        ccw_half_circle.append(Arc(start=(0+0j), radius=(50+50j), rotation=0, large_arc=False, sweep=True, end=(0+100j)))
+        self.assertAlmostEqual(ccw_half_circle.area(), 3926.9908169872415, places=3)
+        self.assertAlmostEqual(ccw_half_circle.area(chord_length=1e-3), 3926.9908169872415, places=6)
+
+
 if __name__ == '__main__':
     unittest.main()
