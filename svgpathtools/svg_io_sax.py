@@ -157,9 +157,12 @@ class SaxDocument:
             root.set(ATTR_VIEWBOX, viewbox)
         identity = np.identity(3)
         for element in self.tree:
-            path = SubElement(root, NAME_PATH)
+            values = element[0]
+            path_value = element[1]
             matrix = element[2]
-            if not np.all(np.equal(matrix, identity)):
+
+            path = SubElement(root, NAME_PATH)
+            if matrix is not None and not np.all(np.equal(matrix, identity)):
                 matrix_string = "matrix("
                 matrix_string += " "
                 matrix_string += str(matrix[0][0])
@@ -175,9 +178,12 @@ class SaxDocument:
                 matrix_string += str(matrix[1][2])
                 matrix_string += ")"
                 path.set(ATTR_TRANSFORM, matrix_string)
-            path.set(ATTR_DATA, element[0][ATTR_DATA])
-            path.set(ATTR_FILL, element[0][ATTR_FILL])
-            path.set(ATTR_STROKE, element[0][ATTR_STROKE])
+            if ATTR_DATA in values:
+                path.set(ATTR_DATA, values[ATTR_DATA])
+            if ATTR_FILL in values:
+                path.set(ATTR_FILL, values[ATTR_FILL])
+            if ATTR_STROKE in values:
+                path.set(ATTR_STROKE, values[ATTR_STROKE])
         return ElementTree(root)
 
     def save(self, filename):
