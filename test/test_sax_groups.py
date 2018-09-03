@@ -2,6 +2,7 @@ from __future__ import division, absolute_import, print_function
 import unittest
 from svgpathtools import *
 from os.path import join, dirname
+import numpy as np
 
 
 class TestSaxGroups(unittest.TestCase):
@@ -13,5 +14,19 @@ class TestSaxGroups(unittest.TestCase):
         self.assertAlmostEqual(v[1], z.imag)
 
     def test_parse_display(self):
-        doc = SaxDocument(join(dirname(__file__), 'groups.svg'))
-        doc.display()
+        doc = SaxDocument(join(dirname(__file__), 'transforms.svg'))
+        # doc.display()
+        identity = np.identity(3)
+        for i, node in enumerate(doc.tree):
+            values = node[0]
+            path_value = node[1]
+            matrix = node[2]
+            self.assertTrue(values is not None)
+            self.assertTrue(path_value is not None)
+            self.assertTrue(matrix is not None)
+            if i == 0:
+                self.assertEqual(values['fill'], 'red')
+            if i == 8 or i == 7:
+                self.assertTrue(np.all(np.equal(matrix, identity)))
+            if i == 9:
+                self.assertEqual(values['fill'], 'lime')

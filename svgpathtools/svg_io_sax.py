@@ -39,6 +39,7 @@ ATTR_DATA = "d"
 ATTR_FILL = "fill"
 ATTR_STROKE = "stroke"
 ATTR_STROKE_WIDTH = "stroke-width"
+ATTR_TRANSFORM = "transform"
 VALUE_NONE = "none"
 
 
@@ -70,10 +71,11 @@ class SvgIoSaxHandler(xml.sax.ContentHandler):
                 continue
             elif "style" == k:
                 for equate in v.split(";"):
-                    for p, q in equate:
-                        self.values[p] = q
+                    equal_item = equate.split(":")
+                    self.values[equal_item[0]] = equal_item[1]
             elif "transform" == k:
-                self.matrix.dot(parse_transform(v))
+                transform_matrix = parse_transform(v)
+                self.matrix = transform_matrix.dot(self.matrix)
             else:
                 self.values[k] = v
         if "svg" == name:
@@ -86,17 +88,29 @@ class SvgIoSaxHandler(xml.sax.ContentHandler):
         elif 'path' == name:
             self.tree.append((self.values, parse_path(self.values['d']), self.matrix))
         elif 'circle' == name:
-            pass
+            self.values["d"] = ellipse2pathd(self.values)
+            self.tree.append((self.values, parse_path(self.values['d']), self.matrix))
+            return
         elif 'ellipse' == name:
-            pass
+            self.values["d"] = ellipse2pathd(self.values)
+            self.tree.append((self.values, parse_path(self.values['d']), self.matrix))
+            return
         elif 'line' == name:
-            pass
+            self.values["d"] = line2pathd(self.values)
+            self.tree.append((self.values, parse_path(self.values['d']), self.matrix))
+            return
         elif 'polyline' == name:
-            pass
+            self.values["d"] = polyline2pathd(self.values['points'])
+            self.tree.append((self.values, parse_path(self.values['d']), self.matrix))
+            return
         elif 'polygon' == name:
-            pass
+            self.values["d"] = polygon2pathd(self.values['points'])
+            self.tree.append((self.values, parse_path(self.values['d']), self.matrix))
+            return
         elif 'rect' == name:
-            pass
+            self.values["d"] = rect2pathd(self.values)
+            self.tree.append((self.values, parse_path(self.values['d']), self.matrix))
+            return
 
     def endElement(self, name):
         self.pop_stack()
@@ -141,8 +155,26 @@ class SaxDocument:
         viewbox = self.root_values.get(ATTR_VIEWBOX, None)
         if viewbox is not None:
             root.set(ATTR_VIEWBOX, viewbox)
+        identity = np.identity(3)
         for element in self.tree:
             path = SubElement(root, NAME_PATH)
+            matrix = element[2]
+            if not np.all(np.equal(matrix, identity)):
+                matrix_string = "matrix("
+                matrix_string += " "
+                matrix_string += str(matrix[0][0])
+                matrix_string += " "
+                matrix_string += str(matrix[1][0])
+                matrix_string += " "
+                matrix_string += str(matrix[0][1])
+                matrix_string += " "
+                matrix_string += str(matrix[1][1])
+                matrix_string += " "
+                matrix_string += str(matrix[0][2])
+                matrix_string += " "
+                matrix_string += str(matrix[1][2])
+                matrix_string += ")"
+                path.set(ATTR_TRANSFORM, matrix_string)
             path.set(ATTR_DATA, element[0][ATTR_DATA])
             path.set(ATTR_FILL, element[0][ATTR_FILL])
             path.set(ATTR_STROKE, element[0][ATTR_STROKE])
