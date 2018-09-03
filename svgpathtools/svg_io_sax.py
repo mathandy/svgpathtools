@@ -149,7 +149,7 @@ class SaxDocument:
         return ElementTree(root)
 
     def save(self, filename):
-        with open(filename, 'w') as output_svg:
+        with open(filename, 'wb') as output_svg:
             dom_tree = self.generate_dom()
             dom_tree.write(output_svg)
 
