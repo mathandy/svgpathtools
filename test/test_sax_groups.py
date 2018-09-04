@@ -18,9 +18,9 @@ class TestSaxGroups(unittest.TestCase):
         # doc.display()
         identity = np.identity(3)
         for i, node in enumerate(doc.tree):
-            values = node[0]
-            path_value = node[1]
-            matrix = node[2]
+            values = node
+            path_value = values['d']
+            matrix = values['matrix']
             self.assertTrue(values is not None)
             self.assertTrue(path_value is not None)
             self.assertTrue(matrix is not None)

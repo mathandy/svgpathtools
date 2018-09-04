@@ -83,34 +83,28 @@ class SvgIoSaxHandler(xml.sax.ContentHandler):
             self.values = {}
             self.values.update(current_values)
             self.root_values = current_values
+            return
         elif "g" == name:
             return
         elif 'path' == name:
-            self.tree.append((self.values, parse_path(self.values['d']), self.matrix))
+            pass
         elif 'circle' == name:
             self.values["d"] = ellipse2pathd(self.values)
-            self.tree.append((self.values, parse_path(self.values['d']), self.matrix))
-            return
         elif 'ellipse' == name:
             self.values["d"] = ellipse2pathd(self.values)
-            self.tree.append((self.values, parse_path(self.values['d']), self.matrix))
-            return
         elif 'line' == name:
             self.values["d"] = line2pathd(self.values)
-            self.tree.append((self.values, parse_path(self.values['d']), self.matrix))
-            return
         elif 'polyline' == name:
             self.values["d"] = polyline2pathd(self.values['points'])
-            self.tree.append((self.values, parse_path(self.values['d']), self.matrix))
-            return
         elif 'polygon' == name:
             self.values["d"] = polygon2pathd(self.values['points'])
-            self.tree.append((self.values, parse_path(self.values['d']), self.matrix))
-            return
         elif 'rect' == name:
             self.values["d"] = rect2pathd(self.values)
-            self.tree.append((self.values, parse_path(self.values['d']), self.matrix))
+        else:
             return
+        self.values["matrix"] = self.matrix
+        self.values["name"] = name
+        self.tree.append(self.values)
 
     def endElement(self, name):
         self.pop_stack()
@@ -140,6 +134,15 @@ class SaxDocument:
             self.tree = handler.tree
             self.root_values = handler.root_values
 
+    def flatten_all_paths(self):
+        flat = []
+        for element in self.tree:
+            values = element
+            parsed_path = parse_path(values['d'])
+            transform(parsed_path, values['matrix'])
+            flat.append(parsed_path)
+        return flat
+
     def generate_dom(self):
         root = Element(NAME_SVG)
         root.set(ATTR_VERSION, VALUE_SVG_VERSION)
@@ -157,9 +160,10 @@ class SaxDocument:
             root.set(ATTR_VIEWBOX, viewbox)
         identity = np.identity(3)
         for element in self.tree:
-            values = element[0]
-            path_value = element[1]
-            matrix = element[2]
+            values = element
+            pathd = values.get('d', '')
+            matrix = values.get('matrix', None)
+            path_value = parse_path(pathd)
 
             path = SubElement(root, NAME_PATH)
             if matrix is not None and not np.all(np.equal(matrix, identity)):
