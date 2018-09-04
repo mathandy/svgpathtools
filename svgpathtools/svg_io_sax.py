@@ -67,11 +67,12 @@ class SaxDocument:
         self.tree = []
         stack = []
         values = {}
-        matrix = np.identity(3)
+        matrix = None
         for event, elem in iterparse(filename, events=('start', 'end')):
             if event == 'start':
                 stack.append((values, matrix))
-                matrix = matrix.copy()  # copy of matrix
+                if matrix is not None:
+                    matrix = matrix.copy()  # copy of matrix
                 current_values = values
                 values = {}
                 values.update(current_values)  # copy of dictionary
@@ -84,6 +85,8 @@ class SaxDocument:
                         values[equal_item[0]] = equal_item[1]
                 if "transform" in attrs:
                     transform_matrix = parse_transform(attrs["transform"])
+                    if matrix is None:
+                        matrix = np.identity(3)
                     matrix = transform_matrix.dot(matrix)
                 if "svg" == name:
                     current_values = values
@@ -119,11 +122,21 @@ class SaxDocument:
 
     def flatten_all_paths(self):
         flat = []
-        for element in self.tree:
-            values = element
-            parsed_path = parse_path(values['d'])
-            transform(parsed_path, values['matrix'])
+        for values in self.tree:
+            pathd = values['d']
+            matrix = values['matrix']
+            parsed_path = parse_path(pathd)
+            if matrix is not None:
+                transform(parsed_path, matrix)
             flat.append(parsed_path)
+        return flat
+
+    def get_pathd_and_matrix(self):
+        flat = []
+        for values in self.tree:
+            pathd = values['d']
+            matrix = values['matrix']
+            flat.append((pathd, matrix))
         return flat
 
     def generate_dom(self):
@@ -142,11 +155,10 @@ class SaxDocument:
         if viewbox is not None:
             root.set(ATTR_VIEWBOX, viewbox)
         identity = np.identity(3)
-        for element in self.tree:
-            values = element
+        for values in self.tree:
             pathd = values.get('d', '')
             matrix = values.get('matrix', None)
-            path_value = parse_path(pathd)
+            # path_value = parse_path(pathd)
 
             path = SubElement(root, NAME_PATH)
             if matrix is not None and not np.all(np.equal(matrix, identity)):
