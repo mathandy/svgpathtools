@@ -5,8 +5,7 @@
 # External dependencies
 from __future__ import division, absolute_import, print_function
 import os
-import xml.sax
-from xml.etree.ElementTree import Element, ElementTree, SubElement
+from xml.etree.ElementTree import iterparse, Element, ElementTree, SubElement
 
 # Internal dependencies
 from .parser import parse_path
@@ -43,73 +42,6 @@ ATTR_TRANSFORM = "transform"
 VALUE_NONE = "none"
 
 
-class SvgIoSaxHandler(xml.sax.ContentHandler):
-    def __init__(self):
-        xml.sax.ContentHandler.__init__(self)
-        self.root_values = {}
-        self.tree = []
-        self.stack = []
-        self.values = {}
-        self.matrix = np.identity(3)
-
-    def push_stack(self):
-        self.stack.append((self.values, self.matrix))
-        self.matrix = np.identity(3).dot(self.matrix)  # copy of matrix
-        current_values = self.values
-        self.values = {}
-        self.values.update(current_values)  # copy of dictionary
-
-    def pop_stack(self):
-        v = self.stack.pop()
-        self.values = v[0]
-        self.matrix = v[1]
-
-    def startElement(self, name, attrs):
-        self.push_stack()
-        for (k, v) in attrs.items():
-            if k is None:
-                continue
-            elif "style" == k:
-                for equate in v.split(";"):
-                    equal_item = equate.split(":")
-                    self.values[equal_item[0]] = equal_item[1]
-            elif "transform" == k:
-                transform_matrix = parse_transform(v)
-                self.matrix = transform_matrix.dot(self.matrix)
-            else:
-                self.values[k] = v
-        if "svg" == name:
-            current_values = self.values
-            self.values = {}
-            self.values.update(current_values)
-            self.root_values = current_values
-            return
-        elif "g" == name:
-            return
-        elif 'path' == name:
-            pass
-        elif 'circle' == name:
-            self.values["d"] = ellipse2pathd(self.values)
-        elif 'ellipse' == name:
-            self.values["d"] = ellipse2pathd(self.values)
-        elif 'line' == name:
-            self.values["d"] = line2pathd(self.values)
-        elif 'polyline' == name:
-            self.values["d"] = polyline2pathd(self.values['points'])
-        elif 'polygon' == name:
-            self.values["d"] = polygon2pathd(self.values['points'])
-        elif 'rect' == name:
-            self.values["d"] = rect2pathd(self.values)
-        else:
-            return
-        self.values["matrix"] = self.matrix
-        self.values["name"] = name
-        self.tree.append(self.values)
-
-    def endElement(self, name):
-        self.pop_stack()
-
-
 class SaxDocument:
     def __init__(self, filename):
         """A container for a SAX SVG light tree objects document.
@@ -119,7 +51,8 @@ class SaxDocument:
         Args:
             filename (str): The filename of the SVG file
         """
-
+        self.root_values = {}
+        self.tree = []
         # remember location of original svg file
         if filename is not None and os.path.dirname(filename) == '':
             self.original_filename = os.path.join(os.getcwd(), filename)
@@ -127,12 +60,62 @@ class SaxDocument:
             self.original_filename = filename
 
         if filename is not None:
-            parser = xml.sax.make_parser()
-            handler = SvgIoSaxHandler()
-            parser.setContentHandler(handler)
-            parser.parse(open(filename, "r"))
-            self.tree = handler.tree
-            self.root_values = handler.root_values
+            self.sax_parse(filename)
+
+    def sax_parse(self, filename):
+        self.root_values = {}
+        self.tree = []
+        stack = []
+        values = {}
+        matrix = np.identity(3)
+        for event, elem in iterparse(filename, events=('start', 'end')):
+            if event == 'start':
+                stack.append((values, matrix))
+                matrix = matrix.copy()  # copy of matrix
+                current_values = values
+                values = {}
+                values.update(current_values)  # copy of dictionary
+                attrs = elem.attrib
+                values.update(attrs)
+                name = elem.tag[28:]
+                if "style" in attrs:
+                    for equate in attrs["style"].split(";"):
+                        equal_item = equate.split(":")
+                        values[equal_item[0]] = equal_item[1]
+                if "transform" in attrs:
+                    transform_matrix = parse_transform(attrs["transform"])
+                    matrix = transform_matrix.dot(matrix)
+                if "svg" == name:
+                    current_values = values
+                    values = {}
+                    values.update(current_values)
+                    self.root_values = current_values
+                    continue
+                elif "g" == name:
+                    continue
+                elif 'path' == name:
+                    values['d'] = path2pathd(values)
+                elif 'circle' == name:
+                    values["d"] = ellipse2pathd(values)
+                elif 'ellipse' == name:
+                    values["d"] = ellipse2pathd(values)
+                elif 'line' == name:
+                    values["d"] = line2pathd(values)
+                elif 'polyline' == name:
+                    values["d"] = polyline2pathd(values['points'])
+                elif 'polygon' == name:
+                    values["d"] = polygon2pathd(values['points'])
+                elif 'rect' == name:
+                    values["d"] = rect2pathd(values)
+                else:
+                    continue
+                values["matrix"] = matrix
+                values["name"] = name
+                self.tree.append(values)
+            else:
+                v = stack.pop()
+                values = v[0]
+                matrix = v[1]
 
     def flatten_all_paths(self):
         flat = []

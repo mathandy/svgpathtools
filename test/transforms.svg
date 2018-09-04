@@ -17,7 +17,7 @@
             fill="black"
             stroke="black"
             stroke-width="3"
-            test:name="path02"/>
+            />
       </g>
   </g>
   <path id="lineAB" d="M 100 350 l 150 -300" stroke="red"
