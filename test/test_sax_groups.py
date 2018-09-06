@@ -16,7 +16,7 @@ class TestSaxGroups(unittest.TestCase):
         doc = SaxDocument(join(dirname(__file__), 'path2.0.svg'))
         paths = doc.flatten_all_paths()
         self.assertTrue(len(paths) == 4)
-        doc.display()
+        # doc.display()
 
     def test_parse_display(self):
         doc = SaxDocument(join(dirname(__file__), 'transforms.svg'))
