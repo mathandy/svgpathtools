@@ -91,7 +91,7 @@ def ellipse2pathd(ellipse):
 
 
 def polyline2pathd(polyline, is_polygon=False):
-    """converts the string from a polyline points-attribute to a string for a
+    """converts the string from a polyline parameters to a string for a
     Path object d-attribute"""
     polyline_d = polyline.get(SVG_ATTR_POINTS, None)
     if polyline_d is None:
@@ -113,7 +113,7 @@ def polyline2pathd(polyline, is_polygon=False):
 
 
 def polygon2pathd(polyline):
-    """converts the string from a polygon points-attribute to a string
+    """converts the string from a polygon parameters to a string
     for a Path object d-attribute.
     Note:  For a polygon made from n points, the resulting path will be
     composed of n lines (even if some of these lines have length zero).
