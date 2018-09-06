@@ -8,6 +8,7 @@ from .path import (Path, Line, QuadraticBezier, CubicBezier, Arc,
                    closest_point_in_path, farthest_point_in_path,
                    path_encloses_pt, bbox2path, polygon, polyline)
 from .parser import parse_path
+from .svg_parser import DefaultParser, DefaultTransform, parse_svg_path, parse_svg_transform, parse_svg_color
 from .paths2svg import disvg, wsvg
 from .polytools import polyroots, polyroots01, rational_limit, real, imag
 from .misctools import hex2rgb, rgb2hex
