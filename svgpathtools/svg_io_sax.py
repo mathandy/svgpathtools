@@ -127,7 +127,7 @@ class SaxDocument:
             matrix = values['matrix']
             parsed_path = parse_path(pathd)
             if matrix is not None:
-                transform(parsed_path, matrix)
+                parsed_path = transform(parsed_path, matrix)
             flat.append(parsed_path)
         return flat
 
@@ -158,7 +158,14 @@ class SaxDocument:
         for values in self.tree:
             pathd = values.get('d', '')
             matrix = values.get('matrix', None)
-            # path_value = parse_path(pathd)
+            if matrix is not None:
+                path_value = parse_path(pathd)
+                path_value = transform(path_value, matrix)
+                pathd = path_value.d()
+                matrix = None
+            else:
+                path_value = parse_path(pathd)
+                pathd = path_value.d()  # For svg 2.0 read, might need to be reclassed.
 
             path = SubElement(root, NAME_PATH)
             if matrix is not None and not np.all(np.equal(matrix, identity)):
@@ -178,7 +185,7 @@ class SaxDocument:
                 matrix_string += ")"
                 path.set(ATTR_TRANSFORM, matrix_string)
             if ATTR_DATA in values:
-                path.set(ATTR_DATA, values[ATTR_DATA])
+                path.set(ATTR_DATA, pathd)
             if ATTR_FILL in values:
                 path.set(ATTR_FILL, values[ATTR_FILL])
             if ATTR_STROKE in values:

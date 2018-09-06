@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<svg baseProfile="full" height="600px" version="1.1" viewBox="0 0 100 100" width="600px"
+     xmlns="http://www.w3.org/2000/svg" xmlns:ev="http://www.w3.org/2001/xml-events"
+     xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!--SVG 2.0 recommend spec: 9.3.4. The "closepath" command. These are explicitly cited in documentation-->
+    <path stroke="green" fill="lime" d="m 100,100 50,0 0,50 z"/>
+    <!--Implicit l command complete, z causes a straight line to be drawn resulting in a closed triangular path.-->
+    <path stroke="blue" fill="yellow" d="m 100,100 a 50,50 0 0 1 100,0 z"/>
+    <!--a command complete, z causes a straight line to be drawn resulting in a closed semi-circular path.-->
+    <path stroke="red" fill="violet" d="m 100,100 a 50,50 0 0 1 100,0 50,50 0 0 1 z"/>
+    <!--Second set of coordinates for the a command missing final point, z causes initial point to be used as final point resulting in a closed circular path.-->
+    <path stroke="black" fill="cyan" d="m 100,100 a 50,50 0 0 1 100,0 c z"/>
+    <!--c command missing three coordinates, z causes initial point to be used as coordinate data for all c coordinates resulting in a closed semi-circle. Visually c z is the same as z but may be useful in animating path data.-->
+</svg>

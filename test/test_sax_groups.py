@@ -2,7 +2,6 @@ from __future__ import division, absolute_import, print_function
 import unittest
 from svgpathtools import *
 from os.path import join, dirname
-import numpy as np
 
 
 class TestSaxGroups(unittest.TestCase):
@@ -12,6 +11,12 @@ class TestSaxGroups(unittest.TestCase):
         # of complex number z
         self.assertAlmostEqual(v[0], z.real)
         self.assertAlmostEqual(v[1], z.imag)
+
+    def test_pathz_display(self):
+        doc = SaxDocument(join(dirname(__file__), 'path2.0.svg'))
+        paths = doc.flatten_all_paths()
+        self.assertTrue(len(paths) == 4)
+        doc.display()
 
     def test_parse_display(self):
         doc = SaxDocument(join(dirname(__file__), 'transforms.svg'))

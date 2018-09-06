@@ -99,7 +99,7 @@
 
     <g
         id="rotate group"
-        transform="rotate(20)">
+        transform="rotate(20) rotate(20) rotate(-20)">
 
       <path
           d="M 183,183 l 0,30"
