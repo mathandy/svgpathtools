@@ -472,7 +472,7 @@ def _tokenize_transform(transform_str):
 
 
 def parse_svg_transform(transform_str, obj):
-    """Parses the svg tranform tag.
+    """Parses the svg transform tag.
     The object is datastructure agnostic. And requires a subclass of DefaultTransform"""
     if not transform_str:
         return
@@ -499,7 +499,7 @@ def parse_svg_transform(transform_str, obj):
 def parse_svg_file(f):
     """Parses the SVG file.
     Style elements are split into their proper values.
-    Transform elements are concatinated and unparsed.
+    Transform elements are concatenated and unparsed.
     Leaf node elements are turned into pathd values."""
 
     stack = []
