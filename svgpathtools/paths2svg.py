@@ -243,7 +243,7 @@ def disvg(paths=None, colors=None,
     elif dimensions:
         dimensions = tuple(map(str, dimensions))
         def strip_units(s):
-            return re.search('\d?\.?\d?', s).group()
+            return re.search(r'\d*\.?\d*', s.strip()).group()
         viewbox = '0 0 %s %s' % tuple(map(strip_units, dimensions))
     else:
         if paths:
