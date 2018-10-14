@@ -140,8 +140,8 @@ def disvg(paths=None, colors=None,
         :param mindim - The minimum dimension (height or width) of the output
         SVG (default is 600).
 
-        :param dimensions - The display dimensions of the output SVG.  Using
-        this will override the mindim parameter.
+        :param dimensions - The (x,y) display dimensions of the output SVG.  
+        Using this will override the `mindim` parameter.
 
         :param viewbox - This specifies what rectangular patch of R^2 will be
         viewable through the outputSVG.  It should be input as a 4-tuple,
@@ -230,11 +230,12 @@ def disvg(paths=None, colors=None,
     assert paths or nodes
     stuff2bound = []
     if viewbox:
-        if isinstance(viewbox, str):
+        if not isinstance(viewbox, str):
+            viewbox = '%s %s %s %s' % viewbox
+        if dimensions is None:
             szx, szy = viewbox.split(' ')[2:4]
         else:
-            szx, szy = viewbox[2:4]
-            viewbox = '%s %s %s %s' % viewbox
+            szx, szy = dimensions
     else:
         if paths:
             stuff2bound += paths
