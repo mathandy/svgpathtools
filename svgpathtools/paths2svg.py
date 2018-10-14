@@ -9,6 +9,7 @@ from xml.dom.minidom import parse as md_xml_parse
 from svgwrite import Drawing, text as txt
 from time import time
 from warnings import warn
+import re
 
 # Internal dependencies
 from .path import Path, Line, is_path_segment
@@ -140,14 +141,19 @@ def disvg(paths=None, colors=None,
         :param mindim - The minimum dimension (height or width) of the output
         SVG (default is 600).
 
-        :param dimensions - The (x,y) display dimensions of the output SVG.  
-        Using this will override the `mindim` parameter.
+        :param dimensions - The (x,y) display dimensions of the output SVG.
+        I.e. this specifies the `width` and `height` SVG attributes. Note that 
+        these also can be used to specify units other than pixels. Using this 
+        will override the `mindim` parameter.
 
-        :param viewbox - This specifies what rectangular patch of R^2 will be
-        viewable through the outputSVG.  It should be input as a 4-tuple,
-        (min_x, min_y, width, height), or a string "min_x min_y width height".  
-        This is different from the display dimension of the svg, which can be 
-        set through mindim or dimensions.
+        :param viewbox - This specifies the coordinated system used in the svg.
+        The SVG `viewBox` attribute works together with the the `height` and 
+        `width` attrinutes.  Using these three attributes allows for shifting 
+        and scaling of the SVG canvas without changing the any values other 
+        than those in `viewBox`, `height`, and `width`.  `viewbox` should be 
+        input as a 4-tuple, (min_x, min_y, width, height), or a string 
+        "min_x min_y width height".  Using this will override the `mindim` 
+        parameter.
 
         :param attributes - a list of dictionaries of attributes for the input
         paths.  Note: This will override any other conflicting settings.
@@ -233,9 +239,12 @@ def disvg(paths=None, colors=None,
         if not isinstance(viewbox, str):
             viewbox = '%s %s %s %s' % viewbox
         if dimensions is None:
-            szx, szy = viewbox.split(' ')[2:4]
-        else:
-            szx, szy = dimensions
+            dimensions = viewbox.split(' ')[2:4]
+    elif dimensions:
+        dimensions = tuple(map(str, dimensions))
+        def strip_units(s):
+            return re.search('\d?\.?\d?', s).group()
+        viewbox = '0 0 %s %s' % tuple(map(strip_units, dimensions))
     else:
         if paths:
             stuff2bound += paths
@@ -282,25 +291,24 @@ def disvg(paths=None, colors=None,
         dx += 2*margin_size*dx + extra_space_for_style
         dy += 2*margin_size*dy + extra_space_for_style
         viewbox = "%s %s %s %s" % (xmin, ymin, dx, dy)
-        if dimensions:
-            szx, szy = dimensions
+
+        if dx > dy:
+            szx = str(mindim) + 'px'
+            szy = str(int(ceil(mindim * dy / dx))) + 'px'
         else:
-            if dx > dy:
-                szx = str(mindim) + 'px'
-                szy = str(int(ceil(mindim * dy / dx))) + 'px'
-            else:
-                szx = str(int(ceil(mindim * dx / dy))) + 'px'
-                szy = str(mindim) + 'px'
+            szx = str(int(ceil(mindim * dx / dy))) + 'px'
+            szy = str(mindim) + 'px'
+        dimensions = szx, szy
 
     # Create an SVG file
     if svg_attributes is not None:
-        szx = svg_attributes.get("width", szx)
-        szy = svg_attributes.get("height", szy)
+        dimensions[0] = svg_attributes.get("width", dimensions[0])
+        dimensions[1] = svg_attributes.get("height", dimensions[1])
         debug = svg_attributes.get("debug", svgwrite_debug)
-        dwg = Drawing(filename=filename, size=(szx, szy), debug=debug,
+        dwg = Drawing(filename=filename, size=dimensions, debug=debug,
                       **svg_attributes)
     else:
-        dwg = Drawing(filename=filename, size=(szx, szy), debug=svgwrite_debug,
+        dwg = Drawing(filename=filename, size=dimensions, debug=svgwrite_debug,
                       viewBox=viewbox)
 
     # add paths
