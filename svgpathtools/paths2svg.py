@@ -144,9 +144,10 @@ def disvg(paths=None, colors=None,
         this will override the mindim parameter.
 
         :param viewbox - This specifies what rectangular patch of R^2 will be
-        viewable through the outputSVG.  It should be input in the form
-        (min_x, min_y, width, height).  This is different from the display
-        dimension of the svg, which can be set through mindim or dimensions.
+        viewable through the outputSVG.  It should be input as a 4-tuple,
+        (min_x, min_y, width, height), or a string "min_x min_y width height".  
+        This is different from the display dimension of the svg, which can be 
+        set through mindim or dimensions.
 
         :param attributes - a list of dictionaries of attributes for the input
         paths.  Note: This will override any other conflicting settings.
@@ -174,11 +175,13 @@ def disvg(paths=None, colors=None,
         names, or use a pause command (e.g. time.sleep(1)) between uses.
     """
 
+
     _default_relative_node_radius = 5e-3
     _default_relative_stroke_width = 1e-3
     _default_path_color = '#000000'  # black
     _default_node_color = '#ff0000'  # red
     _default_font_size = 12
+
 
     # append directory to filename (if not included)
     if os_path.dirname(filename) == '':
@@ -227,7 +230,11 @@ def disvg(paths=None, colors=None,
     assert paths or nodes
     stuff2bound = []
     if viewbox:
-        szx, szy = viewbox[2:4]
+        if isinstance(viewbox, str):
+            szx, szy = viewbox.split(' ')[2:4]
+        else:
+            szx, szy = viewbox[2:4]
+            viewbox = '%s %s %s %s' % viewbox
     else:
         if paths:
             stuff2bound += paths
