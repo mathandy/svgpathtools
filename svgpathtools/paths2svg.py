@@ -89,7 +89,7 @@ def disvg(paths=None, colors=None,
           openinbrowser=True, timestamp=False,
           margin_size=0.1, mindim=600, dimensions=None,
           viewbox=None, text=None, text_path=None, font_size=None,
-          attributes=None, svg_attributes=None, svgwrite_debug=False):
+          attributes=None, svg_attributes=None, svgwrite_debug=False, paths2Drawing=False):
     """Takes in a list of paths and creates an SVG file containing said paths.
     REQUIRED INPUTS:
         :param paths - a list of paths
@@ -164,6 +164,10 @@ def disvg(paths=None, colors=None,
         debugging mode.  By default svgwrite_debug=False.  This increases 
         speed and also prevents `svgwrite` from raising of an error when not 
         all `svg_attributes` key-value pairs are understood.
+        
+        :param paths2Drawing - If true, an `svgwrite.Drawing` object is 
+        returned and no file is written.  This `Drawing` can later be saved 
+        using the `svgwrite.Drawing.save()` method.
 
     NOTES:
         * The `svg_attributes` parameter will override any other conflicting 
@@ -379,6 +383,9 @@ def disvg(paths=None, colors=None,
             txter = dwg.add(dwg.text('', font_size=font_size[idx]))
             txter.add(txt.TextPath('#'+pathid, s))
 
+    if paths2Drawing:
+        return dwg
+      
     # save svg
     if not os_path.exists(os_path.dirname(filename)):
         makedirs(os_path.dirname(filename))
@@ -404,7 +411,7 @@ def wsvg(paths=None, colors=None,
           openinbrowser=False, timestamp=False,
           margin_size=0.1, mindim=600, dimensions=None,
           viewbox=None, text=None, text_path=None, font_size=None,
-          attributes=None, svg_attributes=None, svgwrite_debug=False):
+          attributes=None, svg_attributes=None, svgwrite_debug=False, paths2Drawing=False):
     """Convenience function; identical to disvg() except that
     openinbrowser=False by default.  See disvg() docstring for more info."""
     disvg(paths, colors=colors, filename=filename,
@@ -414,4 +421,23 @@ def wsvg(paths=None, colors=None,
           margin_size=margin_size, mindim=mindim, dimensions=dimensions,
           viewbox=viewbox, text=text, text_path=text_path, font_size=font_size,
           attributes=attributes, svg_attributes=svg_attributes,
-          svgwrite_debug=svgwrite_debug)
+          svgwrite_debug=svgwrite_debug, paths2Drawing=paths2Drawing)
+    
+    
+def paths2Drawing(paths=None, colors=None,
+          filename=os_path.join(getcwd(), 'disvg_output.svg'),
+          stroke_widths=None, nodes=None, node_colors=None, node_radii=None,
+          openinbrowser=False, timestamp=False,
+          margin_size=0.1, mindim=600, dimensions=None,
+          viewbox=None, text=None, text_path=None, font_size=None,
+          attributes=None, svg_attributes=None, svgwrite_debug=False, paths2Drawing=True):
+    """Convenience function; identical to disvg() except that
+    paths2Drawing=True by default.  See disvg() docstring for more info."""
+    disvg(paths, colors=colors, filename=filename,
+          stroke_widths=stroke_widths, nodes=nodes,
+          node_colors=node_colors, node_radii=node_radii,
+          openinbrowser=openinbrowser, timestamp=timestamp,
+          margin_size=margin_size, mindim=mindim, dimensions=dimensions,
+          viewbox=viewbox, text=text, text_path=text_path, font_size=font_size,
+          attributes=attributes, svg_attributes=svg_attributes,
+          svgwrite_debug=svgwrite_debug, paths2Drawing=paths2Drawing)
