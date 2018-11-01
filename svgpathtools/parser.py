@@ -1,21 +1,15 @@
 """This submodule contains the path_parse() function used to convert SVG path
 element d-strings into svgpathtools Path objects.
-Note: This file was taken (nearly) as is from the svg.path module (v 2.0)."""
+Note: This file was taken (nearly) as is from the svg.path module
+(v 2.0)."""
 
 # External dependencies
 from __future__ import division, absolute_import, print_function
 import re
-import numpy as np
-import warnings
 
 # Internal dependencies
-from .path import Path, Line, QuadraticBezier, CubicBezier, Arc
+from .path import Path, Subpath, Line, QuadraticBezier, CubicBezier, Arc
 
-# To maintain forward/backward compatibility
-try:
-    str = basestring
-except NameError:
-    pass
 
 COMMANDS = set('MmZzLlHhVvCcSsQqTtAa')
 UPPERCASE = set('MZLHVCSQTA')
@@ -32,7 +26,9 @@ def _tokenize_path(pathdef):
             yield token
 
 
-def parse_path(pathdef, current_pos=0j, tree_element=None):
+# The following function returns a Subpath when it can, else a Path:
+
+def parse_subpath(pathdef, current_pos=0j, suppress_warning=False):
     # In the SVG specs, initial movetos are absolute, even if
     # specified as 'm'. This is the default behavior here as well.
     # But if you pass in a current_pos variable, the initial moveto
@@ -41,12 +37,9 @@ def parse_path(pathdef, current_pos=0j, tree_element=None):
     # Reverse for easy use of .pop()
     elements.reverse()
 
-    if tree_element is None:
-        segments = Path()
-    else:
-        segments = Path(tree_element=tree_element)
-
-    start_pos = None
+    path = Path()
+    subpath = Subpath()
+    subpath_start = None
     command = None
 
     while elements:
@@ -61,11 +54,14 @@ def parse_path(pathdef, current_pos=0j, tree_element=None):
             # If this element starts with numbers, it is an implicit command
             # and we don't change the command. Check that it's allowed:
             if command is None:
-                raise ValueError("Unallowed implicit command in %s, position %s" % (
+                raise ValueError("Missing command in %s, position %s" % (
                     pathdef, len(pathdef.split()) - len(elements)))
 
         if command == 'M':
             # Moveto command.
+            if len(subpath) > 0:
+                path.append(subpath)
+                subpath = Subpath()
             x = elements.pop()
             y = elements.pop()
             pos = float(x) + float(y) * 1j
@@ -74,10 +70,10 @@ def parse_path(pathdef, current_pos=0j, tree_element=None):
             else:
                 current_pos += pos
 
-            # when M is called, reset start_pos
+            # when M is called, reset subpath_start
             # This behavior of Z is defined in svg spec:
             # http://www.w3.org/TR/SVG/paths.html#PathDataClosePathCommand
-            start_pos = current_pos
+            subpath_start = current_pos
 
             # Implicit moveto commands are treated as lineto commands.
             # So we set command to lineto here, in case there are
@@ -86,10 +82,13 @@ def parse_path(pathdef, current_pos=0j, tree_element=None):
 
         elif command == 'Z':
             # Close path
-            if not (current_pos == start_pos):
-                segments.append(Line(current_pos, start_pos))
-            segments.closed = True
-            current_pos = start_pos
+            if len(subpath) > 0:
+                subpath.set_Z(forceful=True)
+                assert subpath.Z()
+                path.append(subpath)
+                subpath = Subpath()
+            assert subpath_start is not None
+            current_pos = subpath_start
             command = None
 
         elif command == 'L':
@@ -98,7 +97,10 @@ def parse_path(pathdef, current_pos=0j, tree_element=None):
             pos = float(x) + float(y) * 1j
             if not absolute:
                 pos += current_pos
-            segments.append(Line(current_pos, pos))
+            subpath.append(Line(current_pos, pos))
+            if command == 'M.L':
+                path[-1].m = True
+                command = 'L'
             current_pos = pos
 
         elif command == 'H':
@@ -106,7 +108,7 @@ def parse_path(pathdef, current_pos=0j, tree_element=None):
             pos = float(x) + current_pos.imag * 1j
             if not absolute:
                 pos += current_pos.real
-            segments.append(Line(current_pos, pos))
+            subpath.append(Line(current_pos, pos))
             current_pos = pos
 
         elif command == 'V':
@@ -114,7 +116,7 @@ def parse_path(pathdef, current_pos=0j, tree_element=None):
             pos = current_pos.real + float(y) * 1j
             if not absolute:
                 pos += current_pos.imag * 1j
-            segments.append(Line(current_pos, pos))
+            subpath.append(Line(current_pos, pos))
             current_pos = pos
 
         elif command == 'C':
@@ -127,7 +129,7 @@ def parse_path(pathdef, current_pos=0j, tree_element=None):
                 control2 += current_pos
                 end += current_pos
 
-            segments.append(CubicBezier(current_pos, control1, control2, end))
+            subpath.append(CubicBezier(current_pos, control1, control2, end))
             current_pos = end
 
         elif command == 'S':
@@ -143,7 +145,7 @@ def parse_path(pathdef, current_pos=0j, tree_element=None):
                 # The first control point is assumed to be the reflection of
                 # the second control point on the previous command relative
                 # to the current point.
-                control1 = current_pos + current_pos - segments[-1].control2
+                control1 = current_pos + current_pos - path[-1].control2
 
             control2 = float(elements.pop()) + float(elements.pop()) * 1j
             end = float(elements.pop()) + float(elements.pop()) * 1j
@@ -152,7 +154,7 @@ def parse_path(pathdef, current_pos=0j, tree_element=None):
                 control2 += current_pos
                 end += current_pos
 
-            segments.append(CubicBezier(current_pos, control1, control2, end))
+            subpath.append(CubicBezier(current_pos, control1, control2, end))
             current_pos = end
 
         elif command == 'Q':
@@ -163,7 +165,7 @@ def parse_path(pathdef, current_pos=0j, tree_element=None):
                 control += current_pos
                 end += current_pos
 
-            segments.append(QuadraticBezier(current_pos, control, end))
+            subpath.append(QuadraticBezier(current_pos, control, end))
             current_pos = end
 
         elif command == 'T':
@@ -179,14 +181,14 @@ def parse_path(pathdef, current_pos=0j, tree_element=None):
                 # The control point is assumed to be the reflection of
                 # the control point on the previous command relative
                 # to the current point.
-                control = current_pos + current_pos - segments[-1].control
+                control = current_pos + current_pos - path[-1].control
 
             end = float(elements.pop()) + float(elements.pop()) * 1j
 
             if not absolute:
                 end += current_pos
 
-            segments.append(QuadraticBezier(current_pos, control, end))
+            subpath.append(QuadraticBezier(current_pos, control, end))
             current_pos = end
 
         elif command == 'A':
@@ -199,102 +201,22 @@ def parse_path(pathdef, current_pos=0j, tree_element=None):
             if not absolute:
                 end += current_pos
 
-            segments.append(Arc(current_pos, radius, rotation, arc, sweep, end))
+            subpath.append(Arc(current_pos, radius, rotation, arc, sweep, end))
             current_pos = end
 
-    return segments
+    if len(subpath) > 0:
+        path.append(subpath)
 
-
-def _check_num_parsed_values(values, allowed):
-    if not any(num == len(values) for num in allowed):
-        if len(allowed) > 1:
-            warnings.warn('Expected one of the following number of values {0}, but found {1} values instead: {2}'
-                          .format(allowed, len(values), values))
-        elif allowed[0] != 1:
-            warnings.warn('Expected {0} values, found {1}: {2}'.format(allowed[0], len(values), values))
-        else:
-            warnings.warn('Expected 1 value, found {0}: {1}'.format(len(values), values))
-        return False
-    return True
-
-
-def _parse_transform_substr(transform_substr):
-
-    type_str, value_str = transform_substr.split('(')
-    value_str = value_str.replace(',', ' ')
-    values = list(map(float, filter(None, value_str.split(' '))))
-
-    transform = np.identity(3)
-    if 'matrix' in type_str:
-        if not _check_num_parsed_values(values, [6]):
-            return transform
-
-        transform[0:2, 0:3] = np.array([values[0:6:2], values[1:6:2]])
-
-    elif 'translate' in transform_substr:
-        if not _check_num_parsed_values(values, [1, 2]):
-            return transform
-
-        transform[0, 2] = values[0]
-        if len(values) > 1:
-            transform[1, 2] = values[1]
-
-    elif 'scale' in transform_substr:
-        if not _check_num_parsed_values(values, [1, 2]):
-            return transform
-
-        x_scale = values[0]
-        y_scale = values[1] if (len(values) > 1) else x_scale
-        transform[0, 0] = x_scale
-        transform[1, 1] = y_scale
-
-    elif 'rotate' in transform_substr:
-        if not _check_num_parsed_values(values, [1, 3]):
-            return transform
-
-        angle = values[0] * np.pi / 180.0
-        if len(values) == 3:
-            offset = values[1:3]
-        else:
-            offset = (0, 0)
-        tf_offset = np.identity(3)
-        tf_offset[0:2, 2:3] = np.array([[offset[0]], [offset[1]]])
-        tf_rotate = np.identity(3)
-        tf_rotate[0:2, 0:2] = np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])
-        tf_offset_neg = np.identity(3)
-        tf_offset_neg[0:2, 2:3] = np.array([[-offset[0]], [-offset[1]]])
-
-        transform = tf_offset.dot(tf_rotate).dot(tf_offset_neg)
-
-    elif 'skewX' in transform_substr:
-        if not _check_num_parsed_values(values, [1]):
-            return transform
-
-        transform[0, 1] = np.tan(values[0] * np.pi / 180.0)
-
-    elif 'skewY' in transform_substr:
-        if not _check_num_parsed_values(values, [1]):
-            return transform
-
-        transform[1, 0] = np.tan(values[0] * np.pi / 180.0)
+    if len(path) == 1:
+        return path[0]
     else:
-        # Return an identity matrix if the type of transform is unknown, and warn the user
-        warnings.warn('Unknown SVG transform type: {0}'.format(type_str))
+        if not suppress_warning:
+            print("Warning: svgpathtools.parser.parse_subpath returning a Path() object!")
+        return path
 
-    return transform
 
-
-def parse_transform(transform_str):
-    """Converts a valid SVG transformation string into a 3x3 matrix.
-    If the string is empty or null, this returns a 3x3 identity matrix"""
-    if not transform_str:
-        return np.identity(3)
-    elif not isinstance(transform_str, str):
-        raise TypeError('Must provide a string to parse')
-
-    total_transform = np.identity(3)
-    transform_substrs = transform_str.split(')')[:-1]  # Skip the last element, because it should be empty
-    for substr in transform_substrs:
-        total_transform = total_transform.dot(_parse_transform_substr(substr))
-
-    return total_transform
+def parse_path(pathdef, current_pos=0j):
+    s = parse_subpath(pathdef, current_pos, suppress_warning=True)
+    if isinstance(s, Subpath):
+        return Path(s)
+    return s

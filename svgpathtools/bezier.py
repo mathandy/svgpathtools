@@ -14,15 +14,16 @@ from .polytools import real, imag, polyroots, polyroots01
 
 # Evaluation ##################################################################
 
+
 def n_choose_k(n, k):
-    return fac(n)//fac(k)//fac(n-k)
+    return fac(n) // fac(k) // fac(n - k)
 
 
 def bernstein(n, t):
     """returns a list of the Bernstein basis polynomials b_{i, n} evaluated at
     t, for i =0...n"""
-    t1 = 1-t
-    return [n_choose_k(n, k) * t1**(n-k) * t**k for k in range(n+1)]
+    t1 = 1 - t
+    return [n_choose_k(n, k) * t1**(n - k) * t**k for k in range(n + 1)]
 
 
 def bezier_point(p, t):
@@ -41,21 +42,24 @@ def bezier_point(p, t):
 
     deg = len(p) - 1
     if deg == 3:
-        return p[0] + t*(
-            3*(p[1] - p[0]) + t*(
-                3*(p[0] + p[2]) - 6*p[1] + t*(
-                    -p[0] + 3*(p[1] - p[2]) + p[3])))
+        return p[0] + t * (
+            3 * (p[1] - p[0]) + t * (
+                3 * (p[0] + p[2]) - 6 * p[1] + t * (
+                    -p[0] + 3 * (p[1] - p[2]) + p[3])))
     elif deg == 2:
-        return p[0] + t*(
-            2*(p[1] - p[0]) + t*(
-                p[0] - 2*p[1] + p[2]))
+        return p[0] + t * (
+            2 * (p[1] - p[0]) + t * (
+                p[0] - 2 * p[1] + p[2]))
+
     elif deg == 1:
-        return p[0] + t*(p[1] - p[0])
+        return p[0] + t * (p[1] - p[0])
+
     elif deg == 0:
         return p[0]
+
     else:
         bern = bernstein(deg, t)
-        return sum(bern[k]*p[k] for k in range(deg+1))
+        return sum(bern[k] * p[k] for k in range(deg + 1))
 
 
 # Conversion ##################################################################
@@ -84,9 +88,9 @@ def bezier2polynomial(p, numpy_ordering=True, return_poly1d=False):
     else:
         # https://en.wikipedia.org/wiki/Bezier_curve#Polynomial_form
         n = len(p) - 1
-        coeffs = [fac(n)//fac(n-j) * sum(
-            (-1)**(i+j) * p[i] / (fac(i) * fac(j-i)) for i in range(j+1))
-            for j in range(n+1)]
+        coeffs = [fac(n) // fac(n - j) * sum(
+            (-1)**(i + j) * p[i] / (fac(i) * fac(j - i)) for i in range(j + 1))
+            for j in range(n + 1)]
         coeffs.reverse()
     if not numpy_ordering:
         coeffs = coeffs[::-1]  # can't use .reverse() as might be tuple
@@ -103,12 +107,12 @@ def polynomial2bezier(poly):
         c = poly.coeffs
     else:
         c = poly
-    order = len(c)-1
+    order = len(c) - 1
     if order == 3:
-        bpoints = (c[3], c[2]/3 + c[3], (c[1] + 2*c[2])/3 + c[3],
+        bpoints = (c[3], c[2] / 3 + c[3], (c[1] + 2 * c[2]) / 3 + c[3],
                    c[0] + c[1] + c[2] + c[3])
     elif order == 2:
-        bpoints = (c[2], c[1]/2 + c[2], c[0] + c[1] + c[2])
+        bpoints = (c[2], c[1] / 2 + c[2], c[0] + c[1] + c[2])
     elif order == 1:
         bpoints = (c[1], c[0] + c[1])
     else:
@@ -176,8 +180,8 @@ def bezier_real_minmax(p):
             if delta >= 0:  # otherwise no local extrema
                 sqdelta = sqrt(delta)
                 tau = a[0] - 2*a[1] + a[2]
-                r1 = (tau + sqdelta)/denom
-                r2 = (tau - sqdelta)/denom
+                r1 = (tau + sqdelta) / denom
+                r2 = (tau - sqdelta) / denom
                 if 0 < r1 < 1:
                     local_extremizers.append(r1)
                 if 0 < r2 < 1:
@@ -217,9 +221,9 @@ def bezier_bounding_box(bez):
     dx = x.deriv()
     dy = y.deriv()
     x_extremizers = [0, 1] + polyroots(dx, realroots=True,
-                                    condition=lambda r: 0 < r < 1)
+                                       condition=lambda r: 0 < r < 1)
     y_extremizers = [0, 1] + polyroots(dy, realroots=True,
-                                    condition=lambda r: 0 < r < 1)
+                                       condition=lambda r: 0 < r < 1)
     x_extrema = [x(t) for t in x_extremizers]
     y_extrema = [y(t) for t in y_extremizers]
     return min(x_extrema), max(x_extrema), min(y_extrema), max(y_extrema)
@@ -279,18 +283,19 @@ class BPair(object):
 
 
 def bezier_intersections(bez1, bez2, longer_length, tol=1e-8, tol_deC=1e-8):
-    """INPUT:
+    """
     bez1, bez2 = [P0,P1,P2,...PN], [Q0,Q1,Q2,...,PN] defining the two
     Bezier curves to check for intersections between.
     longer_length - the length (or an upper bound) on the longer of the two
-    Bezier curves.  Determines the maximum iterations needed together with tol.
+    Bezier curves. Determines the maximum iterations needed together with tol.
     tol - is the smallest distance that two solutions can differ by and still
     be considered distinct solutions.
     OUTPUT: a list of tuples (t,s) in [0,1]x[0,1] such that
         abs(bezier_point(bez1[0],t) - bezier_point(bez2[1],s)) < tol_deC
     Note: This will return exactly one such tuple for each intersection
-    (assuming tol_deC is small enough)."""
-    maxits = int(ceil(1-log(tol_deC/longer_length)/log(2)))
+    (assuming tol_deC is small enough).
+    """
+    maxits = int(ceil(1 - log(tol_deC / longer_length) / log(2)))
     pair_list = [BPair(bez1, bez2, 0.5, 0.5)]
     intersection_list = []
     k = 0
