@@ -18,7 +18,7 @@ example**.  Feel free to make a pull-request too (see relevant section below).
 
 ## Submitting Pull-Requests 
 
-#### New features should come with unittests and docstrings.
+#### New features come with unittests and docstrings.
 If you want to add a cool/useful feature to svgpathtools, that's great!  Just 
 make sure your pull-request includes both thorough unittests and well-written 
 docstrings.  See relevant sections below on "Testing Style" and 
