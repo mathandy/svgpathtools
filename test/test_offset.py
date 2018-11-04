@@ -1,9 +1,14 @@
 import svgpathtools
 import math
 
+from lib_an_svg import an_svg
+hey = an_svg('inkscape')
+nib = hey.nib()
+nib.put_path('M -5,-5 5,5', {'stroke': 'aliceblue', 'stroke-width': '3', 'fill': 'none'})
+
 
 def output_stub(dstring, attr):
-    pass
+    nib.put_path(dstring, attr)
 
 
 # TEST 1 intersection accuracy
@@ -74,6 +79,7 @@ if False:
     output_stub(p5.d(), {'stroke': 'black', 'stroke-width': '0.15', 'fill': 'none'})
     output_stub(p6.d(), {'stroke': 'red', 'stroke-width': '0.1', 'fill': 'none'})
 
+
 # TEST 5 offsets, strokes
 
 if True:
@@ -81,11 +87,34 @@ if True:
 
     p2wo, p2sk, p2wi = p2.offset(0.2, two_sided=True)
 
-    stroke1 = p2.stroke(0.2)
-    stroke2 = p2.stroke(0.2, join='round')
-    stroke3 = p2.stroke(0.2, join='round', cap='square')
+    stroke1 = p2.stroke(0.25, cap='round')
+    stroke2 = p2.stroke(0.25, join='miter')
+    stroke3 = p2.stroke(0.25, join='round', cap='square')
 
-    output_stub(stroke1.d(), {'stroke': 'gray', 'stroke-width': '0.1', 'fill': 'none'})
-    output_stub(stroke2.translated(4j).d(), {'stroke': 'pink', 'stroke-width': '0.1', 'fill': 'none'})
-    output_stub(stroke3.translated(8j).d(), {'stroke': 'teal', 'stroke-width': '0.1', 'fill': 'none'})
-    output_stub(p2.translated(8j).d(), {'stroke': 'black', 'stroke-width': '0.1', 'fill': 'none'})
+    origin = 14 - 0j
+    scale = 25
+
+    output_stub(stroke1.translated(origin).scaled(scale).d(), {'stroke': 'gray', 'stroke-width': '1.5', 'fill': 'none'})
+    output_stub(p2.translated(origin).scaled(scale).d(), {'stroke': 'black', 'stroke-width': '1.5', 'fill': 'none'})
+    output_stub(stroke2.translated(origin + 6j).scaled(scale).d(), {'stroke': 'pink', 'stroke-width': '1.5', 'fill': 'none'})
+    output_stub(p2.translated(origin + 6j).scaled(scale).d(), {'stroke': 'black', 'stroke-width': '1.5', 'fill': 'none'})
+    output_stub(stroke3.translated(origin + 12j).scaled(scale).d(), {'stroke': 'teal', 'stroke-width': '1.5', 'fill': 'none'})
+    output_stub(p2.translated(origin + 12j).scaled(scale).d(), {'stroke': 'black', 'stroke-width': '1.5', 'fill': 'none'})
+
+
+# TEST 6 offsets from the README
+
+if True:
+    path1 = svgpathtools.parse_path("m 288,600 c -52,-28 -42,-61 0,-97 ")
+    path2 = svgpathtools.parse_path("M 151,395 C 407,485 726.17662,160 634,339").translated(300)
+    path3 = svgpathtools.parse_path("m 117,695 c 237,-7 -103,-146 457,0").translated(500 + 400j)
+    paths = [path1, path2, path3]
+
+    offset_distances = [10 * k for k in range(1, 51)]
+    for path in paths:
+        for distance in offset_distances:
+            output_stub(path.offset(distance)[0].d(), {'stroke': 'red', 'stroke-width': '2', 'fill': 'none'})
+
+
+hey.set_heuristic_viewbox(10)
+hey.print_to("jpsteinb_offset_demo.svg", precision=3, pretty_up=True)
