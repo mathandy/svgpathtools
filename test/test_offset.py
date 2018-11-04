@@ -9,7 +9,7 @@ def output_stub(dstring, attr):
 
 # TEST 1 intersection accuracy
 
-if False:
+if True:
     for norm in {True, False}:
         for parser1 in {svgpathtools.parse_path, svgpathtools.parse_subpath}:
             p1 = parser1('M 0,0 0,1 1,1 1,0 Z M 2,0 2,1 3,1, 3,0 Z')
@@ -34,7 +34,7 @@ if False:
 
 # TEST 2 area computations (with double square and unit circle)
 
-if False:
+if True:
     for parser1 in {svgpathtools.parse_path, svgpathtools.parse_subpath}:
         p1 = parser1('M 0,0 0,1 1,1 1,0 Z M 2,0 2,1 3,1, 3,0 Z')
         assert p1.area() in {2, -2}
@@ -51,7 +51,7 @@ if False:
 
 # TEST 3 length computations
 
-if False:
+if True:
     for parser1 in {svgpathtools.parse_path, svgpathtools.parse_subpath}:
         p1 = parser1('M 0,0 0,1 1,1 1,0 Z M 2,0 2,1 3,1, 3,0 Z')
         p3 = parser1('M 6,6 a 1,1 0 0 0 -1,1 a 1,1 0 0 0 1,1 a 1,1 0 0 0 1,-1 a 1,1 0 0 0 -1,-1 Z')
@@ -67,7 +67,7 @@ if False:
 
 # TEST 4 arc -> cubic conversion
 
-if False:
+if True:
     p5 = svgpathtools.parse_subpath('M 2,1 A 1,2 45 1 0 2,0')
     arc = p5[0]
     assert isinstance(arc, svgpathtools.Arc)
@@ -100,7 +100,7 @@ if True:
 
 # TEST 6 offsets from the README
 
-if True:
+if False:
     path1 = svgpathtools.parse_path("m 288,600 c -52,-28 -42,-61 0,-97 ")
     path2 = svgpathtools.parse_path("M 151,395 C 407,485 726.17662,160 634,339").translated(300)
     path3 = svgpathtools.parse_path("m 117,695 c 237,-7 -103,-146 457,0").translated(500 + 400j)
