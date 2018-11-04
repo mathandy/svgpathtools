@@ -1,14 +1,10 @@
 import svgpathtools
 import math
 
-from lib_an_svg import an_svg
-hey = an_svg('inkscape')
-nib = hey.nib()
-nib.put_path('M -5,-5 5,5', {'stroke': 'aliceblue', 'stroke-width': '3', 'fill': 'none'})
 
-
+# fill out this stub to print/render svg path with preferred method:
 def output_stub(dstring, attr):
-    nib.put_path(dstring, attr)
+    pass
 
 
 # TEST 1 intersection accuracy
@@ -114,7 +110,3 @@ if True:
     for path in paths:
         for distance in offset_distances:
             output_stub(path.offset(distance)[0].d(), {'stroke': 'red', 'stroke-width': '2', 'fill': 'none'})
-
-
-hey.set_heuristic_viewbox(10)
-hey.print_to("jpsteinb_offset_demo.svg", precision=3, pretty_up=True)
