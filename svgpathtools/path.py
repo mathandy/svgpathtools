@@ -16,6 +16,7 @@ try:
 except ImportError:
     _quad_available = False
 
+
 # Internal dependencies
 from .bezier    import bezier_intersections, bezier_bounding_box, split_bezier
 from .bezier    import bezier_by_line_intersections, polynomial2bezier, bezier2polynomial
@@ -219,7 +220,7 @@ def translate(curve, z0):
     """Shifts the curve by the complex quantity z such that
     translate(curve, z0).point(t) = curve.point(t) + z0"""
     if isinstance(curve, Path):
-        return Path(*[translate(subpath, z0) for subpath in curve.subpath_iterator()])
+        return Path(*[translate(subpath, z0) for subpath in curve])
     elif isinstance(curve, Subpath):
         return Subpath(*[translate(seg, z0) for seg in curve]).set_Z(following=curve)
     elif isinstance(curve, BezierSegment):
@@ -232,6 +233,58 @@ def translate(curve, z0):
     else:
         raise TypeError("Input `curve` should be a Path, Line, "
                         "QuadraticBezier, CubicBezier, or Arc object.")
+
+
+def scale(curve, x, y=None):
+    """Scales all coordinates in the curve by x in the x direction and by y direction;
+    y defaults to x if not supplied"""
+    def scale_pt(q):
+        return q.real * x + q.imag * y * 1j
+
+    if y is None:
+        y = x
+
+    assert x.imag == y.imag == 0
+    assert x != 0 and y != 0
+
+    if isinstance(curve, Path):
+        # print("hi apparently you have a PATH:")
+        # print(curve)
+        # print("")
+        assert all(isinstance(subpath, Subpath) for subpath in curve)
+        to_return = Path(*[scale(subpath, x, y) for subpath in curve])
+        # print("FINISHED A PATH")
+        # print("")
+    elif isinstance(curve, Subpath):
+        # print("hi apparently you have a SUBPATH:")
+        # print(curve)
+        # print("")
+        assert all(isinstance(seg, Segment) for seg in curve)
+        to_return = Subpath(*[scale(seg, x, y) for seg in curve]).set_Z(following=curve)
+        # print("FINISHED A SUBPATH")
+        # print("")
+    elif isinstance(curve, BezierSegment):
+        # print("hi apparently you have a BEZIERSEGMENT:")
+        # print(curve)
+        to_return = bezier_segment(*[scale_pt(bpt) for bpt in curve.bpoints()])
+        # print("FINISHED A BEZIERSEGMENT")
+        # print("")
+    elif isinstance(curve, Arc):
+        # print("hi apparently you have an ARC:")
+        # print(curve)
+        new_start = scale_pt(curve.start)
+        new_end = scale_pt(curve.end)
+        new_radius = scale_pt(curve.radius)
+        # print("here's new_radius:", new_radius)
+        to_return = Arc(start=new_start, radius=new_radius, rotation=curve.rotation,
+                        large_arc=curve.large_arc, sweep=curve.sweep, end=new_end)
+        # print("FINISHED AN ARC")
+        # print("")
+    else:
+        raise TypeError("Input `curve` should be a Path, Line, "
+                        "QuadraticBezier, CubicBezier, or Arc object.")
+
+    return to_return
 
 
 def bezier_unit_tangent(seg, t):
@@ -552,6 +605,14 @@ def segment_offset_as_subpath(segment, amount, two_sided=False, quality=0.01, sa
         s1, s2 = segment.split(0.5)
         wo1, sk1, wi1 = segment_offset_as_subpath(s1, amount, two_sided, quality=quality, safety=safety)
         wo2, sk2, wi2 = segment_offset_as_subpath(s2, amount, two_sided, quality=quality, safety=safety)
+        if wo1.end != wo2.start:
+            assert np.isclose(wo1.end, wo2.start)
+            wo2[0]._start = wo1.end
+            wo2.basic_reset()
+        if wi2.end != wi1.start:
+            assert np.isclose(wi2.end, wi1.start)
+            wi1[0]._start = wi2.end
+            wi1.basic_reset()
         way_out  = wo1.extend(wo2)
         way_in   = wi2.extend(wi1)
         skeleton = sk1.extend(sk2)
@@ -653,6 +714,7 @@ def join_offset_segments_into_subpath(skeleton, offsets, putative_amount, join, 
     assert isinstance(skeleton, Subpath) and isinstance(offsets, Path)
     assert len(skeleton) == offsets.num_segments()
     assert skeleton.is_bezier()
+    assert join in ['miter', 'round', 'bevel']
 
     if len(skeleton) == 0:
         return Subpath()
@@ -971,6 +1033,7 @@ class Address(object):
     @t.setter
     def t(self, val):
         if val is not None:
+            assert 0 <= val <= 1
             if self._t is None:
                 self._t = val
             else:
@@ -984,6 +1047,7 @@ class Address(object):
     @T.setter
     def T(self, val):
         if val is not None:
+            assert 0 <= val <= 1
             if self._T is None:
                 self._T = val
             else:
@@ -997,6 +1061,7 @@ class Address(object):
     @W.setter
     def W(self, val):
         if val is not None:
+            assert 0 <= val <= 1
             if self._W is None:
                 self._W = val
             else:
@@ -1010,6 +1075,7 @@ class Address(object):
     @segment_index.setter
     def segment_index(self, val):
         if val is not None:
+            assert isinstance(val, int) and val >= 0
             if self._segment_index is None:
                 self._segment_index = val
             else:
@@ -1023,6 +1089,7 @@ class Address(object):
     @subpath_index.setter
     def subpath_index(self, val):
         if val is not None:
+            assert isinstance(val, int) and val >= 0
             if self._subpath_index is None:
                 self._subpath_index = val
             else:
@@ -1088,6 +1155,11 @@ class Curve(object):
         """Returns a copy of self shifted by the complex quantity `z0` such
         that self.translated(z0).point(t) = self.point(t) + z0 for any t."""
         return translate(self, z0)
+
+    def scaled(self, x, y=None):
+        """Scales x coordinates by x, y coordinates by y; y defaults to x if
+        y == None."""
+        return scale(self, x, y)
 
     def ilength(self, s, s_tol=ILENGTH_S_TOL, maxits=ILENGTH_MAXITS,
                 error=ILENGTH_ERROR, min_depth=ILENGTH_MIN_DEPTH):
@@ -1285,7 +1357,7 @@ class BezierSegment(Segment):
         return self.bpoints()[item]
 
     def __len__(self):
-        return len(self.bpoints())
+        return len(list(self.bpoints()))
 
     def intersect(self, other_seg, tol=1e-12):
         """
@@ -1347,7 +1419,8 @@ class Line(BezierSegment):
         self._end = end
 
     def __repr__(self):
-        return 'Line(start=%s, end=%s)' % (self._start, self._end)
+        return ('Line(start=%s,\n' +
+                '     end=%s)') % (self._start, self._end)
 
     def tweaked(self, start=None, end=None):
         start = start if start is not None else self._start
@@ -1436,7 +1509,7 @@ class Line(BezierSegment):
 
     def naive_offset(self, amount):
         """performs a one-sided offset of the line by amount"""
-        n = self.normal()
+        n = self.normal(0)
         return Line(self._start + amount * n, self._end + amount * n)
 
 
@@ -1454,8 +1527,9 @@ class QuadraticBezier(BezierSegment):
         self._length_info = {'length': None, 'bpoints': None}
 
     def __repr__(self):
-        return 'QuadraticBezier(start=%s, control=%s, end=%s)' % \
-               (self._start, self._control, self._end)
+        return ('QuadraticBezier(start=%s,\n' +
+                '                control=%s,\n' +
+                '                end=%s)') % (self._start, self._control, self._end)
 
     def tweaked(self, start=None, control=None, end=None):
         start = start if start is not None else self._start
@@ -1486,7 +1560,7 @@ class QuadraticBezier(BezierSegment):
     def length(self, t0=0, t1=1, error=None, min_depth=None):
         t0 = param2address(self, t0).t
         t1 = param2address(self, t1).t
-        if t0 == 1 and t1 == 0:
+        if t0 == 0 and t1 == 1:
             if self._length_info['bpoints'] == self.bpoints():
                 return self._length_info['length']
         a = self._start - 2 * self._control + self._end
@@ -1598,8 +1672,10 @@ class CubicBezier(BezierSegment):
                              'min_depth': None}
 
     def __repr__(self):
-        return 'CubicBezier(start=%s, control1=%s, control2=%s, end=%s)' % \
-               (self._start, self._control1, self._control2, self._end)
+        return ('CubicBezier(start=%s,\n' +
+                '            control1=%s,\n' +
+                '            control2=%s,\n' +
+                '            end=%s)') % (self._start, self._control1, self._control2, self._end)
 
     def tweaked(self, start=None, control1=None, control2=None, end=None):
         start = start if start is not None else self._start
@@ -1726,7 +1802,7 @@ class CubicBezier(BezierSegment):
     def control1(self):
         return self._control1
 
-    @control.setter
+    @control1.setter
     def control1(self, val):
         raise Exception("Sorry, segments are immutable!")
 
@@ -1734,12 +1810,12 @@ class CubicBezier(BezierSegment):
     def control2(self):
         return self._control2
 
-    @control.setter
+    @control2.setter
     def control2(self, val):
         raise Exception("Sorry, segments are immutable!")
 
 
-class Arc(BezierSegment):
+class Arc(Segment):
     def __init__(self, start, radius, rotation, large_arc, sweep, end,
                  autoscale_radius=True):
         """
@@ -1837,8 +1913,12 @@ class Arc(BezierSegment):
     def __repr__(self):
         params = (self._start, self._radius, self._rotation,
                   self._large_arc, self._sweep, self._end)
-        return ("Arc({}start={}, radius={}, rotation={}, "
-                "large_arc={}, sweep={}, end={}{})".format(*params))
+        return ('Arc(start={},\n' +
+                '    radius={},\n' +
+                '    rotation={},\n' +
+                '    large_arc={},\n' +
+                '    sweep={},\n' +
+                '    end={})').format(*params)
 
     def tweaked(self, start=None, radius=None, rotation=None, large_arc=None, sweep=None, end=None, autoscale_radius=None):
         start = start if start is not None else self._start
@@ -1926,6 +2006,10 @@ class Arc(BezierSegment):
         # delta is the angular distance of the arc (w.r.t the circle)
         # theta is the angle between the positive x'-axis and the start point
         # on the circle
+        if u1.imag != 0:
+            if abs(u1.real) > 1:
+                assert np.isclose(abs(u1.real), 1)
+                u1 = max(-1, min(1, u1.real)) + 1j * u1.imag
         if u1.imag > 0:
             self.theta = degrees(acos(u1.real))
         elif u1.imag < 0:
@@ -2121,9 +2205,9 @@ class Arc(BezierSegment):
         return P1.extend(P2), allts
 
     def offset(self, amount, two_sided=False, quality=0.01, safety=5):
-        cpath, _ = self.converted_to_bezier_subpath(quality * 0.5, safety)
-        assert isinstance(cpath, Subpath)
-        return cpath.offset(amount, two_sided, quality * 0.5, safety)
+        converted, _ = self.converted_to_bezier_subpath(quality * 0.5, safety)
+        assert isinstance(converted, Subpath)
+        return converted.offset(amount, two_sided, quality * 0.5, safety)
 
     def intersect(self, other_seg, tol=1e-12):
         """
@@ -2336,6 +2420,9 @@ class Subpath(ContinuousCurve):
     def check_health(self):
         assert all(isinstance(thing, Segment) for thing in self)
         for s, t in zip(self, self[1:]):
+            if s.end != t.start:
+                print("s:", s)
+                print("t:", t)
             assert s.end == t.start
         if self._Z:
             assert len(self) > 0
@@ -2360,6 +2447,7 @@ class Subpath(ContinuousCurve):
             self._start = None
             self._end = None
             self._Z = False
+        self.check_health()
 
     def __len__(self):
         return len(self._segments)
@@ -2371,45 +2459,23 @@ class Subpath(ContinuousCurve):
         return index if not use_Z or not self._Z else index % len(self)
 
     def prev_segment(self, index, use_Z=False):
-        assert 0 <= index <= len(self) - 1
+        assert 0 <= index <= len(self)
         prev_index = self.mod_index(index - 1, use_Z)
         return self[prev_index] if prev_index >= 0 else None
 
     def next_segment(self, index, use_Z=False):
-        assert 0 <= index <= len(self) - 1
+        assert -1 <= index <= len(self) - 1
         next_index = self.mod_index(index + 1, use_Z)
         return self[next_index] if next_index <= len(self) - 1 else None
 
     def __setitem__(self, index, value):
         assert isinstance(value, Segment)
         assert -len(self) <= index <= len(self) - 1
-        # if len(self) > 0:
-        #     index = index % len(self)
-        #     prev = self.prev_segment(index, use_Z=True)
-        #     next = self.next_segment(index, use_Z=True)
-        # else:
-        #     prev = next = None
-        # if prev and prev.end != value.start:
-        #     raise ValueError("subpath segment insertion results in .start discontinuity")
-        # if next and next.start != value.end:
-        #     raise ValueError("subpath segment insertion results in .end discontinuity")
-        # self._segments[index] = value
-        # self.basic_reset()
         index = index % len(self)
         self.splice(index, index + 1, value)
 
     def __delitem__(self, index):
         assert -len(self) <= index <= len(self) - 1
-        # if len(self) > 0:
-        #     index = index % len(self)
-        #     prev = self.prev_segment(index, use_Z=True)
-        #     next = self.next_segment(index, use_Z=True)
-        # else:
-        #     prev = next = None
-        # if prev and next and prev.end != next.start:
-        #     raise ValueError("subpath segment deletion results in discontinuity")
-        # del self._segments[index]
-        # self.basic_reset()
         index = index % len(self)
         self.splice(index, index + 1, None)
 
@@ -2433,23 +2499,24 @@ class Subpath(ContinuousCurve):
         return self.insert(0, value)
 
     def splice(self, start_index, end_index, value):
-        """replaces segments of indices start_index, ..., end_index - 1 with the
+        """
+        replaces segments of indices start_index, ..., end_index - 1 with the
         (segments in) value, which may be a segment, a subpath, or a "naively
         continuous" path, as long as no discontinuity is induced; if end_index ==
         start_index, no segments are replaced, and insertion occurs right before
         the segment at start_index == end_index, so that the first inersted segment
         has index start_index. Can be used with an empty value (of type Path or
         Subpath), in which case the effect is only to delete the segments in the
-        sequence start_index, ..., end_index-1."""
-
+        sequence start_index, ..., end_index - 1
+        """
         # assertions / checking
         assert isinstance(value, Curve) or value is None
         assert not isinstance(value, Path) or value.is_naively_continuous()
         assert 0 <= start_index <= end_index <= len(self)
 
         if len(self) > 0:
-            prev = self.prev_segment(start_index % len(self), use_Z=True)
-            next = self.next_segment((end_index - 1) % len(self), use_Z=True)
+            prev = self.prev_segment(start_index, use_Z=True)
+            next = self.next_segment(end_index - 1, use_Z=True)
         else:
             prev = next = None
 
@@ -2460,8 +2527,6 @@ class Subpath(ContinuousCurve):
                 raise ValueError("subpath splice results jumpcut discontinuity")
         else:
             if prev and prev.end != value.start:
-                print("prev:", prev)
-                print("value:", value)
                 raise ValueError("subpath splice results in .start discontinuity")
             if next and next.start != value.end:
                 raise ValueError("subpath splice results in .end discontinuity")
@@ -2475,7 +2540,6 @@ class Subpath(ContinuousCurve):
             self._segments.insert(start_index, seg)
 
         self.basic_reset()
-        self.check_health()
 
         return self
 
@@ -2487,7 +2551,7 @@ class Subpath(ContinuousCurve):
 
     def __repr__(self):
         return "Subpath({})".format(
-            ",\n     ".join(repr(x) for x in self._segments))
+            ",\n        ".join(repr(x).replace('\n', '\n        ') for x in self._segments))
 
     def __eq__(self, other):
         if not isinstance(other, Subpath):
@@ -2519,6 +2583,8 @@ class Subpath(ContinuousCurve):
 
     def length(self, T0=0, T1=1, error=LENGTH_ERROR, min_depth=LENGTH_MIN_DEPTH):
         self._calc_lengths(error=error, min_depth=min_depth)
+        T0 = param2address(self, T0).T
+        T1 = param2address(self, T1).T
         if T0 == 0 and T1 == 1:
             return self._length
         else:
@@ -2534,7 +2600,7 @@ class Subpath(ContinuousCurve):
 
     @property
     def start(self):
-        if not self._start:
+        if not self._start and len(self) > 0:
             self._start = self._segments[0].start
         return self._start
 
@@ -2548,7 +2614,7 @@ class Subpath(ContinuousCurve):
 
     @property
     def end(self):
-        if not self._end:
+        if not self._end and len(self) > 0:
             self._end = self._segments[-1].end
         return self._end
 
@@ -2642,10 +2708,9 @@ class Subpath(ContinuousCurve):
     def self_level_parameter_of(address):
         return address.T
 
-    def T2address(self, T=None, address=None):
+    def T2address(self, T=None):
         assert len(self) > 0
-        a = address if address else Address()
-        a.T = T  # please note this calls a setter in Address---does not overwrite
+        a = T if isinstance(T, Address) else Address(T=T)
         if a.T is None:
             raise ValueError("no source of value for T in Subpath.T2address")
         a.segment_index, a.t = self.T2t(a.T)
@@ -2654,6 +2719,9 @@ class Subpath(ContinuousCurve):
     def T2t(self, T):
         """returns the segment index and segment parameter, t, corresponding to
         the path parameter T. This is the inverse of the Subpath.t2T() method."""
+        if isinstance(T, Address):
+            print("yer it's an address:", T)
+
         if len(self) == 0:
             raise ValueError(".T2t() called on empty subpath")
 
@@ -2729,7 +2797,7 @@ class Subpath(ContinuousCurve):
             return T_seg_end
         return (T_seg_end - T_seg_start) * t + T_seg_start
 
-    def t2address(self, t=None, address=None, segment_index=None, segment=None):
+    def t2address(self, t=None, segment_index=None, segment=None):
         """
         Takes a mandatory value t, 0 <= t <= 1, and an integer segment_index
         (mandatory unless len(self) == 1, and possibly supplied indirectly via
@@ -2745,9 +2813,7 @@ class Subpath(ContinuousCurve):
         Note: t, segment_index are kept as keywords parameters mainly for
         syntactic consistency with Path.T2address.
         """
-        a = address if address is not None else Address()
-
-        a.t = t  # (uses a setter, does not overwrite non-None a.t)
+        a = t if isinstance(t, Address) else Address(t=t)
         if a.t is None:
             raise ValueError("t value required in Subpath.t2address")
 
@@ -2784,7 +2850,7 @@ class Subpath(ContinuousCurve):
         return self._segments[a.segment_index].unit_tangent(a.t)
 
     def normal(self, T_or_address):
-        """returns the (right hand rule) unit normal vector to self at t."""
+        """returns the (right hand rule) unit normal vector to self at t"""
         return - 1j * self.unit_tangent(T_or_address)
 
     def curvature(self, T_or_address):
@@ -2911,8 +2977,8 @@ class Subpath(ContinuousCurve):
         for si1, seg1 in enumerate(subpath1):
             for si2, seg2 in enumerate(subpath2):
                 for a1, a2 in seg1.intersect(seg2, tol=tol):
-                    a1 = subpath1.t2address(segment_index=si1, address=a1)
-                    a2 = subpath2.t2address(segment_index=si2, address=a2)
+                    a1 = subpath1.t2address(segment_index=si1, t=a1)
+                    a2 = subpath2.t2address(segment_index=si2, t=a2)
                     append_new_intersection(a1, a2)
                     if justonemode:
                         return intersection_list[0]
@@ -3136,6 +3202,11 @@ class Path(Curve):
         self.basic_reset()
         return value
 
+    def __contains__(self, subpath):
+        if any(z is subpath for z in self):
+            return True
+        return False
+
     def append(self, value, even_if_empty=False):
         assert isinstance(value, Subpath)
         assert value not in self
@@ -3167,19 +3238,16 @@ class Path(Curve):
     def __iter__(self):
         return self._subpaths.__iter__()
 
-    def __contains__(self, x):
-        return self._subpaths.__contains__(x)
-
     def reversed(self):
         """returns a copy of the Path object with its orientation reversed."""
-        return Path(*[subpath.reversed() for subpath in self].reverse())
+        return Path(*[subpath.reversed() for subpath in reversed(self)])
 
     def __len__(self):
         return len(self._subpaths)
 
     def __repr__(self):
         return "Path({})".format(
-               ",\n     ".join(repr(x) for x in self))
+               ",\n     ".join(repr(x).replace('\n', '\n     ') for x in self))
 
     def __eq__(self, other):
         if not isinstance(other, Path):
@@ -3607,19 +3675,19 @@ class Path(Curve):
         for s in self:
             wo, sk, wi = s.offset(amount, two_sided, quality, safety, join, miter_limit, cap)
             assert all(isinstance(x, Subpath) for x in [wo, sk, wi])
-            skeletons.append(sk)
             way_outs.append(wo)
-            way_ins.append(wi)
+            skeletons.append(sk)
+            way_ins.append(wi, even_if_empty=True)
         assert len(way_outs) == len(way_ins)
         return way_outs, skeletons, way_ins
 
     def stroke(self, width, quality=0.01, safety=5, join='miter', miter_limit=4, cap='butt'):
-        way_outs, skeletons, way_ins = self.offset(width / 2, two_sided=True, quality=quality, safety=safety, join=join, miter_limit=miter_limit, cap=cap)[0]
+        way_outs, skeletons, way_ins = self.offset(width / 2, two_sided=True, quality=quality, safety=safety, join=join, miter_limit=miter_limit, cap=cap)
         stroke = Path()
         assert len(way_outs) == len(way_ins)
         for wo, wi in zip(way_outs, way_ins):
             assert len(wo) > 0
             stroke.append(wo)
             if len(wi) > 0:
-                stroke.append(wo)
-        return way_outs
+                stroke.append(wi)
+        return stroke
