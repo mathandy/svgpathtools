@@ -1,0 +1,91 @@
+import svgpathtools
+import math
+
+
+def output_stub(dstring, attr):
+    pass
+
+
+# TEST 1 intersection accuracy
+
+if False:
+    for norm in {True, False}:
+        for parser1 in {svgpathtools.parse_path, svgpathtools.parse_subpath}:
+            p1 = parser1('M 0,0 0,1 1,1 1,0 Z M 2,0 2,1 3,1, 3,0 Z')
+            for parser2 in {svgpathtools.parse_path, svgpathtools.parse_subpath}:
+                p2 = parser2('M -1,-1 2,2 3,1')
+
+                intersections12 = p1.intersect(p2, normalize=norm)
+                intersections21 = p2.intersect(p1, normalize=norm)
+
+                assert len(intersections12) == len(intersections21) == 3 * (1 + bool(not norm))
+
+                for a1, a2 in intersections12:
+                    assert (a2, a1) in intersections21
+
+                for a2, a1 in intersections21:
+                    assert (a1, a2) in intersections12
+
+                distinct_a2_ts = {a2.t for a2, a1 in intersections21}
+
+                assert distinct_a2_ts == {1 / 3, 2 / 3, 1}
+
+
+# TEST 2 area computations (with double square and unit circle)
+
+if False:
+    for parser1 in {svgpathtools.parse_path, svgpathtools.parse_subpath}:
+        p1 = parser1('M 0,0 0,1 1,1 1,0 Z M 2,0 2,1 3,1, 3,0 Z')
+        assert p1.area() in {2, -2}
+        assert p1.reversed().area() == -p1.area()
+
+        p3 = parser1('M 6,6 a 1,1 0 0 0 -1,1 a 1,1 0 0 0 1,1 a 1,1 0 0 0 1,-1 a 1,1 0 0 0 -1,-1 Z')
+        print("p3.area():", p3.area())
+        print("p3.reversed().area():", p3.reversed().area())
+        print("p3.reversed().area(quality=0.01):", p3.reversed().area(quality=0.01))
+        print("p3.reversed().area(quality=0.001):", p3.reversed().area(quality=0.001))
+        print("p3.reversed().area(quality=0.0001):", p3.reversed().area(quality=0.0001))
+        print("p3.reversed().area(quality=0.00001):", p3.reversed().area(quality=0.00001))
+
+
+# TEST 3 length computations
+
+if False:
+    for parser1 in {svgpathtools.parse_path, svgpathtools.parse_subpath}:
+        p1 = parser1('M 0,0 0,1 1,1 1,0 Z M 2,0 2,1 3,1, 3,0 Z')
+        p3 = parser1('M 6,6 a 1,1 0 0 0 -1,1 a 1,1 0 0 0 1,1 a 1,1 0 0 0 1,-1 a 1,1 0 0 0 -1,-1 Z')
+
+        assert p1.length() == 8
+        assert p1.reversed().length() == 8
+        assert p1.length(0.25, 0.5) == 2
+        assert p1.length(0.25, 0.75) == 4
+
+        print("p3.length:", p3.length())
+        print("tau      :", 2 * math.pi)
+
+
+# TEST 4 arc -> cubic conversion
+
+if False:
+    p5 = svgpathtools.parse_subpath('M 2,1 A 1,2 45 1 0 2,0')
+    arc = p5[0]
+    assert isinstance(arc, svgpathtools.Arc)
+    p6, _ = arc.converted_to_bezier_subpath()
+    output_stub(p5.d(), {'stroke': 'black', 'stroke-width': '0.15', 'fill': 'none'})
+    output_stub(p6.d(), {'stroke': 'red', 'stroke-width': '0.1', 'fill': 'none'})
+
+# TEST 5 offsets, strokes
+
+if True:
+    p2 = svgpathtools.parse_path('M 0,0 0,2 2,2 2,1 A 1,2 45 1 0 2,0 M 5,0 l 0,2 2,0 0,-2 Z')
+
+    p2wo, p2sk, p2wi = p2.offset(0.2, two_sided=True)
+
+    stroke1 = p2.stroke(0.2)
+    stroke2 = p2.stroke(0.2, join='round')
+    stroke3 = p2.stroke(0.2, join='round', cap='square')
+
+    output_stub(stroke1.d(), {'stroke': 'gray', 'stroke-width': '0.1', 'fill': 'none'})
+    output_stub(stroke2.translated(4j).d(), {'stroke': 'pink', 'stroke-width': '0.1', 'fill': 'none'})
+    output_stub(stroke3.translated(8j).d(), {'stroke': 'teal', 'stroke-width': '0.1', 'fill': 'none'})
+    output_stub(p2.translated(8j).d(), {'stroke': 'black', 'stroke-width': '0.1', 'fill': 'none'})
