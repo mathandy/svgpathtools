@@ -3601,15 +3601,25 @@ class Path(Curve):
                                             reuse_segments=reuse_segments) for s in self])
 
     def offset(self, amount, two_sided=False, quality=0.01, safety=5, join='miter', miter_limit=4, cap='butt'):
-        skeleton = Path()
-        offset   = Path()
+        skeletons = Path()
+        way_outs = Path()
+        way_ins  = Path()
         for s in self:
             wo, sk, wi = s.offset(amount, two_sided, quality, safety, join, miter_limit, cap)
             assert all(isinstance(x, Subpath) for x in [wo, sk, wi])
-            skeleton.append(sk)
-            offset.append(wo)
-            offset.append(wi)
-        return offset, skeleton
+            skeletons.append(sk)
+            way_outs.append(wo)
+            way_ins.append(wi)
+        assert len(way_outs) == len(way_ins)
+        return way_outs, skeletons, way_ins
 
     def stroke(self, width, quality=0.01, safety=5, join='miter', miter_limit=4, cap='butt'):
-        return self.offset(width / 2, two_sided=True, quality=quality, safety=safety, join=join, miter_limit=miter_limit, cap=cap)[0]
+        way_outs, skeletons, way_ins = self.offset(width / 2, two_sided=True, quality=quality, safety=safety, join=join, miter_limit=miter_limit, cap=cap)[0]
+        stroke = Path()
+        assert len(way_outs) == len(way_ins)
+        for wo, wi in zip(way_outs, way_ins):
+            assert len(wo) > 0
+            stroke.append(wo)
+            if len(wi) > 0:
+                stroke.append(wo)
+        return way_outs
