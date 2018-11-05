@@ -2445,12 +2445,13 @@ class Path(MutableSequence):
         
         Approximates any Arc segments in the Path with lines
         approximately `chord_length` long, and returns the area enclosed
-        by the approximated Path.  Default chord length is 0.01.  To 
-        ensure accurate results, make sure this `chord_length` is set to
-        a reasonable value (e.g. by checking curvature).  
+        by the approximated Path.  Default chord length is 0.01.  If Arc
+        segments are included in path, to ensure accurate results, make
+        sure this `chord_length` is set to a reasonable value (e.g. by
+        checking curvature).
                 
         Notes
-        ----
+        -----
         * Negative area results from clockwise (as opposed to
         counter-clockwise) parameterization of the input Path.
         
@@ -2458,13 +2459,13 @@ class Path(MutableSequence):
         ---------------
         This is one of many parts of `svgpathtools` that could be 
         improved by a noble soul implementing a piecewise-linear 
-        approximation scheme for paths (one with controls to 
-        guarantee a desired accuracies).
+        approximation scheme for paths (one with controls to guarantee a
+        desired accuracy).
         """
 
-        def area_without_arcs(self):
+        def area_without_arcs(path):
             area_enclosed = 0
-            for seg in self:
+            for seg in path:
                 x = real(seg.poly())
                 dy = imag(seg.poly()).deriv()
                 integrand = x*dy
@@ -2472,20 +2473,22 @@ class Path(MutableSequence):
                 area_enclosed += integral(1) - integral(0)
             return area_enclosed
 
+        def seg2lines(seg):
+            """Find piecewise-linear approximation of `seg`."""
+            num_lines = ceil(seg.length() / chord_length)
+            tvals = np.linspace(0, seg.length(), num_lines)
+            return [Line(seg.point(tvals[i]), seg.point(tvals[i+1]))
+                    for i in range(len(tvals)-1)]
+
         assert self.isclosed()
 
-        bezier_path_approximation = Path()
+        bezier_path_approximation = []
         for seg in self:
             if isinstance(seg, Arc):
-                num_lines = ceil(seg.length() / chord_length)  # check curvature to improve  
-                bezier_path_approximation = \
-                    [Line(seg.point(i/num_lines), seg.point((i+1)/num_lines)) 
-                     for i in range(int(num_lines))]
+                bezier_path_approximation += seg2lines(seg)
             else:
-                approximated_path.append(seg)
-
-        return area_without_arcs(approximated_path)
-
+                bezier_path_approximation.append(seg)
+        return area_without_arcs(Path(*bezier_path_approximation))
 
     def intersect(self, other_curve, justonemode=False, tol=1e-12):
         """returns list of pairs of pairs ((T1, seg1, t1), (T2, seg2, t2))
