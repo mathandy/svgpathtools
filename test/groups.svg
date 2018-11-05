@@ -70,7 +70,8 @@
 
       <g
           id="nested group - translate xy"
-          transform="translate(20, 30)">
+          transform="
+          translate(20, 30)">
 
         <path
             d="M 150,200 l -50,25"
