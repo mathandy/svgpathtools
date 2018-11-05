@@ -18,7 +18,7 @@ example**.  Feel free to make a pull-request too (see relevant section below).
 
 ## Submitting Pull-Requests 
 
-#### New features should come with unittests and docstrings.
+#### New features come with unittests and docstrings.
 If you want to add a cool/useful feature to svgpathtools, that's great!  Just 
 make sure your pull-request includes both thorough unittests and well-written 
 docstrings.  See relevant sections below on "Testing Style" and 
@@ -42,8 +42,9 @@ you want your code's variable names to match some official documentation, or
 PEP8 guidelines contradict those present in this document).
 * Include docstrings and in-line comments where appropriate.  See 
 "Docstring Style" section below for more info.
-* Use explicit, uncontracted names (e.g. "parse_transform" instead of 
-"parse_trafo").   The ideal names should be something a user can guess 
+* Use explicit, uncontracted names (e.g. `parse_transform` instead of 
+`parse_trafo`).   Maybe the most important feature for a name is how easy it is 
+for a user to guess (after having seen other names used in `svgpathtools`).
 * Use a capital 'T' denote a Path object's parameter, use a lower case 't' to 
 denote a Path segment's parameter.  See the methods `Path.t2T` and `Path.T2t` 
 if you're unsure what I mean.  In the ambiguous case, use either 't' or another 
