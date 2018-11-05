@@ -4,7 +4,7 @@ Arc."""
 
 # External dependencies
 from __future__ import division, absolute_import, print_function
-from math import sqrt, cos, sin, acos, degrees, radians, log, pi, ceil
+from math import sqrt, cos, sin, asin, acos, degrees, radians, log, pi, ceil
 from cmath import exp, sqrt as csqrt, phase
 from collections import MutableSequence
 from warnings import warn
