@@ -2180,12 +2180,26 @@ class Path(MutableSequence):
     #     return Ts
 
     def area(self, chord_length=1e-2):
-        """Approximates any Arc segments in the Path with lines
+        """Find area enclosed by path.
+        
+        Approximates any Arc segments in the Path with lines
         approximately `chord_length` long, and returns the area enclosed
-        by the approximated Path.  Default chord length is 0.01.
-
-        Note: negative area results from clockwise (as opposed to
-        counter-clockwise) parameterization of the input Path."""
+        by the approximated Path.  Default chord length is 0.01.  To 
+        ensure accurate results, make sure this `chord_length` is set to
+        a reasonable value (e.g. by checking curvature).  
+                
+        Notes
+        ----
+        * Negative area results from clockwise (as opposed to
+        counter-clockwise) parameterization of the input Path.
+        
+        To Contributors
+        ---------------
+        This is one of many parts of `svgpathtools` that could be 
+        improved by a noble soul implementing a piecewise-linear 
+        approximation scheme for paths (one with controls to 
+        guarantee a desired accuracies).
+        """
 
         def area_without_arcs(self):
             area_enclosed = 0
@@ -2197,17 +2211,15 @@ class Path(MutableSequence):
                 area_enclosed += integral(1) - integral(0)
             return area_enclosed
 
-        assert(self.isclosed())
+        assert self.isclosed()
 
-        approximated_path = Path()
+        bezier_path_approximation = Path()
         for seg in self:
-            if type(seg) == Arc:
-                num_lines = ceil(seg.length() / chord_length)
-                for i in range(0, int(num_lines)):
-                    t0 = i/num_lines
-                    t1 = (i+1)/num_lines
-                    l = Line(start=seg.point(t0), end=seg.point(t1))
-                    approximated_path.append(l)
+            if isinstance(seg, Arc):
+                num_lines = ceil(seg.length() / chord_length)  # check curvature to improve  
+                bezier_path_approximation = \
+                    [Line(seg.point(i/num_lines), seg.point((i+1)/num_lines)) 
+                     for i in range(int(num_lines))]
             else:
                 approximated_path.append(seg)
 
