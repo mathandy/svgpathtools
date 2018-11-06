@@ -47,19 +47,6 @@ Prerequisites
 Setup
 -----
 
-If not already installed, you can **install the prerequisites** using
-pip.
-
-.. code:: bash
-
-    $ pip install numpy
-
-.. code:: bash
-
-    $ pip install svgwrite
-
-Then **install svgpathtools**:
-
 .. code:: bash
 
     $ pip install svgpathtools
