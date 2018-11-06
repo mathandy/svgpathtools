@@ -7,6 +7,25 @@ def output_stub(dstring, attr):
     pass
 
 
+# TEST -1 conversion of Arc to Bezier curve
+
+if False:
+    a0 = svgpathtools.parse_subpath('M1,-1 A1.41421,1.41421 0 1 0 1,1')
+    c1 = svgpathtools.Subpath(a0[0].midpoint_cubic_interpolation(0.1, 0.7))
+    output_stub(a0.d(), {'stroke': 'black', 'stroke-width': '0.1', 'fill': 'none'})
+    output_stub(c1.d(), {'stroke': 'red', 'stroke-width': '0.1', 'fill': 'none'})
+
+# TEST 0 Bezier offset
+
+if False:
+    s = 2
+    c0 = svgpathtools.QuadraticBezier(0, s * (1 + 0.5j), s * (2 + 0j))
+    output_stub(svgpathtools.Subpath(c0).d(), {'stroke': 'black', 'stroke-width': '0.1', 'fill': 'none'})
+    for off in range(10):
+        c1 = c0.naive_offset(off)
+        output_stub(svgpathtools.Subpath(c1).d(), {'stroke': 'red', 'stroke-width': '0.1', 'fill': 'none'})
+
+
 # TEST 1 intersection accuracy
 
 if True:
@@ -47,6 +66,7 @@ if True:
         print("p3.reversed().area(quality=0.001):", p3.reversed().area(quality=0.001))
         print("p3.reversed().area(quality=0.0001):", p3.reversed().area(quality=0.0001))
         print("p3.reversed().area(quality=0.00001):", p3.reversed().area(quality=0.00001))
+        print("p3.reversed().area(quality=0.000001):", p3.reversed().area(quality=0.000001))
 
 
 # TEST 3 length computations
@@ -67,7 +87,7 @@ if True:
 
 # TEST 4 arc -> cubic conversion
 
-if True:
+if False:
     p5 = svgpathtools.parse_subpath('M 2,1 A 1,2 45 1 0 2,0')
     arc = p5[0]
     assert isinstance(arc, svgpathtools.Arc)
