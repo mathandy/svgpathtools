@@ -650,11 +650,11 @@ def compute_offset_joining_subpath(seg1, off1, seg2, off2, offset_amount, join='
     tangent1_base = seg1.unit_tangent(1)
     tangent2_base = seg2.unit_tangent(0)
 
-    tangent1_offset = off1.unit_tangent(1)
-    tangent2_offset = off2.unit_tangent(0)
+    # tangent1_offset = off1.unit_tangent(1)
+    # tangent2_offset = off2.unit_tangent(0)
 
-    assert np.isclose(tangent1_base, tangent1_offset)
-    assert np.isclose(tangent2_base, tangent2_offset)
+    # assert np.isclose(tangent1_base, tangent1_offset)
+    # assert np.isclose(tangent2_base, tangent2_offset)
 
     # note: real(w * z.conjugate()) is the dot product of w, z as vectors
 
@@ -824,7 +824,7 @@ Subpath
 Path
 
 The first four types of objects ('Line', 'QuadraticBezier', 'CubicBezier'
-    and 'Arc') are commonly known as "segments".
+and 'Arc') are commonly known as "segments".
 
 A subpath is a list, possibly empty, of end-to-end contiguous segments. A
 nonempty subpath whose first and last points coincide *may* be "closed". A
@@ -925,18 +925,19 @@ methods, such as:
 - Path.W2address    [takes: W or partial address; returns: completed address]
 - Path.T2address    [takes: T, subpath_index and/or partial address; returns:
                      completed address]
-                     - Subpath.T2t       [takes: T; returns: t]
+- Subpath.T2t       [takes: T; returns: t]
 - Subpath.t2T       [takes: t, segment_index; returns T]
 - Subpath.T2address [takes: T or partial address; returns: address with .T, .t
                      and .segment_index fields completed]
-                     - Subpath.t2address [takes: t, segment_index and/or partial address; returns:]
+- Subpath.t2address [takes: t, segment_index and/or partial address; returns:]
                      address with .T, .t, and .segment_index fields completed]
 
 The user can consult the implementations of these methods for more details, but
-one should be aware that '...2address' methods complete provided addresses (if
-any) in-place, as opposed to creating addresses on the fly. This behavior seems
-to align with most use cases. (Also consult Address and its methods for further
-details.)
+one should especially be aware that '...2address' methods complete provided
+addresses (if any) in-place, as opposed to creating brand new addresses on the
+fly---I.e., these functions have the "side effect" of completing a supplied
+address. This behavior seems to align with use cases. (Also consult Address and
+its methods for further details.)
 
 Lastly it can be noted that addresses provide a more fine-grained control over
 the position of a point than a global parameter such as 'T' or 'W' alone does.
@@ -1412,6 +1413,57 @@ class BezierSegment(Segment):
         t1 = param2address(self, t1_or_address).t
         return crop_bezier(self, t0, t1)
 
+    def naive_offset(self, amount):
+        """Returns a cubic bezier segment that approximates the segment's offset;
+        requires the segment to have a computable unit tangent and second derivative
+        at t = 0, 1."""
+        """Overwritten by Line"""
+
+        # Let O(t) denote offset at time t. Let UT(t) denote unit tangent at time t.
+        # We need to compute O'(0), O'(1) in order to set the control points to match these values.
+        # Have (with d := amount):
+        # O(t) = p(t) + d * n(t)
+        # O(t) = p(t) - d * j * UT(t)
+        # O'(t) = p'(t) - d * j * UT'(t)
+        # And:
+        # UT'(t) = (d/dt) p'(t)/|p'(t)|
+        # So let's first compute d/dt |p'(t)|...
+        # ...happens to be
+        #
+        #      d/dt |p'(t)| = (1 / |p'(t)|) * p'(t).p''(t)
+        #
+        # ...where '.' is a dot product. (Computation ommitted.)
+        # So (continuing):
+        # UT'(t) = (p''(t)/|p'(t)|) - p'(t).p''(t)*p'(t)/|p'(t)|^3)
+        # And (the sought-for derivative):
+        # O'(t) = p'(t) - d * j * (p''(t)/|p'(t)|) - p'(t).p''(t)*p'(t)/|p'(t)|^3)
+
+        N0 = self.normal(0)
+        start = self._start + N0 * amount
+        d0 = self.derivative(0)              # p'(0)
+        if abs(d0) > 1e-6:
+            dd0 = self.derivative(0, n=2)    # p''(0)
+            dot = real(d0 * dd0.conjugate())
+            ab0 = abs(d0)
+            Op0 = d0 - amount * 1j * ((dd0 / ab0) - dot * d0 / ab0**3)
+            control1 = start + Op0 / 3
+        else:
+            control1 = start
+
+        N1 = self.normal(1)
+        end = self._end + N1 * amount
+        d1 = self.derivative(1)
+        if abs(d1) > 1e-6:
+            dd1 = self.derivative(1, n=2)
+            dot = real(d1 * dd1.conjugate())
+            ab1 = abs(d1)
+            Op1 = d1 - amount * 1j * ((dd1 / ab1) - dot * d1 / ab1**3)
+            control2 = end - Op1 / 3
+        else:
+            control2 = end
+
+        return CubicBezier(start, control1, control2, end)
+
 
 class Line(BezierSegment):
     def __init__(self, start, end):
@@ -1641,12 +1693,6 @@ class QuadraticBezier(BezierSegment):
                 self._end, self._control, self._start)
         return new_quad
 
-    def naive_offset(self, amount):
-        start   = self._start + self.normal(0) * amount
-        end     = self._end   + self.normal(1) * amount
-        control = offset_intersection(self._start, self._control, self._end, amount)
-        return QuadraticBezier(start, control, end)
-
     @property
     def control(self):
         return self._control
@@ -1790,13 +1836,6 @@ class CubicBezier(BezierSegment):
             new_cub._length_info['bpoints'] = (
                 self._end, self._control2, self._control1, self._start)
         return new_cub
-
-    def naive_offset(self, amount):
-        start    = self._start + self.normal(0) * amount
-        end      = self._end   + self.normal(1) * amount
-        control1 = offset_intersection(self._start, self._control1, self._control2, amount)
-        control2 = offset_intersection(self._control1, self._control2, self._end, amount)
-        return CubicBezier(start, control1, control2, end)
 
     @property
     def control1(self):
@@ -2058,7 +2097,7 @@ class Arc(Segment):
         sinphi = self.rot_matrix.imag
         rx = self._radius.real
         ry = self._radius.imag
-
+        # [jpsteinb: why is the following line not used?]
         # z = self.rot_matrix * (rx * cos(angle) + 1j * ry * sin(angle)) + self.center
         x = rx * cosphi * cos(angle) - ry * sinphi * sin(angle) + self.center.real
         y = rx * sinphi * cos(angle) + ry * cosphi * sin(angle) + self.center.imag
@@ -2085,7 +2124,7 @@ class Arc(Segment):
         self.u1transform()."""
         x = real(zeta)
         y = imag(zeta)
-        z = x * self._radius.real + y * self._radius.imag
+        z = x * self._radius.real + y * self._radius.imag * 1j
         return self.rot_matrix * z + self.center
 
     def length(self, t0=0, t1=1, error=LENGTH_ERROR, min_depth=LENGTH_MIN_DEPTH):
@@ -2156,6 +2195,9 @@ class Arc(Segment):
             degs = _deg(psi, domain_lower_limit=self.theta)
         return (degs - self.theta) / self.delta
 
+    def t2phase(self, t):
+        return radians(self.theta + t * self.delta)
+
     def t2lambda(self, t):
         p = self.point(t) - self.center
         q = (1 / self.rot_matrix) * p
@@ -2175,7 +2217,10 @@ class Arc(Segment):
 
     def Maisonobe_cubic_interpolation(self, t1, t2):
         """see paper 'Drawing an elliptical arc using polylines, quadratic
-        or cubic Bezier curves' by L. Maisonobe, 2003, sections 2.2.1 and 3.4.1"""
+        or cubic Bezier curves' by L. Maisonobe, 2003, sections 2.2.1 and 3.4.1
+
+        This interpolation respects slope and curvature at the endpoints of the
+        cubic"""
         assert 0 <= t1 < t2 <= 1
         start = self.point(t1)
         end   = self.point(t2)
@@ -2187,10 +2232,35 @@ class Arc(Segment):
         control2 = end   - alpha * self.Maisonobe_E_prime(eta2)
         return CubicBezier(start, control1, control2, end)
 
-    def converted_to_bezier_subpath(self, quality=0.01, safety=5):
+    def midpoint_cubic_interpolation(self, t1, t2):
+        """this interpolation respects slopes at the endpoints of the cubic,
+        and places the midpoint of the cubic in the middle of the interpolated
+        arc
+
+        this interpolation seems to be preferred over Maisonobe's interpolation
+        in drawing programs, but Maisonobe's seems to give faster convergence
+        of areas (not fully tested though)"""
+        assert 0 <= t1 < t2 <= 1
+        start = self.point(t1)
+        end = self.point(t2)
+        psi1 = radians(self.theta + t1 * self.delta)
+        psi2 = radians(self.theta + t2 * self.delta)
+        aperture = psi2 - psi1
+        alpha = (4 / 3) * tan(aperture / 4)
+        assert alpha * self.delta > 0
+        control1 = (1 + alpha * 1j) * exp(1j * psi1)
+        control2 = (1 - alpha * 1j) * exp(1j * psi2)
+        control1 = self.iu1transform(control1)
+        control2 = self.iu1transform(control2)
+        return CubicBezier(start, control1, control2, end)
+
+    def converted_to_bezier_subpath(self, quality=0.01, safety=5, use_Maisonobe=True):
         assert quality > 0
         safety = int(min(4, safety))
-        other = self.Maisonobe_cubic_interpolation(0, 1)
+        if use_Maisonobe:
+            other = self.Maisonobe_cubic_interpolation(0, 1)
+        else:
+            other = self.midpoint_cubic_interpolation(0, 1)
         assert other.start == self._start
         assert other.end == self._end
         divergence = divergence_of_offset(self, other, 0, safety=safety, early_return_threshold=quality)
@@ -2849,10 +2919,6 @@ class Subpath(ContinuousCurve):
         a = self.T2address(param2address(self, T_or_address))
         return self._segments[a.segment_index].unit_tangent(a.t)
 
-    def normal(self, T_or_address):
-        """returns the (right hand rule) unit normal vector to self at t"""
-        return - 1j * self.unit_tangent(T_or_address)
-
     def curvature(self, T_or_address):
         """returns the curvature of the subpath at T while checking for
         possible non-differentiability at T. Outputs float('inf') if not
@@ -2890,7 +2956,10 @@ class Subpath(ContinuousCurve):
         parameterization of the Path object.
         """
         assert self._end == self._start
-        cubicized = self.converted_to_bezier(quality=quality, safety=safety, reuse_segments=True)
+        cubicized = self.converted_to_bezier(quality=quality,
+                                             safety=safety,
+                                             reuse_segments=True,
+                                             use_Maisonobe=True)
         area_enclosed = 0
         for seg in cubicized:
             x         = real(seg.poly())
@@ -3040,14 +3109,14 @@ class Subpath(ContinuousCurve):
 
         return to_return
 
-    def converted_to_bezier(self, quality=0.01, safety=5, reuse_segments=True):
+    def converted_to_bezier(self, quality=0.01, safety=5, reuse_segments=True, use_Maisonobe=False):
         # warning: reuses same segments when available, unless 'reuse_segments'
         #          is set to False
         new_subpath = Subpath()
 
         for s in self:
             if isinstance(s, Arc):
-                cpath, _ = s.converted_to_bezier_subpath(quality, safety)
+                cpath, _ = s.converted_to_bezier_subpath(quality, safety, use_Maisonobe=use_Maisonobe)
                 new_subpath.extend(cpath)
             else:
                 possibly_new_segment = s if reuse_segments else translate(s, 0)
