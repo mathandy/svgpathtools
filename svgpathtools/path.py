@@ -248,38 +248,19 @@ def scale(curve, x, y=None):
     assert x != 0 and y != 0
 
     if isinstance(curve, Path):
-        # print("hi apparently you have a PATH:")
-        # print(curve)
-        # print("")
         assert all(isinstance(subpath, Subpath) for subpath in curve)
         to_return = Path(*[scale(subpath, x, y) for subpath in curve])
-        # print("FINISHED A PATH")
-        # print("")
     elif isinstance(curve, Subpath):
-        # print("hi apparently you have a SUBPATH:")
-        # print(curve)
-        # print("")
         assert all(isinstance(seg, Segment) for seg in curve)
         to_return = Subpath(*[scale(seg, x, y) for seg in curve]).set_Z(following=curve)
-        # print("FINISHED A SUBPATH")
-        # print("")
     elif isinstance(curve, BezierSegment):
-        # print("hi apparently you have a BEZIERSEGMENT:")
-        # print(curve)
         to_return = bezier_segment(*[scale_pt(bpt) for bpt in curve.bpoints()])
-        # print("FINISHED A BEZIERSEGMENT")
-        # print("")
     elif isinstance(curve, Arc):
-        # print("hi apparently you have an ARC:")
-        # print(curve)
         new_start = scale_pt(curve.start)
         new_end = scale_pt(curve.end)
         new_radius = scale_pt(curve.radius)
-        # print("here's new_radius:", new_radius)
         to_return = Arc(start=new_start, radius=new_radius, rotation=curve.rotation,
                         large_arc=curve.large_arc, sweep=curve.sweep, end=new_end)
-        # print("FINISHED AN ARC")
-        # print("")
     else:
         raise TypeError("Input `curve` should be a Path, Line, "
                         "QuadraticBezier, CubicBezier, or Arc object.")
@@ -288,7 +269,8 @@ def scale(curve, x, y=None):
 
 
 def bezier_unit_tangent(seg, t):
-    """Returns the unit tangent of the segment at t.
+    """
+    Returns the unit tangent of the segment at t.
 
     Notes
     - - - - -
@@ -303,7 +285,7 @@ def bezier_unit_tangent(seg, t):
         aft = seg.poly().deriv()(t + 1e-4)
         mes = ("thrown at %s in bezier_unit_tangent:" % place +
                "unit tangent appears to not be well-defined at " +
-               "t = {}, \n".format(t) +
+               "t = {},\n".format(t) +
                "seg.poly().deriv()(t - 1e-4) = {}\n".format(bef) +
                "seg.poly().deriv()(t + 1e-4) = {}".format(aft))
         return mes
@@ -333,7 +315,7 @@ def bezier_unit_tangent(seg, t):
 
         # [jpsteinb]...so here is another hopeful (partial) (?) fix:
         if True:
-            bpoints = list(seg.bpoints)
+            bpoints = list(seg.bpoints())
             if len(bpoints) > 2 and t == 0 and np.isclose(bpoints[0], bpoints[1]):
                 try:
                     dif = bpoints[2] - bpoints[0]
@@ -341,7 +323,7 @@ def bezier_unit_tangent(seg, t):
                 except (ZeroDivisionError, FloatingPointError):
                     raise ValueError(compute_error_message("@B"))
 
-            elif len(bpoints) > 2 and t == 0 and np.isclose(bpoints[-2], bpoints[-1]):
+            elif len(bpoints) > 2 and t == 1 and np.isclose(bpoints[-2], bpoints[-1]):
                 try:
                     dif = bpoints[-1] - bpoints[-3]
                     unit_tangent = dif / abs(dif)
@@ -504,20 +486,6 @@ def crop_bezier(seg, t0, t1):
     else:
         # trim off the 0 <= t < t0 part
         trimmed_seg = seg.split(t0)[1]
-
-        # # find the adjusted t1 (i.e. the t1 such that
-        # # trimmed_seg.point(t1) ~= pt))and trim off the t1 < t <= 1 part
-
-        # pt1 = seg.point(t1)
-        # # recent note: I suspect there's a more elegant way to do this
-        # # than to call radialrange...
-        # t1_adj = bezier_radialrange(trimmed_seg, pt1)[0][1]
-
-        # # let's try this:
-        # assert np.isclose(t1_adj, (t1 - t0) / (1 - t0))
-
-        # print("hey don't forget to remove bezier_radialrange thing (?)")
-
         t1_adj = 1 if t0 == 1 else (t1 - t0) / (1 - t0)
         cropped_seg = trimmed_seg.split(t1_adj)[0]
 
@@ -639,10 +607,6 @@ def compute_offset_joining_subpath(seg1, off1, seg2, off2, offset_amount, join='
 
     theoretical_start = seg1.end   + n1 * offset_amount
     theoretical_end   = seg2.start + n2 * offset_amount
-
-    if not np.isclose(theoretical_start, off1.end):
-        print("seg1:", seg1)
-        print("off1:", off1)
 
     assert np.isclose(theoretical_start, off1.end)  # also checks offset_amount!
     assert np.isclose(theoretical_end, off2.start)
@@ -2490,9 +2454,6 @@ class Subpath(ContinuousCurve):
     def check_health(self):
         assert all(isinstance(thing, Segment) for thing in self)
         for s, t in zip(self, self[1:]):
-            if s.end != t.start:
-                print("s:", s)
-                print("t:", t)
             assert s.end == t.start
         if self._Z:
             assert len(self) > 0
@@ -2789,9 +2750,6 @@ class Subpath(ContinuousCurve):
     def T2t(self, T):
         """returns the segment index and segment parameter, t, corresponding to
         the path parameter T. This is the inverse of the Subpath.t2T() method."""
-        if isinstance(T, Address):
-            print("yer it's an address:", T)
-
         if len(self) == 0:
             raise ValueError(".T2t() called on empty subpath")
 
@@ -3071,7 +3029,7 @@ class Subpath(ContinuousCurve):
         ending at self.point(T1); T0 and T1 must be distinct, 0 < T0, T1 < 1.
 
         If T1 < T0 the crop interpreted as a wraparound crop. In that case the
-        path's ._Z value must be set.
+        subpath must be geometrically closed.
 
         If drop_small==True, initial and final subpath segments seg such that
         np.isclose(seg.start, seg.eng) are dropped from the final answer.
@@ -3101,11 +3059,13 @@ class Subpath(ContinuousCurve):
                 for index in range(a0.subpath_index, a1.subpath_index):
                     to_return.append(self[index])
                 to_return.append(self[a1.subpath_index].cropped(0, a1))
-        elif a0.W > a1.W:
-            to_return = self.cropped(a1, 1)
-            to_return.extend(self.cropped(0, a0))
+        elif a0.T > a1.T:
+            if not self._start == self._end:
+                raise ValueError("cannot do wraparound crop of non-geometrically closed subpath")
+            to_return = self.cropped(a0, 1)
+            to_return.extend(self.cropped(0, a1))
         else:
-            raise ValueError("W0 == W1 in Path.cropped().")
+            raise ValueError("T0 == T1 in Subpath.cropped().")
 
         return to_return
 
