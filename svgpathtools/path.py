@@ -200,9 +200,9 @@ def rotate(curve, degs, origin=None):
             origin = curve.point(0.5)
 
     if isinstance(curve, Path):
-        return Path(*[rotate(subpath, degs, origin=origin) for subpath in curve.subpath_iterator()])
+        return Path(*[rotate(subpath, degs, origin=origin) for subpath in curve])
     elif isinstance(curve, Subpath):
-        return Subpath(*[rotate(seg, degs, origin=origin) for seg in curve]).set_Z(following=curve.Z())
+        return Subpath(*[rotate(seg, degs, origin=origin) for seg in curve]).set_Z(following=curve)
     elif isinstance(curve, BezierSegment):
         return bezier_segment(*[transform(bpt) for bpt in curve.bpoints()])
     elif isinstance(curve, Arc):
@@ -3327,7 +3327,7 @@ class Path(Curve):
         # T: .......................for Subpath
         # t: .......................for Segment
         a = param2address(self, W_or_address)
-        self.W2t(a)
+        self.W2address(a)
         return self[a.subpath_index][a.segment_index].point(a)
 
     def length(self, W0=0, W1=1, error=LENGTH_ERROR, min_depth=LENGTH_MIN_DEPTH):
