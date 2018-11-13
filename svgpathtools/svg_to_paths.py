@@ -24,8 +24,8 @@ def ellipse2pathd(ellipse):
     """converts the parameters from an ellipse or a circle to a string for a 
     Path object d-attribute"""
 
-    cx = ellipse.get('cx', None)
-    cy = ellipse.get('cy', None)
+    cx = ellipse.get('cx', 0)
+    cy = ellipse.get('cy', 0)
     rx = ellipse.get('rx', None)
     ry = ellipse.get('ry', None)
     r = ellipse.get('r', None)
