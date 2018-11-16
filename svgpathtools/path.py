@@ -4,7 +4,7 @@ Arc."""
 
 # External dependencies
 from __future__ import division, absolute_import, print_function
-from math import sqrt, cos, sin, acos, degrees, radians, log, pi
+from math import sqrt, cos, sin, acos, atan2, degrees, radians, log, pi
 from cmath import exp, sqrt as csqrt, phase
 from collections import MutableSequence
 from warnings import warn
@@ -160,6 +160,41 @@ def bez2poly(bez, numpy_ordering=True, return_poly1d=False):
 
 
 # Geometric####################################################################
+
+def apply_matrix(z, matrix, origin=0):
+    a, b, c, d, e, f = matrix
+    z = z - origin
+    z = complex(a*z.real + b*z.imag + e,
+                c*z.real + d*z.imag + f)
+    return z + origin
+
+def transform(curve, matrix, origin=None):
+    """Returns curve transformed by `matrix` relatively to the point `origin`.
+
+    Parameters
+    ----------
+    curve : Path, Line, QuadraticBezier, or CubicBezier
+    matrix : 6-tuple
+        The elements (a, b, c, d, e, f) of an affine transformation matrix.
+        The new coordinates (x', y') are derived from the input coordinates
+        (x, y) using the following relation:
+            x' = a*x + b*y + e
+            y' = c*x + c*y + f
+    origin: complex
+        By default origin is `curve.point(0.5)`.
+    """
+    if origin == None:
+        origin = curve.point(0.5)
+
+    this_transform = lambda z: apply_matrix(z, matrix, origin)
+
+    if isinstance(curve, Path):
+        return Path(*[transform(seg, matrix, origin=origin) for seg in curve])
+    elif is_bezier_segment(curve):
+        return bpoints2bezier([this_transform(bpt) for bpt in curve.bpoints()])
+    else:
+        raise TypeError("Input `curve` should be a Path, Line, "
+                        "QuadraticBezier, or CubicBezier object.")
 
 def rotate(curve, degs, origin=None):
     """Returns curve rotated by `degs` degrees (CCW) around the point `origin`
