@@ -4,7 +4,7 @@ Arc."""
 
 # External dependencies
 from __future__ import division, absolute_import, print_function
-from math import sqrt, cos, sin, acos, atan2, degrees, radians, log, pi
+from math import sqrt, cos, sin, acos, asin, degrees, radians, log, pi, ceil, atan2
 from cmath import exp, sqrt as csqrt, phase
 from collections import MutableSequence
 from warnings import warn
@@ -18,7 +18,8 @@ except:
 
 # Internal dependencies
 from .bezier import (bezier_intersections, bezier_bounding_box, split_bezier,
-                     bezier_by_line_intersections, polynomial2bezier)
+                     bezier_by_line_intersections, polynomial2bezier,
+                     bezier2polynomial)
 from .misctools import BugException
 from .polytools import rational_limit, polyroots, polyroots01, imag, real
 
@@ -204,7 +205,7 @@ def rotate(curve, degs, origin=None):
     def transform(z):
         return exp(1j*radians(degs))*(z - origin) + origin
 
-    if origin == None:
+    if origin is None:
         if isinstance(curve, Arc):
             origin = curve.center
         else:
@@ -236,6 +237,80 @@ def translate(curve, z0):
         new_start = curve.start + z0
         new_end = curve.end + z0
         return Arc(new_start, radius=curve.radius, rotation=curve.rotation,
+                   large_arc=curve.large_arc, sweep=curve.sweep, end=new_end)
+    else:
+        raise TypeError("Input `curve` should be a Path, Line, "
+                        "QuadraticBezier, CubicBezier, or Arc object.")
+
+
+def scale(curve, sx, sy=None, origin=0j):
+    """Scales `curve`, about `origin`, by diagonal matrix `[[sx,0],[0,sy]]`.
+
+    Notes:
+    ------
+    * If `sy` is not specified, it is assumed to be equal to `sx` and 
+    a scalar transformation of `curve` about `origin` will be returned.
+    I.e.
+        scale(curve, sx, origin).point(t) == 
+            ((curve.point(t) - origin) * sx) + origin
+    """
+
+    if sy is None:
+        isy = 1j*sx
+    else:
+        isy = 1j*sy
+
+    def _scale(z):
+        if sy is None:
+            return sx*z
+        return sx*z.real + isy*z.imag          
+
+    def scale_bezier(bez):
+        p = [_scale(c) for c in bez2poly(bez)]
+        p[-1] += origin - _scale(origin)
+        return poly2bez(p)
+
+    if isinstance(curve, Path):
+        return Path(*[scale(seg, sx, sy, origin) for seg in curve])
+    elif is_bezier_segment(curve):
+        return scale_bezier(curve)
+    elif isinstance(curve, Arc):
+        if sy is None or sy == sx:
+            return Arc(start=sx*(curve.start - origin) + origin,
+                       radius=sx*curve.radius,
+                       rotation=curve.rotation, 
+                       large_arc=curve.large_arc, 
+                       sweep=curve.sweep, 
+                       end=sx*(curve.end - origin) + origin)
+        else:
+            raise Exception("\nFor `Arc` objects, only scale transforms "
+                            "with sx==sy are implemented.\n")
+    else:
+        raise TypeError("Input `curve` should be a Path, Line, "
+                        "QuadraticBezier, CubicBezier, or Arc object.")
+
+
+def transform(curve, tf):
+    """Transforms the curve by the homogeneous transformation matrix tf"""
+    def to_point(p):
+        return np.array([[p.real], [p.imag], [1.0]])
+
+    def to_vector(z):
+        return np.array([[z.real], [z.imag], [0.0]])
+
+    def to_complex(v):
+        return v.item(0) + 1j * v.item(1)
+
+    if isinstance(curve, Path):
+        return Path(*[transform(segment, tf) for segment in curve])
+    elif is_bezier_segment(curve):
+        return bpoints2bezier([to_complex(tf.dot(to_point(p)))
+                               for p in curve.bpoints()])
+    elif isinstance(curve, Arc):
+        new_start = to_complex(tf.dot(to_point(curve.start)))
+        new_end = to_complex(tf.dot(to_point(curve.end)))
+        new_radius = to_complex(tf.dot(to_vector(curve.radius)))
+        return Arc(new_start, radius=new_radius, rotation=curve.rotation,
                    large_arc=curve.large_arc, sweep=curve.sweep, end=new_end)
     else:
         raise TypeError("Input `curve` should be a Path, Line, "
@@ -419,12 +494,15 @@ def inv_arclength(curve, s, s_tol=ILENGTH_S_TOL, maxits=ILENGTH_MAXITS,
         return 1
 
     if isinstance(curve, Path):
-        seg_lengths = [seg.length(error=error, min_depth=min_depth) for seg in curve]
+        seg_lengths = [seg.length(error=error, min_depth=min_depth)
+                       for seg in curve]
         lsum = 0
         # Find which segment the point we search for is located on
         for k, len_k in enumerate(seg_lengths):
             if lsum <= s <= lsum + len_k:
-                t = inv_arclength(curve[k], s - lsum, s_tol=s_tol, maxits=maxits, error=error, min_depth=min_depth)
+                t = inv_arclength(curve[k], s - lsum, s_tol=s_tol,
+                                  maxits=maxits, error=error,
+                                  min_depth=min_depth)
                 return curve.t2T(k, t)
             lsum += len_k
         return 1
@@ -643,6 +721,29 @@ class Line(object):
         ymax = max(self.start.imag, self.end.imag)
         return xmin, xmax, ymin, ymax
 
+    def point_to_t(self, point):
+        """If the point lies on the Line, returns its `t` parameter.
+        If the point does not lie on the Line, returns None."""
+
+        # Single-precision floats have only 7 significant figures of
+        # resolution, so test that we're within 6 sig figs.
+        if np.isclose(point, self.start, rtol=0, atol=1e-6):
+            return 0.0
+        elif np.isclose(point, self.end, rtol=0, atol=1e-6):
+            return 1.0
+
+        # Finding the point "by hand" here is much faster than calling
+        # radialrange(), see the discussion on PR #40:
+        # https://github.com/mathandy/svgpathtools/pull/40#issuecomment-358134261
+
+        p = self.poly()
+        # p(t) = (p_1 * t) + p_0 = point
+        # t = (point - p_0) / p_1
+        t = (point - p[0]) / p[1]
+        if np.isclose(t.imag, 0) and (t.real >= 0.0) and (t.real <= 1.0):
+            return t.real
+        return None
+
     def cropped(self, t0, t1):
         """returns a cropped copy of this segment which starts at
         self.point(t0) and ends at self.point(t1)."""
@@ -671,6 +772,10 @@ class Line(object):
         """Returns a copy of self shifted by the complex quantity `z0` such
         that self.translated(z0).point(t) = self.point(t) + z0 for any t."""
         return translate(self, z0)
+
+    def scaled(self, sx, sy=None, origin=0j):
+        """Scale transform.  See `scale` function for further explanation."""
+        return scale(self, sx=sx, sy=sy, origin=origin)
 
 
 class QuadraticBezier(object):
@@ -916,6 +1021,10 @@ class QuadraticBezier(object):
         that self.translated(z0).point(t) = self.point(t) + z0 for any t."""
         return translate(self, z0)
 
+    def scaled(self, sx, sy=None, origin=0j):
+        """Scale transform.  See `scale` function for further explanation."""
+        return scale(self, sx=sx, sy=sy, origin=origin)
+
 
 class CubicBezier(object):
     # For compatibility with old pickle files.
@@ -1156,6 +1265,10 @@ class CubicBezier(object):
         that self.translated(z0).point(t) = self.point(t) + z0 for any t."""
         return translate(self, z0)
 
+    def scaled(self, sx, sy=None, origin=0j):
+        """Scale transform.  See `scale` function for further explanation."""
+        return scale(self, sx=sx, sy=sy, origin=origin)
+
 
 class Arc(object):
     def __init__(self, start, radius, rotation, large_arc, sweep, end,
@@ -1331,17 +1444,18 @@ class Arc(object):
         u1 = (x1p - cp.real)/rx + 1j*(y1p - cp.imag)/ry  # transformed start
         u2 = (-x1p - cp.real)/rx + 1j*(-y1p - cp.imag)/ry  # transformed end
 
+        # clip in case of floating point error
+        u1 = np.clip(u1.real, -1, 1) + 1j*np.clip(u1.imag, -1, 1)
+        u2 = np.clip(u2.real, -1, 1) + 1j * np.clip(u2.imag, -1, 1)
+
         # Now compute theta and delta (we'll define them as we go)
         # delta is the angular distance of the arc (w.r.t the circle)
         # theta is the angle between the positive x'-axis and the start point
         # on the circle
-        u1_real_rounded = u1.real
-        if u1.real > 1 or u1.real < -1:
-            u1_real_rounded = round(u1.real)
         if u1.imag > 0:
-            self.theta = degrees(acos(u1_real_rounded))
+            self.theta = degrees(acos(u1.real))
         elif u1.imag < 0:
-            self.theta = -degrees(acos(u1_real_rounded))
+            self.theta = -degrees(acos(u1.real))
         else:
             if u1.real > 0:  # start is on pos u_x axis
                 self.theta = 0
@@ -1354,8 +1468,8 @@ class Arc(object):
         det_uv = u1.real*u2.imag - u1.imag*u2.real
 
         acosand = u1.real*u2.real + u1.imag*u2.imag
-        if acosand > 1 or acosand < -1:
-            acosand = round(acosand)
+        acosand = np.clip(acosand.real, -1, 1) + np.clip(acosand.imag, -1, 1)
+        
         if det_uv > 0:
             self.delta = degrees(acos(acosand))
         elif det_uv < 0:
@@ -1391,6 +1505,128 @@ class Arc(object):
         x = rx*cosphi*cos(angle) - ry*sinphi*sin(angle) + self.center.real
         y = rx*sinphi*cos(angle) + ry*cosphi*sin(angle) + self.center.imag
         return complex(x, y)
+
+    def point_to_t(self, point):
+        """If the point lies on the Arc, returns its `t` parameter.
+        If the point does not lie on the Arc, returns None.
+        This function only works on Arcs with rotation == 0.0"""
+
+        def in_range(min, max, val):
+            return (min <= val) and (max >= val)
+
+        # Single-precision floats have only 7 significant figures of
+        # resolution, so test that we're within 6 sig figs.
+        if np.isclose(point, self.start, rtol=0.0, atol=1e-6):
+            return 0.0
+        elif np.isclose(point, self.end, rtol=0.0, atol=1e-6):
+            return 1.0
+
+        if self.rotation != 0.0:
+            raise ValueError("Arc.point_to_t() only works on non-rotated Arcs.")
+
+        v = point - self.center
+        distance_from_center = sqrt((v.real * v.real) + (v.imag * v.imag))
+        min_radius = min(self.radius.real, self.radius.imag)
+        max_radius = max(self.radius.real, self.radius.imag)
+        if (distance_from_center < min_radius) and not np.isclose(distance_from_center, min_radius):
+            return None
+        if (distance_from_center > max_radius) and not np.isclose(distance_from_center, max_radius):
+            return None
+
+        # x = center_x + radius_x cos(radians(theta + t delta))
+        # y = center_y + radius_y sin(radians(theta + t delta))
+        #
+        # For x:
+        # cos(radians(theta + t delta)) = (x - center_x) / radius_x
+        # radians(theta + t delta) = acos((x - center_x) / radius_x)
+        # theta + t delta = degrees(acos((x - center_x) / radius_x))
+        # t_x = (degrees(acos((x - center_x) / radius_x)) - theta) / delta
+        #
+        # Similarly for y:
+        # t_y = (degrees(asin((y - center_y) / radius_y)) - theta) / delta
+
+        x = point.real
+        y = point.imag
+
+        #
+        # +Y points down!
+        #
+        # sweep mean clocwise
+        # sweep && (delta > 0)
+        # !sweep && (delta < 0)
+        #
+        # -180 <= theta_1 <= 180
+        #
+        # large_arc && (-360 <= delta <= 360)
+        # !large_arc && (-180 < delta < 180)
+        #
+
+        end_angle = self.theta + self.delta
+        min_angle = min(self.theta, end_angle)
+        max_angle = max(self.theta, end_angle)
+
+        acos_arg = (x - self.center.real) / self.radius.real
+        if acos_arg > 1.0:
+            acos_arg = 1.0
+        elif acos_arg < -1.0:
+            acos_arg = -1.0
+
+        x_angle_0 = degrees(acos(acos_arg))
+        while x_angle_0 < min_angle:
+            x_angle_0 += 360.0
+        while x_angle_0 > max_angle:
+            x_angle_0 -= 360.0
+
+        x_angle_1 = -1.0 * x_angle_0
+        while x_angle_1 < min_angle:
+            x_angle_1 += 360.0
+        while x_angle_1 > max_angle:
+            x_angle_1 -= 360.0
+
+        t_x_0 = (x_angle_0 - self.theta) / self.delta
+        t_x_1 = (x_angle_1 - self.theta) / self.delta
+
+        asin_arg = (y - self.center.imag) / self.radius.imag
+        if asin_arg > 1.0:
+            asin_arg = 1.0
+        elif asin_arg < -1.0:
+            asin_arg = -1.0
+
+        y_angle_0 = degrees(asin(asin_arg))
+        while y_angle_0 < min_angle:
+            y_angle_0 += 360.0
+        while y_angle_0 > max_angle:
+            y_angle_0 -= 360.0
+
+        y_angle_1 = 180 - y_angle_0
+        while y_angle_1 < min_angle:
+            y_angle_1 += 360.0
+        while y_angle_1 > max_angle:
+            y_angle_1 -= 360.0
+
+        t_y_0 = (y_angle_0 - self.theta) / self.delta
+        t_y_1 = (y_angle_1 - self.theta) / self.delta
+
+        t = None
+        if np.isclose(t_x_0, t_y_0):
+            t = (t_x_0 + t_y_0) / 2.0
+        elif np.isclose(t_x_0, t_y_1):
+            t= (t_x_0 + t_y_1) / 2.0
+        elif np.isclose(t_x_1, t_y_0):
+            t = (t_x_1 + t_y_0) / 2.0
+        elif np.isclose(t_x_1, t_y_1):
+            t = (t_x_1 + t_y_1) / 2.0
+        else:
+            # Comparing None and float yields a result in python2,
+            # but throws TypeError in python3.  This fix (suggested by
+            # @CatherineH) explicitly handles and avoids the case where
+            # the None-vs-float comparison would have happened below.
+            return None
+
+        if (t >= 0.0) and (t <= 1.0):
+            return t
+
+        return None
 
     def centeriso(self, z):
         """This is an isometry that translates and rotates self so that it
@@ -1563,7 +1799,123 @@ class Arc(object):
         to let me know if you're interested in such a feature -- or even better
         please submit an implementation if you want to code one."""
 
-        if is_bezier_segment(other_seg):
+        # This special case can be easily solved algebraically.
+        if (self.rotation == 0) and isinstance(other_seg, Line):
+            a = self.radius.real
+            b = self.radius.imag
+
+            # Ignore the ellipse's center point (to pretend that it's
+            # centered at the origin), and translate the Line to match.
+            l = Line(start=(other_seg.start-self.center), end=(other_seg.end-self.center))
+
+            # This gives us the translated Line as a parametric equation.
+            # s = p1 t + p0
+            p = l.poly()
+
+            if p[1].real == 0.0:
+                # The `x` value doesn't depend on `t`, the line is vertical.
+                c = p[0].real
+                x_values = [c]
+
+                # Substitute the line `x = c` into the equation for the
+                # (origin-centered) ellipse.
+                #
+                # x^2/a^2 + y^2/b^2 = 1
+                # c^2/a^2 + y^2/b^2 = 1
+                # y^2/b^2 = 1 - c^2/a^2
+                # y^2 = b^2(1 - c^2/a^2)
+                # y = +-b sqrt(1 - c^2/a^2)
+
+                discriminant = 1 - (c * c)/(a * a)
+                if discriminant < 0:
+                    return []
+                elif discriminant == 0:
+                    y_values = [0]
+                else:
+                    val = b * sqrt(discriminant)
+                    y_values = [val, -val]
+
+            else:
+                # This is a non-vertical line.
+                #
+                # Convert the Line's parametric equation to the "y = mx + c" format.
+                # x = p1.real t + p0.real
+                # y = p1.imag t + p0.imag
+                #
+                # t = (x - p0.real) / p1.real
+                # t = (y - p0.imag) / p1.imag
+                #
+                # (y - p0.imag) / p1.imag = (x - p0.real) / p1.real
+                # (y - p0.imag) = ((x - p0.real) * p1.imag) / p1.real
+                # y = ((x - p0.real) * p1.imag) / p1.real + p0.imag
+                # y = (x p1.imag - p0.real * p1.imag) / p1.real + p0.imag
+                # y = x p1.imag/p1.real - p0.real p1.imag / p1.real + p0.imag
+                # m = p1.imag/p1.real
+                # c = -m p0.real + p0.imag
+                m = p[1].imag / p[1].real
+                c = (-m * p[0].real) + p[0].imag
+
+                # Substitute the line's y(x) equation into the equation for
+                # the ellipse.  We can pretend the ellipse is centered at the
+                # origin, since we shifted the Line by the ellipse's center.
+                #
+                # x^2/a^2 + y^2/b^2 = 1
+                # x^2/a^2 + (mx+c)^2/b^2 = 1
+                # (b^2 x^2 + a^2 (mx+c)^2)/(a^2 b^2) = 1
+                # b^2 x^2 + a^2 (mx+c)^2 = a^2 b^2
+                # b^2 x^2 + a^2(m^2 x^2 + 2mcx + c^2) = a^2 b^2
+                # b^2 x^2 + a^2 m^2 x^2 + 2a^2 mcx + a^2 c^2 - a^2 b^2 = 0
+                # (a^2 m^2 + b^2)x^2 + 2a^2 mcx + a^2(c^2 - b^2) = 0
+                #
+                # The quadratic forumla tells us:  x = (-B +- sqrt(B^2 - 4AC)) / 2A
+                # Where:
+                #     A = a^2 m^2 + b^2
+                #     B = 2 a^2 mc
+                #     C = a^2(c^2 - b^2)
+                #
+                # The determinant is: B^2 - 4AC
+                #
+                # The solution simplifies to:
+                # x = (-a^2 mc +- a b sqrt(a^2 m^2 + b^2 - c^2)) / (a^2 m^2 + b^2)
+                #
+                # Solving the line for x(y) and substituting *that* into
+                # the equation for the ellipse gives this solution for y:
+                # y = (b^2 c +- abm sqrt(a^2 m^2 + b^2 - c^2)) / (a^2 m^2 + b^2)
+
+                denominator = (a * a * m * m) + (b * b)
+
+                discriminant = denominator - (c * c)
+                if discriminant < 0:
+                    return []
+
+                x_sqrt = a * b * sqrt(discriminant)
+                x1 = (-(a * a * m * c) + x_sqrt) / denominator 
+                x2 = (-(a * a * m * c) - x_sqrt) / denominator 
+                x_values = [x1]
+                if x1 != x2:
+                    x_values.append(x2)
+
+                y_sqrt = x_sqrt * m
+                y1 = ((b * b * c) + y_sqrt) / denominator
+                y2 = ((b * b * c) - y_sqrt) / denominator
+                y_values = [y1]
+                if y1 != y2:
+                    y_values.append(y2)
+
+            intersections = []
+            for x in x_values:
+                for y in y_values:
+                    p = complex(x, y) + self.center
+                    my_t = self.point_to_t(p)
+                    if my_t == None:
+                        continue
+                    other_t = other_seg.point_to_t(p)
+                    if other_t == None:
+                        continue
+                    intersections.append([my_t, other_t])
+            return intersections
+
+        elif is_bezier_segment(other_seg):
             u1poly = self.u1transform(other_seg.poly())
             u1poly_mag2 = real(u1poly)**2 + imag(u1poly)**2
             t2s = polyroots01(u1poly_mag2 - 1)
@@ -1642,7 +1994,6 @@ class Arc(object):
         xmin = max(xtrema)
         return min(xtrema), max(xtrema), min(ytrema), max(ytrema)
 
-
     def split(self, t):
         """returns two segments, whose union is this segment and which join
         at self.point(t)."""
@@ -1664,48 +2015,46 @@ class Arc(object):
         and maximize, respectively, the distance,
         d = |self.point(t)-origin|."""
 
-        u1orig = self.u1transform(origin)
-        if abs(u1orig) == 1:  # origin lies on ellipse
-            t = self.phase2t(phase(u1orig))
-            d_min = 0
-
-        # Transform to a coordinate system where the ellipse is centered
-        # at the origin and its axes are horizontal/vertical
-        zeta0 = self.centeriso(origin)
-        a, b = self.radius.real, self.radius.imag
-        x0, y0 = zeta0.real, zeta0.imag
-
-        # Find t s.t. z'(t)
-        a2mb2 = (a**2 - b**2)
-        if u1orig.imag:  # x != x0
-
-            coeffs = [a2mb2**2,
-                      2*a2mb2*b**2*y0,
-                      (-a**4 + (2*a**2 - b**2 + y0**2)*b**2 + x0**2)*b**2,
-                      -2*a2mb2*b**4*y0,
-                      -b**6*y0**2]
-            ys = polyroots(coeffs, realroots=True,
-                           condition=lambda r: -b <= r <= b)
-            xs = (a*sqrt(1 - y**2/b**2) for y in ys)
-
-
-
-            ts = [self.phase2t(phase(self.u1transform(self.icenteriso(
-                complex(x, y))))) for x, y in zip(xs, ys)]
-
-        else:  # This case is very similar, see notes and assume instead y0!=y
-            b2ma2 = (b**2 - a**2)
-            coeffs = [b2ma2**2,
-                      2*b2ma2*a**2*x0,
-                      (-b**4 + (2*b**2 - a**2 + x0**2)*a**2 + y0**2)*a**2,
-                      -2*b2ma2*a**4*x0,
-                      -a**6*x0**2]
-            xs = polyroots(coeffs, realroots=True,
-                           condition=lambda r: -a <= r <= a)
-            ys = (b*sqrt(1 - x**2/a**2) for x in xs)
-
-            ts = [self.phase2t(phase(self.u1transform(self.icenteriso(
-                complex(x, y))))) for x, y in zip(xs, ys)]
+        # u1orig = self.u1transform(origin)
+        # if abs(u1orig) == 1:  # origin lies on ellipse
+        #     t = self.phase2t(phase(u1orig))
+        #     d_min = 0
+        #
+        # # Transform to a coordinate system where the ellipse is centered
+        # # at the origin and its axes are horizontal/vertical
+        # zeta0 = self.centeriso(origin)
+        # a, b = self.radius.real, self.radius.imag
+        # x0, y0 = zeta0.real, zeta0.imag
+        #
+        # # Find t s.t. z'(t)
+        # a2mb2 = (a**2 - b**2)
+        # if u1orig.imag:  # x != x0
+        #
+        #     coeffs = [a2mb2**2,
+        #               2*a2mb2*b**2*y0,
+        #               (-a**4 + (2*a**2 - b**2 + y0**2)*b**2 + x0**2)*b**2,
+        #               -2*a2mb2*b**4*y0,
+        #               -b**6*y0**2]
+        #     ys = polyroots(coeffs, realroots=True,
+        #                    condition=lambda r: -b <= r <= b)
+        #     xs = (a*sqrt(1 - y**2/b**2) for y in ys)
+        #
+        #     ts = [self.phase2t(phase(self.u1transform(self.icenteriso(
+        #         complex(x, y))))) for x, y in zip(xs, ys)]
+        #
+        # else:  # This case is very similar, see notes and assume instead y0!=y
+        #     b2ma2 = (b**2 - a**2)
+        #     coeffs = [b2ma2**2,
+        #               2*b2ma2*a**2*x0,
+        #               (-b**4 + (2*b**2 - a**2 + x0**2)*a**2 + y0**2)*a**2,
+        #               -2*b2ma2*a**4*x0,
+        #               -a**6*x0**2]
+        #     xs = polyroots(coeffs, realroots=True,
+        #                    condition=lambda r: -a <= r <= a)
+        #     ys = (b*sqrt(1 - x**2/a**2) for x in xs)
+        #
+        #     ts = [self.phase2t(phase(self.u1transform(self.icenteriso(
+        #         complex(x, y))))) for x, y in zip(xs, ys)]
 
         raise _NotImplemented4ArcException
 
@@ -1720,6 +2069,10 @@ class Arc(object):
         """Returns a copy of self shifted by the complex quantity `z0` such
         that self.translated(z0).point(t) = self.point(t) + z0 for any t."""
         return translate(self, z0)
+
+    def scaled(self, sx, sy=None, origin=0j):
+        """Scale transform.  See `scale` function for further explanation."""
+        return scale(self, sx=sx, sy=sy, origin=origin)
 
 
 def is_bezier_segment(x):
@@ -1752,6 +2105,9 @@ class Path(MutableSequence):
         else:
             self._start = None
             self._end = None
+
+        if 'tree_element' in kw:
+            self._tree_element = kw['tree_element']
 
     def __getitem__(self, index):
         return self._segments[index]
@@ -2020,9 +2376,9 @@ class Path(MutableSequence):
                 0) == previous.unit_tangent(1)
 
     def T2t(self, T):
-        """returns the segment index, seg_idx, and segment parameter, t,
-        corresponding to the path parameter T.  In other words, this is the
-        inverse of the Path.t2T() method."""
+        """returns the segment index, `seg_idx`, and segment parameter, `t`,
+        corresponding to the path parameter `T`.  In other words, this is the
+        inverse of the `Path.t2T()` method."""
         if T == 1:
             return len(self)-1, 1
         if T == 0:
@@ -2095,15 +2451,16 @@ class Path(MutableSequence):
         if np.isclose(t, 0) and (seg_idx != 0 or self.end==self.start):
             previous_seg_in_path = self._segments[
                 (seg_idx - 1) % len(self._segments)]
-            if not seg.joins_smoothl_with(previous_seg_in_path):
+            if not seg.joins_smoothly_with(previous_seg_in_path):
                 return float('inf')
-        elif np.isclose(t, 1) and (seg_idx != len(self) - 1 or self.end==self.start):
+        elif np.isclose(t, 1) and (seg_idx != len(self) - 1 or
+                                   self.end == self.start):
             next_seg_in_path = self._segments[
                 (seg_idx + 1) % len(self._segments)]
             if not next_seg_in_path.joins_smoothly_with(seg):
                 return float('inf')
-        dz = self.derivative(t)
-        ddz = self.derivative(t, n=2)
+        dz = self.derivative(T)
+        ddz = self.derivative(T, n=2)
         dx, dy = dz.real, dz.imag
         ddx, ddy = ddz.real, ddz.imag
         return abs(dx*ddy - dy*ddx)/(dx*dx + dy*dy)**1.5
@@ -2118,19 +2475,55 @@ class Path(MutableSequence):
     #         Ts += [self.t2T(i, t) for t in seg.icurvature(kappa)]
     #     return Ts
 
-    def area(self):
-        """returns the area enclosed by this Path object.
-        Note: negative area results from CW (as opposed to CCW)
-        parameterization of the Path object."""
+    def area(self, chord_length=1e-2):
+        """Find area enclosed by path.
+        
+        Approximates any Arc segments in the Path with lines
+        approximately `chord_length` long, and returns the area enclosed
+        by the approximated Path.  Default chord length is 0.01.  If Arc
+        segments are included in path, to ensure accurate results, make
+        sure this `chord_length` is set to a reasonable value (e.g. by
+        checking curvature).
+                
+        Notes
+        -----
+        * Negative area results from clockwise (as opposed to
+        counter-clockwise) parameterization of the input Path.
+        
+        To Contributors
+        ---------------
+        This is one of many parts of `svgpathtools` that could be 
+        improved by a noble soul implementing a piecewise-linear 
+        approximation scheme for paths (one with controls to guarantee a
+        desired accuracy).
+        """
+
+        def area_without_arcs(path):
+            area_enclosed = 0
+            for seg in path:
+                x = real(seg.poly())
+                dy = imag(seg.poly()).deriv()
+                integrand = x*dy
+                integral = integrand.integ()
+                area_enclosed += integral(1) - integral(0)
+            return area_enclosed
+
+        def seg2lines(seg):
+            """Find piecewise-linear approximation of `seg`."""
+            num_lines = ceil(seg.length() / chord_length)
+            tvals = np.linspace(0, seg.length(), num_lines)
+            return [Line(seg.point(tvals[i]), seg.point(tvals[i+1]))
+                    for i in range(len(tvals)-1)]
+
         assert self.isclosed()
-        area_enclosed = 0
+
+        bezier_path_approximation = []
         for seg in self:
-            x = real(seg.poly())
-            dy = imag(seg.poly()).deriv()
-            integrand = x*dy
-            integral = integrand.integ()
-            area_enclosed += integral(1) - integral(0)
-        return area_enclosed
+            if isinstance(seg, Arc):
+                bezier_path_approximation += seg2lines(seg)
+            else:
+                bezier_path_approximation.append(seg)
+        return area_without_arcs(Path(*bezier_path_approximation))
 
     def intersect(self, other_curve, justonemode=False, tol=1e-12):
         """returns list of pairs of pairs ((T1, seg1, t1), (T2, seg2, t2))
@@ -2164,7 +2557,8 @@ class Path(MutableSequence):
         # redundant intersection.  This code block checks for and removes said
         # redundancies.
         if intersection_list:
-            pts = [seg1.point(_t1) for _T1, _seg1, _t1 in list(zip(*intersection_list))[0]]
+            pts = [seg1.point(_t1)
+                   for _T1, _seg1, _t1 in list(zip(*intersection_list))[0]]
             indices2remove = []
             for ind1 in range(len(pts)):
                 for ind2 in range(ind1 + 1, len(pts)):
@@ -2248,7 +2642,6 @@ class Path(MutableSequence):
                 new_path.append(seg1.cropped(0, t_seg1))
         return new_path
 
-
     def radialrange(self, origin, return_all_global_extrema=False):
         """returns the tuples (d_min, t_min, idx_min), (d_max, t_max, idx_max)
         which minimize and maximize, respectively, the distance
@@ -2277,3 +2670,7 @@ class Path(MutableSequence):
         """Returns a copy of self shifted by the complex quantity `z0` such
         that self.translated(z0).point(t) = self.point(t) + z0 for any t."""
         return translate(self, z0)
+
+    def scaled(self, sx, sy=None, origin=0j):
+        """Scale transform.  See `scale` function for further explanation."""
+        return scale(self, sx=sx, sy=sy, origin=origin)

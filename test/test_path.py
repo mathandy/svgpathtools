@@ -3,16 +3,60 @@ from __future__ import division, absolute_import, print_function
 import unittest
 from math import sqrt, pi
 from operator import itemgetter
-from numpy import poly1d
+import numpy as np
+import random
 
 # Internal dependencies
 from svgpathtools import *
+from svgpathtools.path import _NotImplemented4ArcException
 
 # An important note for those doing any debugging:
 # ------------------------------------------------
 # Most of these test points are not calculated separately, as that would
 # take too long and be too error prone. Instead the curves have been verified
 # to be correct visually with the disvg() function.
+
+
+def random_line():
+    x = (random.random() - 0.5) * 2000
+    y = (random.random() - 0.5) * 2000
+    start = complex(x, y)
+
+    x = (random.random() - 0.5) * 2000
+    y = (random.random() - 0.5) * 2000
+    end = complex(x, y)
+
+    return Line(start, end)
+
+
+def random_arc():
+    x = (random.random() - 0.5) * 2000
+    y = (random.random() - 0.5) * 2000
+    start = complex(x, y)
+
+    x = (random.random() - 0.5) * 2000
+    y = (random.random() - 0.5) * 2000
+    end = complex(x, y)
+
+    x = (random.random() - 0.5) * 2000
+    y = (random.random() - 0.5) * 2000
+    radius = complex(x, y)
+
+    large_arc = random.choice([True, False])
+    sweep = random.choice([True, False])
+
+    return Arc(start=start, radius=radius, rotation=0.0, large_arc=large_arc, sweep=sweep, end=end)
+
+
+def assert_intersections(a_seg, b_seg, intersections, count):
+    if count != None:
+        assert(len(intersections) == count)
+    for i in intersections:
+        assert(i[0] >= 0.0)
+        assert(i[0] <= 1.0)
+        assert(i[1] >= 0.0)
+        assert(i[1] <= 1.0)
+        assert(np.isclose(a_seg.point(i[0]), b_seg.point(i[1])))
 
 
 class LineTest(unittest.TestCase):
@@ -48,12 +92,77 @@ class LineTest(unittest.TestCase):
         # This is to test the __eq__ and __ne__ methods, so we can't use
         # assertEqual and assertNotEqual
         line = Line(0j, 400 + 0j)
+        cubic = CubicBezier(600 + 500j, 600 + 350j, 900 + 650j, 900 + 500j)
         self.assertTrue(line == Line(0, 400))
         self.assertTrue(line != Line(100, 400))
         self.assertFalse(line == str(line))
         self.assertTrue(line != str(line))
-        self.assertFalse(
-            CubicBezier(600 + 500j, 600 + 350j, 900 + 650j, 900 + 500j) == line)
+        self.assertFalse(cubic == line)
+
+    def test_point_to_t(self):
+        l = Line(start=(0+0j), end=(0+10j))
+        self.assertEqual(l.point_to_t(0+0j), 0.0)
+        self.assertAlmostEqual(l.point_to_t(0+5j), 0.5)
+        self.assertEqual(l.point_to_t(0+10j), 1.0)
+        self.assertIsNone(l.point_to_t(1+0j))
+        self.assertIsNone(l.point_to_t(0-1j))
+        self.assertIsNone(l.point_to_t(0+11j))
+
+        l = Line(start=(0+0j), end=(10+10j))
+        self.assertEqual(l.point_to_t(0+0j), 0.0)
+        self.assertAlmostEqual(l.point_to_t(5+5j), 0.5)
+        self.assertEqual(l.point_to_t(10+10j), 1.0)
+        self.assertIsNone(l.point_to_t(1+0j))
+        self.assertIsNone(l.point_to_t(0-1j))
+        self.assertIsNone(l.point_to_t(0+11j))
+        self.assertIsNone(l.point_to_t(10.001+10.001j))
+        self.assertIsNone(l.point_to_t(-0.001-0.001j))
+
+        l = Line(start=(0+0j), end=(10+0j))
+        self.assertEqual(l.point_to_t(0+0j), 0.0)
+        self.assertAlmostEqual(l.point_to_t(5+0j), 0.5)
+        self.assertEqual(l.point_to_t(10+0j), 1.0)
+        self.assertIsNone(l.point_to_t(0+1j))
+        self.assertIsNone(l.point_to_t(0-1j))
+        self.assertIsNone(l.point_to_t(0+11j))
+        self.assertIsNone(l.point_to_t(10.001+0j))
+        self.assertIsNone(l.point_to_t(-0.001-0j))
+
+        l = Line(start=(-2-1j), end=(11-20j))
+        self.assertEqual(l.point_to_t(-2-1j), 0.0)
+        self.assertAlmostEqual(l.point_to_t(4.5-10.5j), 0.5)
+        self.assertEqual(l.point_to_t(11-20j), 1.0)
+        self.assertIsNone(l.point_to_t(0+1j))
+        self.assertIsNone(l.point_to_t(0-1j))
+        self.assertIsNone(l.point_to_t(0+11j))
+        self.assertIsNone(l.point_to_t(10.001+0j))
+        self.assertIsNone(l.point_to_t(-0.001-0j))
+
+        l = Line(start=(40.234-32.613j), end=(12.7-32.613j))
+        self.assertEqual(l.point_to_t(40.234-32.613j), 0.0)
+        self.assertAlmostEqual(l.point_to_t(33.3505-32.613j), 0.25)
+        self.assertAlmostEqual(l.point_to_t(26.467-32.613j), 0.50)
+        self.assertAlmostEqual(l.point_to_t(19.5835-32.613j), 0.75)
+        self.assertEqual(l.point_to_t(12.7-32.613j), 1.0)
+        self.assertIsNone(l.point_to_t(40.25-32.613j))
+        self.assertIsNone(l.point_to_t(12.65-32.613j))
+        self.assertIsNone(l.point_to_t(11-20j))
+        self.assertIsNone(l.point_to_t(0+1j))
+        self.assertIsNone(l.point_to_t(0-1j))
+        self.assertIsNone(l.point_to_t(0+11j))
+        self.assertIsNone(l.point_to_t(10.001+0j))
+        self.assertIsNone(l.point_to_t(-0.001-0j))
+
+        random.seed()
+        for line_index in range(100):
+            l = random_line()
+            for t_index in range(100):
+                orig_t = random.random()
+                p = l.point(orig_t)
+                computed_t = l.point_to_t(p)
+                self.assertAlmostEqual(orig_t, computed_t)
+
+
 
 
 class CubicBezierTest(unittest.TestCase):
@@ -233,8 +342,9 @@ class CubicBezierTest(unittest.TestCase):
 
         self.assertAlmostEqual(cub.length(), sqrt(2 * 100 * 100))
 
-        # A quarter circle large_arc with radius 100:
-        kappa = 4 * (sqrt(2) - 1) / 3  # http://www.whizkidtech.redprince.net/bezier/circle/
+        # A quarter circle large_arc with radius 100
+        # http://www.whizkidtech.redprince.net/bezier/circle/
+        kappa = 4 * (sqrt(2) - 1) / 3  
 
         cub = CubicBezier(
             complex(0, 0),
@@ -270,9 +380,9 @@ class CubicBezierTest(unittest.TestCase):
                               complex(900, 650), complex(900, 500))
 
         self.assertTrue(segment ==
-                        CubicBezier(600 + 500j, 600 + 350j, 900 + 650j, 900 + 500j))
+                CubicBezier(600 + 500j, 600 + 350j, 900 + 650j, 900 + 500j))
         self.assertTrue(segment !=
-                        CubicBezier(600 + 501j, 600 + 350j, 900 + 650j, 900 + 500j))
+                CubicBezier(600 + 501j, 600 + 350j, 900 + 650j, 900 + 500j))
         self.assertTrue(segment != Line(0, 400))
 
 
@@ -345,8 +455,10 @@ class QuadraticBezierTest(unittest.TestCase):
         # This is to test the __eq__ and __ne__ methods, so we can't use
         # assertEqual and assertNotEqual
         segment = QuadraticBezier(200 + 300j, 400 + 50j, 600 + 300j)
-        self.assertTrue(segment == QuadraticBezier(200 + 300j, 400 + 50j, 600 + 300j))
-        self.assertTrue(segment != QuadraticBezier(200 + 301j, 400 + 50j, 600 + 300j))
+        self.assertTrue(segment == 
+            QuadraticBezier(200 + 300j, 400 + 50j, 600 + 300j))
+        self.assertTrue(segment != 
+            QuadraticBezier(200 + 301j, 400 + 50j, 600 + 300j))
         self.assertFalse(segment == Arc(0j, 100 + 50j, 0, 0, 0, 100 + 50j))
         self.assertTrue(Arc(0j, 100 + 50j, 0, 0, 0, 100 + 50j) != segment)
 
@@ -439,16 +551,26 @@ class ArcTest(unittest.TestCase):
                    225.6910319606926, 1, 1,
                    (-624.6375539637027+896.5483089399895j))
         self.assertAlmostEqual(arc5.point(0.0), (725.307482226-915.554819928j))
-        self.assertAlmostEqual(arc5.point(0.0909090909091), (1023.47397369-597.730444283j))
-        self.assertAlmostEqual(arc5.point(0.181818181818), (1242.80253007-232.251400124j))
-        self.assertAlmostEqual(arc5.point(0.272727272727), (1365.52445614+151.273373978j))
-        self.assertAlmostEqual(arc5.point(0.363636363636), (1381.69755131+521.772981736j))
-        self.assertAlmostEqual(arc5.point(0.454545454545), (1290.01156757+849.231748376j))
-        self.assertAlmostEqual(arc5.point(0.545454545455), (1097.89435807+1107.12091209j))
-        self.assertAlmostEqual(arc5.point(0.636363636364), (820.910116547+1274.54782658j))
-        self.assertAlmostEqual(arc5.point(0.727272727273), (481.49845896+1337.94855893j))
-        self.assertAlmostEqual(arc5.point(0.818181818182), (107.156499251+1292.18675889j))
-        self.assertAlmostEqual(arc5.point(0.909090909091), (-271.788803303+1140.96977533j))
+        self.assertAlmostEqual(arc5.point(0.0909090909091), 
+                               (1023.47397369-597.730444283j))
+        self.assertAlmostEqual(arc5.point(0.181818181818), 
+                               (1242.80253007-232.251400124j))
+        self.assertAlmostEqual(arc5.point(0.272727272727), 
+                               (1365.52445614+151.273373978j))
+        self.assertAlmostEqual(arc5.point(0.363636363636), 
+                               (1381.69755131+521.772981736j))
+        self.assertAlmostEqual(arc5.point(0.454545454545), 
+                               (1290.01156757+849.231748376j))
+        self.assertAlmostEqual(arc5.point(0.545454545455), 
+                               (1097.89435807+1107.12091209j))
+        self.assertAlmostEqual(arc5.point(0.636363636364), 
+                               (820.910116547+1274.54782658j))
+        self.assertAlmostEqual(arc5.point(0.727272727273), 
+                               (481.49845896+1337.94855893j))
+        self.assertAlmostEqual(arc5.point(0.818181818182), 
+                               (107.156499251+1292.18675889j))
+        self.assertAlmostEqual(arc5.point(0.909090909091), 
+                               (-271.788803303+1140.96977533j))
 
     def test_length(self):
         # I'll test the length calculations by making a circle, in two parts.
@@ -463,6 +585,67 @@ class ArcTest(unittest.TestCase):
         segment = Arc(0j, 100 + 50j, 0, 0, 0, 100 + 50j)
         self.assertTrue(segment == Arc(0j, 100 + 50j, 0, 0, 0, 100 + 50j))
         self.assertTrue(segment != Arc(0j, 100 + 50j, 0, 1, 0, 100 + 50j))
+
+    def test_point_to_t(self):
+        a = Arc(start=(0+0j), radius=(5+5j), rotation=0.0, large_arc=True, sweep=True, end=(0+10j))
+        self.assertEqual(a.point_to_t(0+0j), 0.0)
+        self.assertAlmostEqual(a.point_to_t(5+5j), 0.5)
+        self.assertEqual(a.point_to_t(0+10j), 1.0)
+        self.assertIsNone(a.point_to_t(-5+5j))
+        self.assertIsNone(a.point_to_t(0+5j))
+        self.assertIsNone(a.point_to_t(1+0j))
+        self.assertIsNone(a.point_to_t(0-1j))
+        self.assertIsNone(a.point_to_t(0+11j))
+
+        a = Arc(start=(0+0j), radius=(5+5j), rotation=0.0, large_arc=True, sweep=False, end=(0+10j))
+        self.assertEqual(a.point_to_t(0+0j), 0.0)
+        self.assertAlmostEqual(a.point_to_t(-5+5j), 0.5)
+        self.assertEqual(a.point_to_t(0+10j), 1.0)
+        self.assertIsNone(a.point_to_t(5+5j))
+        self.assertIsNone(a.point_to_t(0+5j))
+        self.assertIsNone(a.point_to_t(1+0j))
+        self.assertIsNone(a.point_to_t(0-1j))
+        self.assertIsNone(a.point_to_t(0+11j))
+
+        a = Arc(start=(-10+0j), radius=(10+20j), rotation=0.0, large_arc=True, sweep=True, end=(10+0j))
+        self.assertEqual(a.point_to_t(-10+0j), 0.0)
+        self.assertAlmostEqual(a.point_to_t(0-20j), 0.5)
+        self.assertEqual(a.point_to_t(10+0j), 1.0)
+        self.assertIsNone(a.point_to_t(0+20j))
+        self.assertIsNone(a.point_to_t(-5+5j))
+        self.assertIsNone(a.point_to_t(0+5j))
+        self.assertIsNone(a.point_to_t(1+0j))
+        self.assertIsNone(a.point_to_t(0-1j))
+        self.assertIsNone(a.point_to_t(0+11j))
+
+        a = Arc(start=(100.834+27.987j), radius=(60.6+60.6j), rotation=0.0, large_arc=False, sweep=False, end=(40.234-32.613j))
+        self.assertEqual(a.point_to_t(100.834+27.987j), 0.0)
+        self.assertAlmostEqual(a.point_to_t(96.2210993246+4.7963831644j), 0.25)
+        self.assertAlmostEqual(a.point_to_t(83.0846703014-14.8636715784j), 0.50)
+        self.assertAlmostEqual(a.point_to_t(63.4246151671-28.0001000158j), 0.75)
+        self.assertEqual(a.point_to_t(40.234-32.613j), 1.00)
+        self.assertIsNone(a.point_to_t(-10+0j))
+        self.assertIsNone(a.point_to_t(0+0j))
+
+        a = Arc(start=(423.049961698-41.3779390229j), radius=(904.283878032+597.298520765j), rotation=0.0, large_arc=True, sweep=False, end=(548.984030235-312.385118044j))
+        orig_t = 0.854049465076
+        p = a.point(orig_t)
+        computed_t = a.point_to_t(p)
+        self.assertAlmostEqual(orig_t, computed_t)
+
+        a = Arc(start=(-1-750j), radius=(750+750j), rotation=0.0, large_arc=True, sweep=False, end=1-750j)
+        self.assertAlmostEqual(a.point_to_t(730.5212132777968+169.8191111892562j), 0.71373858)
+        self.assertIsNone(a.point_to_t(730.5212132777968+169j))
+        self.assertIsNone(a.point_to_t(730.5212132777968+171j))
+
+        random.seed()
+        for arc_index in range(100):
+            a = random_arc()
+            for t_index in range(100):
+                orig_t = random.random()
+                p = a.point(orig_t)
+                computed_t = a.point_to_t(p)
+                self.assertAlmostEqual(orig_t, computed_t)
 
 
 class TestPath(unittest.TestCase):
@@ -485,26 +668,31 @@ class TestPath(unittest.TestCase):
         path = Path(Line(300 + 200j, 150 + 200j),
                     Arc(150 + 200j, 150 + 150j, 0, 1, 0, 300 + 50j),
                     Line(300 + 50j, 300 + 200j))
-        # The points and length for this path are calculated and not regression tests.
+        # The points and length for this path are calculated and not 
+        # regression tests.
         self.assertAlmostEqual(path.point(0.0), (300 + 200j))
         self.assertAlmostEqual(path.point(0.14897825542), (150 + 200j))
         self.assertAlmostEqual(path.point(0.5), (406.066017177 + 306.066017177j))
         self.assertAlmostEqual(path.point(1 - 0.14897825542), (300 + 50j))
         self.assertAlmostEqual(path.point(1.0), (300 + 200j))
-        # The errors seem to accumulate. Still 6 decimal places is more than good enough.
+        # The errors seem to accumulate. Still 6 decimal places is more 
+        # than good enough.
         self.assertAlmostEqual(path.length(), pi * 225 + 300, places=6)
 
         # Little pie: M275,175 v-150 a150,150 0 0,0 -150,150 z
         path = Path(Line(275 + 175j, 275 + 25j),
                     Arc(275 + 25j, 150 + 150j, 0, 0, 0, 125 + 175j),
                     Line(125 + 175j, 275 + 175j))
-        # The points and length for this path are calculated and not regression tests.
+        # The points and length for this path are calculated and not 
+        # regression tests.
         self.assertAlmostEqual(path.point(0.0), (275 + 175j))
         self.assertAlmostEqual(path.point(0.2800495767557787), (275 + 25j))
-        self.assertAlmostEqual(path.point(0.5), (168.93398282201787 + 68.93398282201787j))
+        self.assertAlmostEqual(path.point(0.5), 
+                               (168.93398282201787 + 68.93398282201787j))
         self.assertAlmostEqual(path.point(1 - 0.2800495767557787), (125 + 175j))
         self.assertAlmostEqual(path.point(1.0), (275 + 175j))
-        # The errors seem to accumulate. Still 6 decimal places is more than good enough.
+        # The errors seem to accumulate. Still 6 decimal places is more 
+        # than good enough.
         self.assertAlmostEqual(path.length(), pi * 75 + 300, places=6)
 
         # Bumpy path: M600,350 l 50,-25
@@ -531,14 +719,17 @@ class TestPath(unittest.TestCase):
         # self.assertAlmostEqual(path.point(0.5), (827.730749264+147.824157418j))
         # self.assertAlmostEqual(path.point(0.9), (971.284357806+106.302352605j))
         # self.assertAlmostEqual(path.point(1), (1050+125j))
-        # # The errors seem to accumulate. Still 6 decimal places is more than good enough.
+        # # The errors seem to accumulate. Still 6 decimal places is more 
+        # # than good enough.
         # self.assertAlmostEqual(path.length(), 928.3886394081095)
 
     def test_repr(self):
         path = Path(
             Line(start=600 + 350j, end=650 + 325j),
-            Arc(start=650 + 325j, radius=25 + 25j, rotation=-30, large_arc=0, sweep=1, end=700 + 300j),
-            CubicBezier(start=700 + 300j, control1=800 + 400j, control2=750 + 200j, end=600 + 100j),
+            Arc(start=650 + 325j, radius=25 + 25j, rotation=-30, 
+                large_arc=0, sweep=1, end=700 + 300j),
+            CubicBezier(start=700 + 300j, control1=800 + 400j, 
+                control2=750 + 200j, end=600 + 100j),
             QuadraticBezier(start=600 + 100j, control=600, end=600 + 300j))
         self.assertEqual(eval(repr(path)), path)
 
@@ -547,13 +738,17 @@ class TestPath(unittest.TestCase):
         # assertEqual and assertNotEqual
         path1 = Path(
             Line(start=600 + 350j, end=650 + 325j),
-            Arc(start=650 + 325j, radius=25 + 25j, rotation=-30, large_arc=0, sweep=1, end=700 + 300j),
-            CubicBezier(start=700 + 300j, control1=800 + 400j, control2=750 + 200j, end=600 + 100j),
+            Arc(start=650 + 325j, radius=25 + 25j, rotation=-30, 
+                large_arc=0, sweep=1, end=700 + 300j),
+            CubicBezier(start=700 + 300j, control1=800 + 400j, 
+                control2=750 + 200j, end=600 + 100j),
             QuadraticBezier(start=600 + 100j, control=600, end=600 + 300j))
         path2 = Path(
             Line(start=600 + 350j, end=650 + 325j),
-            Arc(start=650 + 325j, radius=25 + 25j, rotation=-30, large_arc=0, sweep=1, end=700 + 300j),
-            CubicBezier(start=700 + 300j, control1=800 + 400j, control2=750 + 200j, end=600 + 100j),
+            Arc(start=650 + 325j, radius=25 + 25j, rotation=-30, 
+                large_arc=0, sweep=1, end=700 + 300j),
+            CubicBezier(start=700 + 300j, control1=800 + 400j, 
+                control2=750 + 200j, end=600 + 100j),
             QuadraticBezier(start=600 + 100j, control=600, end=600 + 300j))
 
         self.assertTrue(path1 == path2)
@@ -701,6 +896,164 @@ class TestPath(unittest.TestCase):
         with self.assertRaises(AssertionError):
             p_open.cropped(1, 0)
 
+    def test_transform_scale(self):
+
+        line1 = Line(600.5 + 350.5j, 650.5 + 325.5j)
+        arc1 = Arc(650 + 325j, 25 + 25j, -30, 0, 1, 700 + 300j)
+        arc2 = Arc(650 + 325j, 30 + 25j, -30, 0, 0, 700 + 300j)
+        cub1 = CubicBezier(650 + 325j, 25 + 25j, -30, 700 + 300j)
+        cub2 = CubicBezier(700 + 300j, 800 + 400j, 750 + 200j, 600 + 100j)
+        quad3 = QuadraticBezier(600 + 100j, 600, 600 + 300j)
+        linez = Line(600 + 300j, 600 + 350j)
+
+        bezpath = Path(line1, cub1, cub2, quad3)
+        bezpathz = Path(line1, cub1, cub2, quad3, linez)
+        path = Path(line1, arc1, cub2, quad3)
+        pathz = Path(line1, arc1, cub2, quad3, linez)
+        lpath = Path(linez)
+        qpath = Path(quad3)
+        cpath = Path(cub1)
+        apath = Path(arc1, arc2)
+
+        test_curves = [bezpath, bezpathz, path, pathz, lpath, qpath, cpath,
+                       apath, line1, arc1, arc2, cub1, cub2, quad3, linez]
+
+        def scale_a_point(pt, sx, sy=None, origin=0j):
+
+            if sy is None:
+                sy = sx
+
+            zeta = pt - origin
+            pt_vec = [[zeta.real],
+                      [zeta.imag],
+                      [1]]
+            transform = [[sx, 0, origin.real],
+                         [0, sy, origin.imag]]
+
+            return complex(*np.dot(transform, pt_vec).ravel())
+
+        for curve in test_curves:
+            # generate a random point and a random scaling
+            t = np.random.rand()
+            pt = curve.point(t)
+
+            # random diagonal transformation
+            sx = 2 * np.random.rand()
+            sy = 2 * np.random.rand()
+
+            # random origin
+            origin = (10  * (np.random.rand() - 0.5) +
+                      10j * (np.random.rand() - 0.5))
+
+            # Note: `sx != sy` cases are not implemented for `Arc` objects
+            has_arc = (isinstance(curve, Arc) or
+                       isinstance(curve, Path) and
+                       any(isinstance(seg, Arc) for seg in curve))
+
+            # find seg which t lands on for failure reporting
+            seg = curve
+            if isinstance(curve, Path):
+                seg_idx, seg_t = curve.T2t(t)
+                seg = curve[seg_idx]
+            _fail_msg = "Failure!\nseg  {}\n".format(seg)
+
+            # case where no `sy` and no `origin` given
+            curve_scaled = curve.scaled(sx)
+            if isinstance(curve, Path):
+                res = curve_scaled[seg_idx].point(seg_t)
+            else:
+                res = curve_scaled.point(t)
+            ans = scale_a_point(pt, sx, None)
+            fail_msg = _fail_msg + ("curve.scaled({}, {}, {}) = \n{}\n"
+                                    "".format(sx, None, None, curve_scaled))
+            fail_msg += "seg_scaled.point({}) = {}\n".format(seg_t, res)
+            fail_msg += "ans = {}".format(ans)
+            self.assertAlmostEqual(ans, res, places=4, msg=fail_msg)
+
+            # case where random `origin` given but no `sy`
+            ans = scale_a_point(pt, sx, None, origin)
+            curve_scaled = curve.scaled(sx, origin=origin)
+            if isinstance(curve, Path):
+                res = curve_scaled[seg_idx].point(seg_t)
+            else:
+                res = curve_scaled.point(t)
+            fail_msg = _fail_msg + ("curve.scaled({}, {}, {}) = \n{}\n"
+                                    "".format(sx, None, origin, curve_scaled))
+            fail_msg += "seg_scaled.point({}) = {}\n".format(seg_t, res)
+            fail_msg += "ans = {}".format(ans)
+            self.assertAlmostEqual(ans, res, places=4, msg=fail_msg)
+
+            # case where `sx != sy`, and no `origin` given
+            ans = scale_a_point(pt, sx, sy)
+            if has_arc:  # the cases with sx != sy are not yet imp for arcs
+                with self.assertRaises(Exception):
+                    curve.scaled(sx, sy).point(t)
+            else:
+                curve_scaled = curve.scaled(sx, sy)
+                seg_scaled = seg.scaled(sx, sy)
+                if isinstance(curve, Path):
+                    res = curve_scaled[seg_idx].point(seg_t)
+                else:
+                    res = curve_scaled.point(t)
+                fail_msg = _fail_msg + ("curve.scaled({}, {}, {}) = \n{}\n"
+                                        "".format(sx, sy, None, curve_scaled))
+                fail_msg += "seg_scaled.point({}) = {}\n".format(seg_t, res)
+                fail_msg += "ans = {}".format(ans)
+                self.assertAlmostEqual(ans, res, places=4, msg=fail_msg)
+
+            # case where `sx != sy`, and random `origin` given
+            ans = scale_a_point(pt, sx, sy, origin)
+            if has_arc:  # the cases with sx != sy are not yet imp for arcs
+                with self.assertRaises(Exception):
+                    curve.scaled(sx, sy, origin).point(t)
+            else:
+                curve_scaled = curve.scaled(sx, sy, origin)
+                if isinstance(curve, Path):
+                    res = curve_scaled[seg_idx].point(seg_t)
+                else:
+                    res = curve_scaled.point(t)
+                fail_msg = _fail_msg + ("curve.scaled({}, {}, {}) = \n{}\n"
+                                        "".format(sx, sy, origin, curve_scaled))
+                fail_msg += "seg_scaled.point({}) = {}\n".format(seg_t, res)
+                fail_msg += "ans = {}".format(ans)
+                self.assertAlmostEqual(ans, res, places=4, msg=fail_msg)
+
+        # more tests for scalar (i.e. `sx == sy`) case
+        for curve in test_curves:
+            # scale by 2 around (100, 100)
+            scaled_curve = curve.scaled(2.0, origin=complex(100, 100))
+
+            # expected length
+            len_orig = curve.length()
+            len_trns = scaled_curve.length()
+            self.assertAlmostEqual(len_orig * 2.0, len_trns)
+
+            # expected positions
+            for T in np.linspace(0.0, 1.0, num=100):
+                pt_orig = curve.point(T)
+                pt_trns = scaled_curve.point(T)
+                pt_xpct = (pt_orig - complex(100, 100)) * 2.0 + complex(100, 100)
+                self.assertAlmostEqual(pt_xpct, pt_trns)
+
+            # scale by 0.3 around (0, -100)
+            # the 'almost equal' test fails at the 7th decimal place for 
+            # some length and position tests here.
+            scaled_curve = curve.scaled(0.3, origin=complex(0, -100))
+
+            # expected length
+            len_orig = curve.length()
+            len_trns = scaled_curve.length()
+            self.assertAlmostEqual(len_orig * 0.3, len_trns, delta=0.000001)
+
+            # expected positions
+            for T in np.linspace(0.0, 1.0, num=100):
+                pt_orig = curve.point(T)
+                pt_trns = scaled_curve.point(T)
+                pt_xpct = (pt_orig - complex(0, -100)) * 0.3 + complex(0, -100)
+                self.assertAlmostEqual(pt_xpct, pt_trns, delta=0.000001)
+
+
+                
 
 class Test_ilength(unittest.TestCase):
     # See svgpathtools.notes.inv_arclength.py for information on how these
@@ -928,7 +1281,19 @@ class Test_ilength(unittest.TestCase):
                  (apath, 1.0, 87.81018330500885)]
 
         for (c, t, s) in tests:
-            self.assertAlmostEqual(c.ilength(s), t, msg=str((c, t, s)))
+            try:
+                self.assertAlmostEqual(c.ilength(s), t, msg=str((c, t, s)))
+            except:
+                # These test case values were generated using a system
+                # with scipy installed -- if scipy is not installed, 
+                # then in cases where `t == 1`, `s` may be slightly 
+                # greater than the length computed previously. 
+                # Thus this try/except block exists as a workaround.
+                if c.length() < s:
+                    with self.assertRaises(ValueError):
+                        c.ilength(s)
+                else:
+                    raise
 
     # Exceptional Cases
     def test_ilength_exceptions(self):
@@ -992,17 +1357,160 @@ class Test_intersect(unittest.TestCase):
         ###################################################################
 
     def test_line_line_0(self):
-        l0 = Line(start=(25.389999999999997+99.989999999999995j), end=(25.389999999999997+90.484999999999999j))
-        l1 = Line(start=(25.390000000000001+84.114999999999995j), end=(25.389999999999997+74.604202137430320j))
+        l0 = Line(start=(25.389999999999997+99.989999999999995j), 
+                  end=(25.389999999999997+90.484999999999999j))
+        l1 = Line(start=(25.390000000000001+84.114999999999995j), 
+                  end=(25.389999999999997+74.604202137430320j))
         i = l0.intersect(l1)
         assert(len(i)) == 0
 
     def test_line_line_1(self):
-        l0 = Line(start=(-124.705378549+327.696674827j), end=(12.4926214511+121.261674827j))
-        l1 = Line(start=(-12.4926214511+121.261674827j), end=(124.705378549+327.696674827j))
+        l0 = Line(start=(-124.705378549+327.696674827j), 
+                  end=(12.4926214511+121.261674827j))
+        l1 = Line(start=(-12.4926214511+121.261674827j), 
+                  end=(124.705378549+327.696674827j))
         i = l0.intersect(l1)
         assert(len(i)) == 1
         assert(abs(l0.point(i[0][0])-l1.point(i[0][1])) < 1e-9)
+
+
+    def test_arc_line(self):
+        l = Line(start=(-20+1j), end=(20+1j))
+        a = Arc(start=(-10+0), radius=(10+10j), rotation=0.0, large_arc=True, sweep=False, end=(10+0j))
+        intersections = a.intersect(l)
+        assert_intersections(a, l, intersections, 2)
+
+        l = Line(start=(-20-1j), end=(20-1j))
+        a = Arc(start=(-10+0), radius=(10+10j), rotation=0.0, large_arc=True, sweep=False, end=(10+0j))
+        intersections = a.intersect(l)
+        assert_intersections(a, l, intersections, 0)
+
+        l = Line(start=(-20+1j), end=(20+1j))
+        a = Arc(start=(-10+0), radius=(10+10j), rotation=0.0, large_arc=True, sweep=True, end=(10+0j))
+        intersections = a.intersect(l)
+        assert_intersections(a, l, intersections, 0)
+
+        l = Line(start=(-20-1j), end=(20-1j))
+        a = Arc(start=(-10+0), radius=(10+10j), rotation=0.0, large_arc=True, sweep=True, end=(10+0j))
+        intersections = a.intersect(l)
+        assert_intersections(a, l, intersections, 2)
+
+        l = Line(start=(-20+0j), end=(20+0j))
+        a = Arc(start=(-10+0), radius=(10+10j), rotation=0.0, large_arc=True, sweep=True, end=(10+0j))
+        intersections = a.intersect(l)
+        assert_intersections(a, l, intersections, 2)
+
+        l = Line(start=(-20+0j), end=(20+0j))
+        a = Arc(start=(-10+0), radius=(10+10j), rotation=0.0, large_arc=True, sweep=False, end=(10+0j))
+        intersections = a.intersect(l)
+        assert_intersections(a, l, intersections, 2)
+
+        l = Line(start=(-20+10j), end=(20+10j))
+        a = Arc(start=(-10+0), radius=(10+10j), rotation=0.0, large_arc=True, sweep=False, end=(10+0j))
+        intersections = a.intersect(l)
+        assert_intersections(a, l, intersections, 1)
+
+        l = Line(start=(229.226097475-282.403591377j), end=(751.681212592+188.907748894j))
+        a = Arc(start=(-1-750j), radius=(750+750j), rotation=0.0, large_arc=True, sweep=False, end=(1-750j))
+        intersections = a.intersect(l)
+        assert_intersections(a, l, intersections, 1)
+
+        # end of arc touches start of horizontal line
+        l = Line(start=(40.234-32.613j), end=(12.7-32.613j))
+        a = Arc(start=(100.834+27.987j), radius=(60.6+60.6j), rotation=0.0, large_arc=False, sweep=False, end=(40.234-32.613j))
+        intersections = a.intersect(l)
+        assert_intersections(a, l, intersections, 1)
+
+        # vertical line, intersects half-arc once
+        l = Line(start=(1-100j), end=(1+100j))
+        a = Arc(start=(10.0+0j), radius=(10+10j), rotation=0, large_arc=False, sweep=True, end=(-10.0+0j))
+        intersections = a.intersect(l)
+        assert_intersections(a, l, intersections, 1)
+
+        # vertical line, intersects nearly-full arc twice
+        l = Line(start=(1-100j), end=(1+100j))
+        a = Arc(start=(0.1-10j), radius=(10+10j), rotation=0, large_arc=True, sweep=True, end=(-0.1-10j))
+        intersections = a.intersect(l)
+        assert_intersections(a, l, intersections, 2)
+
+        # vertical line, start of line touches end of arc
+        l = Line(start=(15.4+100j), end=(15.4+90.475j))
+        a = Arc(start=(25.4+90j), radius=(10+10j), rotation=0, large_arc=False, sweep=True, end=(15.4+100j))
+        intersections = a.intersect(l)
+        assert_intersections(a, l, intersections, 1)
+
+        l = Line(start=(100-60.913j), end=(40+59j))
+        a = Arc(start=(100.834+27.987j), radius=(60.6+60.6j), rotation=0.0, large_arc=False, sweep=False, end=(40.234-32.613j))
+        intersections = a.intersect(l)
+        assert_intersections(a, l, intersections, 1)
+
+        l = Line(start=(128.57143 + 380.93364j), end=(300.00001 + 389.505069j))
+        a = Arc(start=(214.28572 + 598.07649j), radius=(85.714287 + 108.57143j), rotation=0.0, large_arc=False, sweep=True, end=(128.57143 + 489.50507j))
+        intersections = a.intersect(l)
+        assert_intersections(a, l, intersections, 0)
+
+        random.seed()
+        for arc_index in range(50):
+            a = random_arc()
+            for line_index in range(100):
+                l = random_line()
+                intersections = a.intersect(l)
+                assert_intersections(a, l, intersections, None)
+
+
+    def test_intersect_arc_line_1(self):
+
+        """Verify the return value of intersects() when an Arc ends at
+        the starting point of a Line."""
+
+        a = Arc(start=(0+0j), radius=(10+10j), rotation=0, large_arc=False,
+                sweep=False, end=(10+10j), autoscale_radius=False)
+        l = Line(start=(10+10j), end=(20+10j))
+
+        i = a.intersect(l)
+        self.assertEqual(len(i), 1)
+        self.assertEqual(i[0][0], 1.0)
+        self.assertEqual(i[0][1], 0.0)
+
+
+    def test_intersect_arc_line_2(self):
+
+        """Verify the return value of intersects() when an Arc is pierced
+        once by a Line."""
+
+        a = Arc(start=(0+0j), radius=(10+10j), rotation=0, large_arc=False,
+                sweep=False, end=(10+10j), autoscale_radius=False)
+        l = Line(start=(0+9j), end=(20+9j))
+
+        i = a.intersect(l)
+        self.assertEqual(len(i), 1)
+        self.assertGreaterEqual(i[0][0], 0.0)
+        self.assertLessEqual(i[0][0], 1.0)
+        self.assertGreaterEqual(i[0][1], 0.0)
+        self.assertLessEqual(i[0][1], 1.0)
+
+
+    def test_intersect_arc_line_3(self):
+
+        """Verify the return value of intersects() when an Arc misses
+        a Line, but the circle that the Arc is part of hits the Line."""
+
+        a = Arc(start=(0+0j), radius=(10+10j), rotation=0, large_arc=False,
+                sweep=False, end=(10+10j), autoscale_radius=False)
+        l = Line(start=(11+100j), end=(11-100j))
+
+        i = a.intersect(l)
+        self.assertEqual(len(i), 0)
+
+
+    def test_intersect_arc_line_disjoint_bboxes(self):
+        # The arc is very short, which contributes to the problem here.
+        l = Line(start=(125.314540561+144.192926144j), end=(125.798713132+144.510685287j))
+        a = Arc(start=(128.26640649+146.908463323j), radius=(2+2j),
+                rotation=0, large_arc=False, sweep=True,
+                end=(128.26640606+146.90846449j))
+        i = l.intersect(a)
+        self.assertEqual(i, [])
 
 
 class TestPathTools(unittest.TestCase):
@@ -1050,10 +1558,10 @@ class TestPathTools(unittest.TestCase):
 
         # Case: Line
         pcoeffs = [(-1.7-2j), (6+2j)]
-        p = poly1d(pcoeffs)
+        p = np.poly1d(pcoeffs)
         correct_bpoints = [(6+2j), (4.3+0j)]
 
-        # Input poly1d object
+        # Input np.poly1d object
         bez = poly2bez(p)
         bpoints = bez.bpoints()
         self.assertAlmostEqual(distfcn(bpoints, correct_bpoints), 0)
@@ -1064,10 +1572,10 @@ class TestPathTools(unittest.TestCase):
 
         # Case: Quadratic
         pcoeffs = [(29.5+15.5j), (-31-19j), (7.5+5.5j)]
-        p = poly1d(pcoeffs)
+        p = np.poly1d(pcoeffs)
         correct_bpoints = [(7.5+5.5j), (-8-4j), (6+2j)]
 
-        # Input poly1d object
+        # Input np.poly1d object
         bez = poly2bez(p)
         bpoints = bez.bpoints()
         self.assertAlmostEqual(distfcn(bpoints, correct_bpoints), 0)
@@ -1078,10 +1586,10 @@ class TestPathTools(unittest.TestCase):
 
         # Case: Cubic
         pcoeffs = [(-18.5-12.5j), (34.5+16.5j), (-18-6j), (6+2j)]
-        p = poly1d(pcoeffs)
+        p = np.poly1d(pcoeffs)
         correct_bpoints = [(6+2j), 0j, (5.5+3.5j), (4+0j)]
 
-        # Input poly1d object
+        # Input np.poly1d object
         bez = poly2bez(p)
         bpoints = bez.bpoints()
         self.assertAlmostEqual(distfcn(bpoints, correct_bpoints), 0)
@@ -1237,6 +1745,34 @@ class TestPathTools(unittest.TestCase):
         #       openinbrowser=True)
         # disvg(closed_bez_path, nodes=ns2d, node_colors=ncolors,
         #       openinbrowser=True)
+
+
+    def test_path_area(self):
+        cw_square = Path()
+        cw_square.append(Line((0+0j), (0+100j)))
+        cw_square.append(Line((0+100j), (100+100j)))
+        cw_square.append(Line((100+100j), (100+0j)))
+        cw_square.append(Line((100+0j), (0+0j)))
+        self.assertEqual(cw_square.area(), -10000.0)
+
+        ccw_square = Path()
+        ccw_square.append(Line((0+0j), (100+0j)))
+        ccw_square.append(Line((100+0j), (100+100j)))
+        ccw_square.append(Line((100+100j), (0+100j)))
+        ccw_square.append(Line((0+100j), (0+0j)))
+        self.assertEqual(ccw_square.area(), 10000.0)
+
+        cw_half_circle = Path()
+        cw_half_circle.append(Line((0+0j), (0+100j)))
+        cw_half_circle.append(Arc(start=(0+100j), radius=(50+50j), rotation=0, large_arc=False, sweep=False, end=(0+0j)))
+        self.assertAlmostEqual(cw_half_circle.area(), -3926.9908169872415, places=3)
+        self.assertAlmostEqual(cw_half_circle.area(chord_length=1e-3), -3926.9908169872415, places=6)
+
+        ccw_half_circle = Path()
+        ccw_half_circle.append(Line((0+100j), (0+0j)))
+        ccw_half_circle.append(Arc(start=(0+0j), radius=(50+50j), rotation=0, large_arc=False, sweep=True, end=(0+100j)))
+        self.assertAlmostEqual(ccw_half_circle.area(), 3926.9908169872415, places=3)
+        self.assertAlmostEqual(ccw_half_circle.area(chord_length=1e-3), 3926.9908169872415, places=6)
 
 
 if __name__ == '__main__':

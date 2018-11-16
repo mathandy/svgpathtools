@@ -1,0 +1,162 @@
+<?xml version="1.0" ?>
+<svg
+    baseProfile="full"
+    version="1.1"
+    viewBox="0 0 365 365"
+    height="100%"
+    width="100%"
+    xmlns="http://www.w3.org/2000/svg"
+    xmlns:test="some://testuri">
+  <defs/>
+  <g
+      id="matrix group"
+      transform="matrix(1.5 0.0 0.0 0.5 -40.0 20.0)">
+
+    <path
+        d="M 183,183 l 0,-50"
+        fill="black"
+        stroke="black"
+        stroke-width="3"
+        test:name="path00"/>
+
+    <g
+        id="scale group"
+        transform="scale(1.25)">
+
+      <path
+            d="M 122,320 l -50,0"
+            fill="black"
+            stroke="black"
+            stroke-width="3"
+            test:name="path01"/>
+
+      <g
+          id="nested group - empty transform"
+          transform="">
+
+        <path
+            d="M 150,200 l -50,25"
+            fill="black"
+            stroke="black"
+            stroke-width="3"
+            test:name="path02"/>
+
+      </g>
+
+      <g
+          id="nested group - no transform">
+
+        <path
+            d="M 150,200 l -50,25"
+            fill="black"
+            stroke="black"
+            stroke-width="3"
+            test:name="path03"/>
+
+      </g>
+
+      <g
+          id="nested group - translate"
+          transform="translate(20)">
+
+        <path
+            d="M 150,200 l -50,25"
+            fill="black"
+            stroke="black"
+            stroke-width="3"
+            test:name="path04"/>
+
+      </g>
+
+      <g
+          id="nested group - translate xy"
+          transform="
+          translate(20, 30)">
+
+        <path
+            d="M 150,200 l -50,25"
+            fill="black"
+            stroke="black"
+            stroke-width="3"
+            test:name="path05"/>
+
+      </g>
+
+    </g>
+
+    <g
+        id="scale xy group"
+        transform="scale(0.5 1.5)">
+
+      <path
+          d="M 122,320 l -50,0"
+          fill="black"
+          stroke="black"
+          stroke-width="3"
+          test:name="path06"/>
+
+    </g>
+
+    <g
+        id="rotate group"
+        transform="rotate(20)">
+
+      <path
+          d="M 183,183 l 0,30"
+          fill="black"
+          stroke="black"
+          stroke-width="3"
+          test:name="path07"/>
+
+    </g>
+
+    <g
+        id="rotate xy group"
+        transform="rotate(45 183 183)">
+
+      <path
+          d="M 183,183 l 0,30"
+          fill="black"
+          stroke="black"
+          stroke-width="3"
+          test:name="path08"/>
+
+    </g>
+
+    <g
+        id="skew x group"
+        transform="skewX(5)">
+
+      <path
+          d="M 183,183 l 40,40"
+          fill="black"
+          stroke="black"
+          stroke-width="3"
+          test:name="path09"/>
+
+    </g>
+
+    <g
+        id="skew y group"
+        transform="skewY(5)">
+
+      <path
+          d="M 183,183 l 40,40"
+          fill="black"
+          stroke="black"
+          stroke-width="3"
+          test:name="path10"/>
+
+      <path
+          d="M 180,20 l -70,80"
+          fill="black"
+          stroke="black"
+          stroke-width="4"
+          transform="rotate(-40, 100, 100)"
+          test:name="path11"/>
+
+    </g>
+
+  </g>
+
+</svg>

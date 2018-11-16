@@ -5,17 +5,27 @@ The main tool being the svg2paths() function."""
 from __future__ import division, absolute_import, print_function
 from xml.dom.minidom import parse
 from os import path as os_path, getcwd
+import re
 
 # Internal dependencies
 from .parser import parse_path
 
 
+COORD_PAIR_TMPLT = re.compile(
+    r'([\+-]?\d*[\.\d]\d*[eE][\+-]?\d+|[\+-]?\d*[\.\d]\d*)' +
+    r'(?:\s*,\s*|\s+|(?=-))' +
+    r'([\+-]?\d*[\.\d]\d*[eE][\+-]?\d+|[\+-]?\d*[\.\d]\d*)'
+)
+
+def path2pathd(path):
+    return path.get('d', '')
+
 def ellipse2pathd(ellipse):
     """converts the parameters from an ellipse or a circle to a string for a 
     Path object d-attribute"""
 
-    cx = ellipse.get('cx', None)
-    cy = ellipse.get('cy', None)
+    cx = ellipse.get('cx', 0)
+    cy = ellipse.get('cy', 0)
     rx = ellipse.get('rx', None)
     ry = ellipse.get('ry', None)
     r = ellipse.get('r', None)
@@ -37,54 +47,41 @@ def ellipse2pathd(ellipse):
     return d
 
 
-def polyline2pathd(polyline_d):
+def polyline2pathd(polyline_d, is_polygon=False):
     """converts the string from a polyline points-attribute to a string for a
     Path object d-attribute"""
-    points = polyline_d.replace(', ', ',')
-    points = points.replace(' ,', ',')
-    points = points.split()
+    points = COORD_PAIR_TMPLT.findall(polyline_d)
+    closed = (float(points[0][0]) == float(points[-1][0]) and
+              float(points[0][1]) == float(points[-1][1]))
 
-    closed = points[0] == points[-1]
+    # The `parse_path` call ignores redundant 'z' (closure) commands
+    # e.g. `parse_path('M0 0L100 100Z') == parse_path('M0 0L100 100L0 0Z')`
+    # This check ensures that an n-point polygon is converted to an n-Line path.
+    if is_polygon and closed:
+        points.append(points[0])
 
-    d = 'M' + points.pop(0).replace(',', ' ')
-    for p in points:
-        d += 'L' + p.replace(',', ' ')
-    if closed:
+    d = 'M' + 'L'.join('{0} {1}'.format(x,y) for x,y in points)
+    if is_polygon or closed:
         d += 'z'
     return d
 
 
 def polygon2pathd(polyline_d):
-    """converts the string from a polygon points-attribute to a string for a
-    Path object d-attribute.
+    """converts the string from a polygon points-attribute to a string 
+    for a Path object d-attribute.
     Note:  For a polygon made from n points, the resulting path will be
-    composed of n lines (even if some of these lines have length zero)."""
-    points = polyline_d.replace(', ', ',')
-    points = points.replace(' ,', ',')
-    points = points.split()
-
-    reduntantly_closed = points[0] == points[-1]
-
-    d = 'M' + points[0].replace(',', ' ')
-    for p in points[1:]:
-        d += 'L' + p.replace(',', ' ')
-
-    # The `parse_path` call ignores redundant 'z' (closure) commands
-    # e.g. `parse_path('M0 0L100 100Z') == parse_path('M0 0L100 100L0 0Z')`
-    # This check ensures that an n-point polygon is converted to an n-Line path.
-    if reduntantly_closed:
-        d += 'L' + points[0].replace(',', ' ')
-
-    return d + 'z'
+    composed of n lines (even if some of these lines have length zero).
+    """
+    return polyline2pathd(polyline_d, True)
 
 
 def rect2pathd(rect):
     """Converts an SVG-rect element to a Path d-string.
     
-    The rectangle will start at the (x,y) coordinate specified by the rectangle 
-    object and proceed counter-clockwise."""
+    The rectangle will start at the (x,y) coordinate specified by the 
+    rectangle object and proceed counter-clockwise."""
     x0, y0 = float(rect.get('x', 0)), float(rect.get('y', 0))
-    w, h = float(rect["width"]), float(rect["height"])
+    w, h = float(rect.get('width', 0)), float(rect.get('height', 0))
     x1, y1 = x0 + w, y0
     x2, y2 = x0 + w, y0 + h
     x3, y3 = x0, y0 + h
@@ -93,6 +90,8 @@ def rect2pathd(rect):
          "".format(x0, y0, x1, y1, x2, y2, x3, y3))
     return d
 
+def line2pathd(l):
+    return 'M' + l['x1'] + ' ' + l['y1'] + 'L' + l['x2'] + ' ' + l['y2']
 
 def svg2paths(svg_file_location,
               return_svg_attributes=False,

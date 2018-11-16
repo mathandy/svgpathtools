@@ -6,7 +6,7 @@ easily be generalized to paths containing `Line` and `QuadraticBezier` objects
 also.  
 Note: The relevant matrix transformation for quadratics can be found in the
 svgpathtools.bezier module."""
-
+from __future__ import print_function
 import numpy as np
 from svgpathtools import *
 
@@ -38,10 +38,10 @@ def points_in_each_seg_slow(path, tvals):
 
 def points_in_each_seg(path, tvals):
     """Compute seg.point(t) for each seg in path and each t in tvals."""
-    A = np.matrix([[-1,  3, -3,  1], # transforms cubic bez to standard poly
-                   [ 3, -6,  3,  0],
-                   [-3,  3,  0,  0],
-                   [ 1,  0,  0,  0]])
+    A = np.array([[-1,  3, -3,  1], # transforms cubic bez to standard poly
+                  [ 3, -6,  3,  0],
+                  [-3,  3,  0,  0],
+                  [ 1,  0,  0,  0]])
     B = [seg.bpoints() for seg in path]
     return np.dot(B, np.dot(A, np.power(tvals, [[3],[2],[1],[0]])))
 
@@ -53,4 +53,4 @@ if __name__ == '__main__':
 
     pts = points_in_each_seg(testpath, tvals)
     pts_check = points_in_each_seg_slow(testpath, tvals)
-    print np.max(pts - pts_check)
+    print(np.max(pts - pts_check))
