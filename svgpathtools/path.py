@@ -1323,6 +1323,9 @@ class Arc(object):
         self.end = end
         self.autoscale_radius = autoscale_radius
 
+        self.segment_length_hash = None
+        self.segment_length = None
+
         # Convenience parameters
         self.phi = radians(self.rotation)
         self.rot_matrix = exp(1j*self.phi)
@@ -1625,6 +1628,19 @@ class Arc(object):
         integration, and in that case it's simpler to just do a geometric
         approximation, as for cubic bezier curves."""
         assert 0 <= t0 <= 1 and 0 <= t1 <= 1
+
+        if t0 == 0 and t1 == 1:
+            h = hash(self)
+            if self.segment_length_hash is None or self.segment_length_hash != h:
+                self.segment_length_hash = h
+                if _quad_available:
+                    self.segment_length = quad(lambda tau: abs(self.derivative(tau)),
+                                               t0, t1, epsabs=error, limit=1000)[0]
+                else:
+                    self.segment_length = segment_length(self, t0, t1, self.point(t0),
+                                                         self.point(t1), error, min_depth, 0)
+            return self.segment_length
+
         if _quad_available:
             return quad(lambda tau: abs(self.derivative(tau)), t0, t1,
                         epsabs=error, limit=1000)[0]
