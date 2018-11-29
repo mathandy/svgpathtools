@@ -1330,6 +1330,9 @@ class Arc(object):
         # Derive derived parameters
         self._parameterize()
 
+    def __hash__(self):
+        return hash((self.start, self.radius, self.rotation, self.large_arc, self.sweep, self.end))
+
     def __repr__(self):
         params = (self.start, self.radius, self.rotation,
                   self.large_arc, self.sweep, self.end)
