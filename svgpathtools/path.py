@@ -1886,8 +1886,124 @@ class Arc(object):
             t2s = polyroots01(u1poly_mag2 - 1)
             t1s = [self.phase2t(phase(u1poly(t2))) for t2 in t2s]
             return list(zip(t1s, t2s))
+
         elif isinstance(other_seg, Arc):
             assert other_seg != self
+
+            import sys
+
+            # From "Intersection of two circles", at
+            # http://paulbourke.net/geometry/circlesphere/
+
+            # It's easy to find the intersections of two circles, so
+            # compute that and see if any of those
+            # intersection points are on the arcs.
+            if (self.rotation == 0) and (self.radius.real == self.radius.imag) and (other_seg.rotation == 0) and (other_seg.radius.real == other_seg.radius.imag):
+                r0 = self.radius.real
+                r1 = other_seg.radius.real
+                p0 = self.center
+                p1 = other_seg.center
+                d = abs(p0 - p1)
+                possible_inters = []
+
+                if d > (r0 + r1):
+                    # The circles are farther apart than the sum of
+                    # their radii: no intersections possible.
+                    pass
+
+                elif d < abs(r0 - r1):
+                    # The small circle is wholly contained within the
+                    # large circle: no intersections possible.
+                    pass
+
+                elif (np.isclose(d, 0, rtol=0.0, atol=1e-6)) and (np.isclose(r0, r1, rtol=0.0, atol=1e-6)):
+                    # The Arcs lie on the same circle: they have the
+                    # same center and are of equal radius.
+
+                    def point_in_seg_interior(point, seg):
+                        t = seg.point_to_t(point)
+                        if t is None: return False
+                        if np.isclose(t, 0.0, rtol=0.0, atol=1e-6): return False
+                        if np.isclose(t, 1.0, rtol=0.0, atol=1e-6): return False
+                        return True
+
+                    # If either end of either segment is in the interior
+                    # of the other segment, then the Arcs overlap
+                    # in an infinite number of points, and we return
+                    # "no intersections".
+                    if point_in_seg_interior(self.start, other_seg): return []
+                    if point_in_seg_interior(self.end, other_seg): return []
+                    if point_in_seg_interior(other_seg.start, self): return []
+                    if point_in_seg_interior(other_seg.end, self): return []
+
+                    # If they touch at their endpoint(s) and don't go
+                    # in "overlapping directions", then we accept that
+                    # as intersections.
+
+                    if (self.start == other_seg.start) and (self.sweep != other_seg.sweep):
+                        possible_inters.append((0.0, 0.0))
+
+                    if (self.start == other_seg.end) and (self.sweep == other_seg.sweep):
+                        possible_inters.append((0.0, 1.0))
+
+                    if (self.end == other_seg.start) and (self.sweep == other_seg.sweep):
+                        possible_inters.append((1.0, 0.0))
+
+                    if (self.end == other_seg.end) and (self.sweep != other_seg.sweep):
+                        possible_inters.append((1.0, 1.0))
+
+                elif np.isclose(d, r0 + r1, rtol=0.0, atol=1e-6):
+                    # The circles are tangent, so the Arcs may touch
+                    # at exactly one point.  The circles lie outside
+                    # each other.
+                    l = Line(start=p0, end=p1)
+                    p = l.point(r0/d)
+                    possible_inters.append((self.point_to_t(p), other_seg.point_to_t(p)))
+
+                elif np.isclose(d, abs(r0 - r1), rtol=0.0, atol=1e-6):
+                    # The circles are tangent, so the Arcs may touch
+                    # at exactly one point.  One circle lies inside
+                    # the other.
+                    # Make a line from the center of the inside circle
+                    # to the center of the outside circle, and walk
+                    # along it the negative of the small radius.
+                    l = Line(start=p0, end=p1)
+                    little_r = r0
+                    if r0 > r1:
+                        l = Line(start=p1, end=p0)
+                        little_r = r1
+                    p = l.point(-little_r/d)
+                    possible_inters.append((self.point_to_t(p), other_seg.point_to_t(p)))
+
+                else:
+                    a = (pow(r0, 2.0) - pow(r1, 2.0) + pow(d, 2.0)) / (2.0 * d)
+                    h = sqrt(pow(r0, 2.0) - pow(a, 2.0))
+                    p2 = p0 + (a * (p1 - p0) / d)
+
+                    x30 = p2.real + (h * (p1.imag - p0.imag) / d)
+                    x31 = p2.real - (h * (p1.imag - p0.imag) / d)
+
+                    y30 = p2.imag - (h * (p1.real - p0.real) / d)
+                    y31 = p2.imag + (h * (p1.real - p0.real) / d)
+
+                    p30 = complex(x30, y30)
+                    p31 = complex(x31, y31)
+
+                    possible_inters.append((self.point_to_t(p30), other_seg.point_to_t(p30)))
+                    possible_inters.append((self.point_to_t(p31), other_seg.point_to_t(p31)))
+
+                inters = []
+                for p in possible_inters:
+                    self_t = p[0]
+                    if (self_t is None) or (self_t < 0.0) or (self_t > 1.0): continue
+                    other_t = p[1]
+                    if (other_t is None) or (other_t < 0.0) or (other_t > 1.0): continue
+                    assert(np.isclose(self.point(self_t), other_seg.point(other_t), rtol=0.0, atol=1e-6))
+                    i = (self_t, other_t)
+                    inters.append(i)
+
+                return inters
+
             # This could be made explicit to increase efficiency
             longer_length = max(self.length(), other_seg.length())
             inters = bezier_intersections(self, other_seg,
@@ -1907,6 +2023,7 @@ class Arc(object):
                 else:
                     return [inters[0], inters[-1]]
             return inters
+
         else:
             raise TypeError("other_seg should be a Arc, Line, "
                             "QuadraticBezier, or CubicBezier object.")
