@@ -2440,7 +2440,7 @@ class Path(MutableSequence):
     #         Ts += [self.t2T(i, t) for t in seg.icurvature(kappa)]
     #     return Ts
 
-    def area(self, chord_length=1e-2):
+    def area(self, chord_length=1e-4):
         """Find area enclosed by path.
         
         Approximates any Arc segments in the Path with lines
@@ -2475,10 +2475,9 @@ class Path(MutableSequence):
 
         def seg2lines(seg):
             """Find piecewise-linear approximation of `seg`."""
-            num_lines = ceil(seg.length() / chord_length)
-            tvals = np.linspace(0, seg.length(), num_lines)
-            return [Line(seg.point(tvals[i]), seg.point(tvals[i+1]))
-                    for i in range(len(tvals)-1)]
+            num_lines = int(ceil(seg.length() / chord_length))
+            pts = [seg.point(t) for t in np.linspace(0, 1, num_lines+1)]
+            return [Line(pts[i], pts[i+1]) for i in range(num_lines)]
 
         assert self.isclosed()
 
