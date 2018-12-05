@@ -645,7 +645,7 @@ class ArcTest(unittest.TestCase):
                 orig_t = random.random()
                 p = a.point(orig_t)
                 computed_t = a.point_to_t(p)
-                self.assertAlmostEqual(orig_t, computed_t)
+                self.assertAlmostEqual(orig_t, computed_t, msg="arc %s at t=%f is point %s, but got %f back" % (a, orig_t, p, computed_t))
 
 
 class TestPath(unittest.TestCase):
