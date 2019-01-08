@@ -306,8 +306,8 @@ def disvg(paths=None, colors=None,
 
     # Create an SVG file
     if svg_attributes is not None:
-        dimensions[0] = svg_attributes.get("width", dimensions[0])
-        dimensions[1] = svg_attributes.get("height", dimensions[1])
+        dimensions = (svg_attributes.get("width", dimensions[0]),
+                      svg_attributes.get("height", dimensions[1]))
         debug = svg_attributes.get("debug", svgwrite_debug)
         dwg = Drawing(filename=filename, size=dimensions, debug=debug,
                       **svg_attributes)
