@@ -3,7 +3,7 @@ import codecs
 import os
 
 
-VERSION = '1.3.3'
+VERSION = '1.3.4'
 AUTHOR_NAME = 'Andy Port'
 AUTHOR_EMAIL = 'AndyAPort@gmail.com'
 
