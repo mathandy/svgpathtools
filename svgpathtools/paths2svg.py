@@ -9,6 +9,8 @@ from xml.dom.minidom import parse as md_xml_parse
 from svgwrite import Drawing, text as txt
 from time import time
 from warnings import warn
+from webbrowser import Error as BrowserError
+import re
 
 # Internal dependencies
 from .path import Path, Segment, Line
@@ -82,13 +84,28 @@ def big_bounding_box(paths_n_stuff):
     return xmin, xmax, ymin, ymax
 
 
-def disvg(paths=None, colors=None,
-          filename=os_path.join(getcwd(), 'disvg_output.svg'),
-          stroke_widths=None, nodes=None, node_colors=None, node_radii=None,
-          openinbrowser=True, timestamp=False,
-          margin_size=0.1, mindim=600, dimensions=None,
-          viewbox=None, text=None, text_path=None, font_size=None,
-          attributes=None, svg_attributes=None):
+def disvg(
+    paths=None,
+    colors=None,
+    filename=os_path.join(getcwd(), 'disvg_output.svg'),
+    stroke_widths=None,
+    nodes=None,
+    node_colors=None,
+    node_radii=None,
+    openinbrowser=True,
+    timestamp=False,
+    margin_size=0.1,
+    mindim=600,
+    dimensions=None,
+    viewbox=None,
+    text=None,
+    text_path=None,
+    font_size=None,
+    attributes=None,
+    svg_attributes=None,
+    svgwrite_debug=False,
+    paths2Drawing=False
+):
     """Takes in a list of paths and creates an SVG file containing said paths.
     REQUIRED INPUTS:
         :param paths - a list of paths
@@ -140,26 +157,41 @@ def disvg(paths=None, colors=None,
         :param mindim - The minimum dimension (height or width) of the output
         SVG (default is 600).
 
-        :param dimensions - The display dimensions of the output SVG.  Using
-        this will override the mindim parameter.
+        :param dimensions - The (x,y) display dimensions of the output SVG.
+        I.e. this specifies the `width` and `height` SVG attributes. Note that
+        these also can be used to specify units other than pixels. Using this
+        will override the `mindim` parameter.
 
-        :param viewbox - This specifies what rectangular patch of R^2 will be
-        viewable through the outputSVG.  It should be input in the form
-        (min_x, min_y, width, height).  This is different from the display
-        dimension of the svg, which can be set through mindim or dimensions.
+        :param viewbox - This specifies the coordinated system used in the svg.
+        The SVG `viewBox` attribute works together with the the `height` and
+        `width` attrinutes.  Using these three attributes allows for shifting
+        and scaling of the SVG canvas without changing the any values other
+        than those in `viewBox`, `height`, and `width`.  `viewbox` should be
+        input as a 4-tuple, (min_x, min_y, width, height), or a string
+        "min_x min_y width height".  Using this will override the `mindim`
+        parameter.
 
         :param attributes - a list of dictionaries of attributes for the input
         paths.  Note: This will override any other conflicting settings.
 
         :param svg_attributes - a dictionary of attributes for output svg.
-        Note 1: This will override any other conflicting settings.
-        Note 2: Setting `svg_attributes={'debug': False}` may result in a 
-        significant increase in speed.
+
+        :param svgwrite_debug - This parameter turns on/off `svgwrite`'s
+        debugging mode.  By default svgwrite_debug=False.  This increases
+        speed and also prevents `svgwrite` from raising of an error when not
+        all `svg_attributes` key-value pairs are understood.
+
+        :param paths2Drawing - If true, an `svgwrite.Drawing` object is
+        returned and no file is written.  This `Drawing` can later be saved
+        using the `svgwrite.Drawing.save()` method.
 
     NOTES:
-        -The unit of length here is assumed to be pixels in all variables.
+        * The `svg_attributes` parameter will override any other conflicting
+        settings.
 
-        -If this function is used multiple times in quick succession to
+        * The unit of length here is assumed to be pixels in all variables.
+
+        * If this function is used multiple times in quick succession to
         display multiple SVGs (all using the default filename), the
         svgviewer/browser will likely fail to load some of the SVGs in time.
         To fix this, use the timestamp attribute, or give the files unique
@@ -178,11 +210,9 @@ def disvg(paths=None, colors=None,
 
     # append time stamp to filename
     if timestamp:
-        fbname, fext = os_path.splitext(filename)
-        dirname = os_path.dirname(filename)
         tstamp = str(time()).replace('.', '')
-        stfilename = os_path.split(fbname)[1] + '_' + tstamp + fext
-        filename = os_path.join(dirname, stfilename)
+        fbname, fext = os_path.splitext(filename)
+        filename = fbname + '_' + tstamp + fext
 
     # check paths and colors are set
     if isinstance(paths, Path) or isinstance(paths, Segment):
@@ -218,8 +248,19 @@ def disvg(paths=None, colors=None,
     # along the way, set stroke_widths and node_radii if not provided
     assert paths or nodes
     stuff2bound = []
+
     if viewbox:
-        szx, szy = viewbox[2:4]
+        if not isinstance(viewbox, str):
+            viewbox = '%s %s %s %s' % viewbox
+        if dimensions is None:
+            dimensions = viewbox.split(' ')[2: 4]
+
+    elif dimensions:
+        def strip_units(s):
+            return re.search(r'\d*\.?\d*', s.strip()).group()
+        dimensions = tuple(map(str, dimensions))
+        viewbox = '0 0 %s %s' % tuple(map(strip_units, dimensions))
+
     else:
         if paths:
             stuff2bound += paths
@@ -240,7 +281,7 @@ def disvg(paths=None, colors=None,
         if paths:
             if not stroke_widths:
                 sw = max(dx, dy) * _default_relative_stroke_width
-                stroke_widths = [sw]*len(paths)
+                stroke_widths = [sw] * len(paths)
                 max_stroke_width = sw
             else:
                 assert len(paths) == len(stroke_widths)
@@ -252,35 +293,39 @@ def disvg(paths=None, colors=None,
         if nodes:
             if not node_radii:
                 r = max(dx, dy) * _default_relative_node_radius
-                node_radii = [r]*len(nodes)
-                max_node_diameter = 2*r
+                node_radii = [r] * len(nodes)
+                max_node_diameter = 2 * r
             else:
                 assert len(nodes) == len(node_radii)
-                max_node_diameter = 2*max(node_radii)
+                max_node_diameter = 2 * max(node_radii)
         else:
             max_node_diameter = 0
 
         extra_space_for_style = max(max_stroke_width, max_node_diameter)
-        xmin -= margin_size*dx + extra_space_for_style/2
-        ymin -= margin_size*dy + extra_space_for_style/2
-        dx += 2*margin_size*dx + extra_space_for_style
-        dy += 2*margin_size*dy + extra_space_for_style
+        xmin -= margin_size * dx + extra_space_for_style / 2
+        ymin -= margin_size * dy + extra_space_for_style / 2
+        dx += 2 * margin_size * dx + extra_space_for_style
+        dy += 2 * margin_size * dy + extra_space_for_style
         viewbox = "%s %s %s %s" % (xmin, ymin, dx, dy)
-        if dimensions:
-            szx, szy = dimensions
+
+        if dx > dy:
+            szx = str(mindim) + 'px'
+            szy = str(int(ceil(mindim * dy / dx))) + 'px'
         else:
-            if dx > dy:
-                szx = str(mindim) + 'px'
-                szy = str(int(ceil(mindim * dy / dx))) + 'px'
-            else:
-                szx = str(int(ceil(mindim * dx / dy))) + 'px'
-                szy = str(mindim) + 'px'
+            szx = str(int(ceil(mindim * dx / dy))) + 'px'
+            szy = str(mindim) + 'px'
+        dimensions = szx, szy
 
     # Create an SVG file
-    if svg_attributes:
-        dwg = Drawing(filename=filename, **svg_attributes)
+    if svg_attributes is not None:
+        dimensions = (svg_attributes.get("width", dimensions[0]),
+                      svg_attributes.get("height", dimensions[1]))
+        debug = svg_attributes.get("debug", svgwrite_debug)
+        dwg = Drawing(filename=filename, size=dimensions, debug=debug,
+                      **svg_attributes)
     else:
-        dwg = Drawing(filename=filename, size=(szx, szy), viewBox=viewbox)
+        dwg = Drawing(filename=filename, size=dimensions, debug=svgwrite_debug,
+                      viewBox=viewbox)
 
     # add paths
     if paths:
@@ -350,6 +395,9 @@ def disvg(paths=None, colors=None,
             txter = dwg.add(dwg.text('', font_size=font_size[idx]))
             txter.add(txt.TextPath('#' + pathid, s))
 
+    if paths2Drawing:
+        return dwg
+
     # save svg
     if not os_path.exists(os_path.dirname(filename)):
         makedirs(os_path.dirname(filename))
@@ -364,24 +412,50 @@ def disvg(paths=None, colors=None,
     if openinbrowser:
         try:
             open_in_browser(filename)
-        except:
+        except (IOError, BrowserError):
             print("Failed to open output SVG in browser.  SVG saved to:")
             print(filename)
 
 
-def wsvg(paths=None, colors=None,
-          filename=os_path.join(getcwd(), 'disvg_output.svg'),
-          stroke_widths=None, nodes=None, node_colors=None, node_radii=None,
-          openinbrowser=False, timestamp=False,
-          margin_size=0.1, mindim=600, dimensions=None,
-          viewbox=None, text=None, text_path=None, font_size=None,
-          attributes=None, svg_attributes=None):
+def wsvg(
+    paths=None,
+    colors=None,
+    filename=os_path.join(getcwd(), 'disvg_output.svg'),
+    stroke_widths=None,
+    nodes=None,
+    node_colors=None,
+    node_radii=None,
+    openinbrowser=False,
+    timestamp=False,
+    margin_size=0.1,
+    mindim=600,
+    dimensions=None,
+    viewbox=None,
+    text=None,
+    text_path=None,
+    font_size=None,
+    attributes=None,
+    svg_attributes=None
+):
     """Convenience function; identical to disvg() except that
     openinbrowser=False by default.  See disvg() docstring for more info."""
-    disvg(paths, colors=colors, filename=filename,
-          stroke_widths=stroke_widths, nodes=nodes,
-          node_colors=node_colors, node_radii=node_radii,
-          openinbrowser=openinbrowser, timestamp=timestamp,
-          margin_size=margin_size, mindim=mindim, dimensions=dimensions,
-          viewbox=viewbox, text=text, text_path=text_path, font_size=font_size,
-          attributes=attributes, svg_attributes=svg_attributes)
+    disvg(
+        paths,
+        colors=colors,
+        filename=filename,
+        stroke_widths=stroke_widths,
+        nodes=nodes,
+        node_colors=node_colors,
+        node_radii=node_radii,
+        openinbrowser=openinbrowser,
+        timestamp=timestamp,
+        margin_size=margin_size,
+        mindim=mindim,
+        dimensions=dimensions,
+        viewbox=viewbox,
+        text=text,
+        text_path=text_path,
+        font_size=font_size,
+        attributes=attributes,
+        svg_attributes=svg_attributes
+    )

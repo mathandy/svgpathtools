@@ -290,12 +290,15 @@ def bezier_unit_tangent(seg, t):
                "seg.poly().deriv()(t + 1e-4) = {}".format(aft))
         return mes
 
+    def normalize(thing):
+        return thing / abs(thing)
+
     assert 0 <= t <= 1
     dseg = seg.derivative(t)
 
     # Note: dseg might be numpy value, use np.seterr(invalid='raise')
     try:
-        unit_tangent = dseg / abs(dseg)
+        unit_tangent = normalize(dseg)
     except (ZeroDivisionError, FloatingPointError):
         # [jpsteinb] a previous author suggested this
         # but---alas!---csqrt(x^2) is not equal to x for all x in C
@@ -311,27 +314,35 @@ def bezier_unit_tangent(seg, t):
             try:
                 return csqrt(rational_limit(dseg_poly**2, dseg_abs_squared_poly, t))
             except ValueError:
-                raise ValueError(compute_error_message("@A"))
+                raise ValueError(compute_error_message("@Z"))
 
         # [jpsteinb]...so here is another hopeful (partial) (?) fix:
         if True:
             bpoints = list(seg.bpoints())
             if len(bpoints) > 2 and t == 0 and np.isclose(bpoints[0], bpoints[1]):
                 try:
-                    dif = bpoints[2] - bpoints[0]
-                    unit_tangent = dif / abs(dif)
+                    unit_tangent = normalize(bpoints[2] - bpoints[0])
                 except (ZeroDivisionError, FloatingPointError):
+                    if len(bpoints) > 3 and np.isclose(bpoints[0], bpoints[2]):
+                        try:
+                            unit_tangent = normalize(bpoints[3] - bpoints[0])
+                        except (ZeroDivisionError, FloatingPointError):
+                            raise ValueError(compute_error_message("@A"))
                     raise ValueError(compute_error_message("@B"))
 
-            elif len(bpoints) > 2 and t == 1 and np.isclose(bpoints[-2], bpoints[-1]):
+            elif len(bpoints) > 2 and t == 1 and np.isclose(bpoints[-1], bpoints[-2]):
                 try:
-                    dif = bpoints[-1] - bpoints[-3]
-                    unit_tangent = dif / abs(dif)
+                    unit_tangent = normalize(bpoints[-1] - bpoints[-3])
                 except (ZeroDivisionError, FloatingPointError):
-                    raise ValueError(compute_error_message("@C"))
+                    if len(bpoints) > 3 and np.isclose(bpoints[-1], bpoints[-3]):
+                        try:
+                            unit_tangent = normalize(bpoints[-1] - bpoints[-4])
+                        except (ZeroDivisionError, FloatingPointError):
+                            raise ValueError(compute_error_message("@C"))
+                    raise ValueError(compute_error_message("@D"))
 
             else:
-                raise ValueError(compute_error_message("@D"))
+                raise ValueError(compute_error_message("@E"))
 
     return unit_tangent
 
@@ -3017,8 +3028,8 @@ class Subpath(ContinuousCurve):
             raise ValueError("Subpath.even_odd_encloses called on non-loop path")
         if ref_point is None:
             ref_point = self.point_outside()
-        Is = Subpath(Line(pt, ref_point)).intersect(self, normalize=False)
-        return bool(len({a.t for a in Is}) % 2)
+        intersections = Subpath(Line(pt, ref_point)).intersect(self, normalize=False)
+        return bool(len({a1.t for a1, a2 in intersections}) % 2)
 
     def union_encloses(self, pt, ref_point=None):
         raise NotImplementedError
@@ -3612,8 +3623,8 @@ class Path(Curve):
             raise ValueError('path has non-loop subpath in Path.even_odd_encloses')
         if ref_point_outside is None:
             ref_point_outside = self.point_outside()
-        intersections = Path(Line(pt, ref_point_outside)).intersect(self, normalize=False)
-        return bool(len({a.t for a in intersections}) % 2)
+        intersections = Path(Subpath(Line(pt, ref_point_outside))).intersect(self)
+        return bool(len({a1.t for a1, a2 in intersections}) % 2)
 
     def union_encloses(self, pt, ref_point_outside=None):
         """Not implemented"""

@@ -36,7 +36,7 @@ def bezier_point(p, t):
     try:
         p.large_arc
         return p.point(t)
-    except:
+    except AttributeError:
         pass
     # end arc support block ##########################
 
@@ -46,6 +46,7 @@ def bezier_point(p, t):
             3 * (p[1] - p[0]) + t * (
                 3 * (p[0] + p[2]) - 6 * p[1] + t * (
                     -p[0] + 3 * (p[1] - p[2]) + p[3])))
+
     elif deg == 2:
         return p[0] + t * (
             2 * (p[1] - p[0]) + t * (
@@ -72,16 +73,16 @@ def bezier2polynomial(p, numpy_ordering=True, return_poly1d=False):
     numpy_ordering : By default (to accommodate numpy) the coefficients will
     be output in reverse standard order."""
     if len(p) == 4:
-        coeffs = (-p[0] + 3*(p[1] - p[2]) + p[3],
-                  3*(p[0] - 2*p[1] + p[2]),
-                  3*(p[1]-p[0]),
+        coeffs = (-p[0] + 3 * (p[1] - p[2]) + p[3],
+                  3 * (p[0] - 2 * p[1] + p[2]),
+                  3 * (p[1] - p[0]),
                   p[0])
     elif len(p) == 3:
-        coeffs = (p[0] - 2*p[1] + p[2],
-                  2*(p[1] - p[0]),
+        coeffs = (p[0] - 2 * p[1] + p[2],
+                  2 * (p[1] - p[0]),
                   p[0])
     elif len(p) == 2:
-        coeffs = (p[1]-p[0],
+        coeffs = (p[1] - p[0],
                   p[0])
     elif len(p) == 1:
         coeffs = p
@@ -131,11 +132,11 @@ def split_bezier(bpoints, t):
             bpoints_left_.append(bpoints_[0])
             bpoints_right_.append(bpoints_[0])
         else:
-            new_points = [None]*(len(bpoints_) - 1)
+            new_points = [None] * (len(bpoints_) - 1)
             bpoints_left_.append(bpoints_[0])
             bpoints_right_.append(bpoints_[-1])
             for i in range(len(bpoints_) - 1):
-                new_points[i] = (1 - t_)*bpoints_[i] + t_*bpoints_[i + 1]
+                new_points[i] = (1 - t_) * bpoints_[i] + t_ * bpoints_[i + 1]
             bpoints_left_, bpoints_right_ = split_bezier_recursion(
                 bpoints_left_, bpoints_right_, new_points, t_)
         return bpoints_left_, bpoints_right_
@@ -154,15 +155,16 @@ def halve_bezier(p):
     try:
         p.large_arc
         return p.split(0.5)
-    except:
+
+    except AttributeError:
         pass
     # end arc support block ##########################
 
     if len(p) == 4:
-        return ([p[0], (p[0] + p[1])/2, (p[0] + 2*p[1] + p[2])/4,
-                 (p[0] + 3*p[1] + 3*p[2] + p[3])/8],
-                [(p[0] + 3*p[1] + 3*p[2] + p[3])/8,
-                 (p[1] + 2*p[2] + p[3])/4, (p[2] + p[3])/2, p[3]])
+        return ([p[0], (p[0] + p[1]) / 2, (p[0] + 2 * p[1] + p[2]) / 4,
+                 (p[0] + 3 * p[1] + 3 * p[2] + p[3]) / 8],
+                [(p[0] + 3 * p[1] + 3 * p[2] + p[3]) / 8,
+                 (p[1] + 2 * p[2] + p[3]) / 4, (p[2] + p[3]) / 2, p[3]])
     else:
         return split_bezier(p, 0.5)
 
@@ -174,12 +176,12 @@ def bezier_real_minmax(p):
     local_extremizers = [0, 1]
     if len(p) == 4:  # cubic case
         a = [p.real for p in p]
-        denom = a[0] - 3*a[1] + 3*a[2] - a[3]
+        denom = a[0] - 3 * a[1] + 3 * a[2] - a[3]
         if denom != 0:
-            delta = a[1]**2 - (a[0] + a[1])*a[2] + a[2]**2 + (a[0] - a[1])*a[3]
+            delta = a[1]**2 - (a[0] + a[1]) * a[2] + a[2]**2 + (a[0] - a[1]) * a[3]
             if delta >= 0:  # otherwise no local extrema
                 sqdelta = sqrt(delta)
-                tau = a[0] - 2*a[1] + a[2]
+                tau = a[0] - 2 * a[1] + a[2]
                 r1 = (tau + sqdelta) / denom
                 r2 = (tau - sqdelta) / denom
                 if 0 < r1 < 1:
@@ -205,9 +207,9 @@ def bezier_bounding_box(bez):
 
     # begin arc support block ########################
     try:
-        bla = bez.large_arc
+        bez.large_arc
         return bez.bbox()  # added to support Arc objects
-    except:
+    except AttributeError:
         pass
     # end arc support block ##########################
 
@@ -234,7 +236,7 @@ def box_area(xmin, xmax, ymin, ymax):
     INPUT: 2-tuple of cubics (given by control points)
     OUTPUT: boolean
     """
-    return (xmax - xmin)*(ymax - ymin)
+    return (xmax - xmin) * (ymax - ymin)
 
 
 def interval_intersection_width(a, b, c, d):
@@ -260,6 +262,7 @@ def boxes_intersect(box1, box2):
 class ApproxSolutionSet(list):
     """A class that behaves like a set but treats two elements , x and y, as
     equivalent if abs(x-y) < self.tol"""
+
     def __init__(self, tol):
         self.tol = tol
 
@@ -283,7 +286,7 @@ class BPair(object):
 
 
 def bezier_intersections(bez1, bez2, longer_length, tol=1e-8, tol_deC=1e-8):
-    """
+    """INPUT:
     bez1, bez2 = [P0,P1,P2,...PN], [Q0,Q1,Q2,...,PN] defining the two
     Bezier curves to check for intersections between.
     longer_length - the length (or an upper bound) on the longer of the two
@@ -293,8 +296,7 @@ def bezier_intersections(bez1, bez2, longer_length, tol=1e-8, tol_deC=1e-8):
     OUTPUT: a list of tuples (t,s) in [0,1]x[0,1] such that
         abs(bezier_point(bez1[0],t) - bezier_point(bez2[1],s)) < tol_deC
     Note: This will return exactly one such tuple for each intersection
-    (assuming tol_deC is small enough).
-    """
+    (assuming tol_deC is small enough)."""
     maxits = int(ceil(1 - log(tol_deC / longer_length) / log(2)))
     pair_list = [BPair(bez1, bez2, 0.5, 0.5)]
     intersection_list = []
@@ -360,8 +362,8 @@ def bezier_by_line_intersections(bezier, line):
     line_length = abs(shifted_line_end)
 
     # Now let's rotate the complex plane so that line falls on the x-axis
-    rotation_matrix = line_length/shifted_line_end
-    transformed_bezier = [rotation_matrix*z for z in shifted_bezier]
+    rotation_matrix = line_length / shifted_line_end
+    transformed_bezier = [rotation_matrix * z for z in shifted_bezier]
 
     # Now all intersections should be roots of the imaginary component of
     # the transformed bezier
@@ -374,7 +376,6 @@ def bezier_by_line_intersections(bezier, line):
     for bez_t in set(roots_y):
         xval = bezier_point(transformed_bezier_real, bez_t)
         if 0 <= xval <= line_length:
-            line_t = xval/line_length
+            line_t = xval / line_length
             intersection_list.append((bez_t, line_t))
     return intersection_list
-
