@@ -209,7 +209,7 @@ def flatten_group(group_to_flatten, root, recursive=True,
                 break
 
         if route is None:
-            raise ValueError('The group_to_flatten is not an ancestor of the root!')
+            raise ValueError('The group_to_flatten is not a descendant of the root!')
 
     def desired_group_filter(x):
         return (id(x) in desired_groups) and group_filter(x)
