@@ -168,7 +168,7 @@ class TestGroups(unittest.TestCase):
     def test_nested_group(self):
         # A bug in the flatten_group() implementation made it so that only top-level
         # groups could have their paths flattened. This is a regression test to make
-        # sure that when a nested group is request, its paths can also be flattened.
+        # sure that when a nested group is requested, its paths can also be flattened.
         doc = Document(join(dirname(__file__), 'groups.svg'))
         result = doc.flatten_group(['matrix group', 'scale group'])
         self.assertEqual(len(result), 5)
