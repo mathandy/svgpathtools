@@ -327,6 +327,20 @@ class Document:
         return any(group is owned for owned in self.tree.iter())
 
     def get_group(self, nested_names, name_attr='id'):
+        """Get a group from the tree, or None if the requested group
+        does not exist. Use get_or_add_group(~) if you want a new group
+        to be created if it did not already exist.
+
+        `nested_names` is a list of strings which represent group names.
+        Each group name will be nested inside of the previous group name.
+
+        `name_attr` is the group attribute that is being used to
+        represent the group's name. Default is 'id', but some SVGs may
+        contain custom name labels, like 'inkscape:label'.
+
+        Returns the request group. If the requested group did not
+        exist, this function will return a None value.
+        """
         group = self.tree.getroot()
         # Drill down through the names until we find the desired group
         while len(nested_names):
