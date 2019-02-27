@@ -184,7 +184,7 @@ def flatten_group(group_to_flatten, root, recursive=True,
         while search:
             top = search.pop(0)
             frontier = top[-1]
-            for child in frontier.iterfind('svg:g', SVG_NAMESPACE):
+            for child in frontier.iterfind(group_search_xpath, SVG_NAMESPACE):
                 if child is group_to_flatten:
                     route = top
                     break
