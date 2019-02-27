@@ -73,6 +73,7 @@ CONVERT_ONLY_PATHS = {'path': path2pathd}
 
 SVG_GROUP_TAG = 'svg:g'
 
+
 def flatten_all_paths(group, group_filter=lambda x: True,
                       path_filter=lambda x: True, path_conversions=CONVERSIONS,
                       group_search_xpath=SVG_GROUP_TAG):
