@@ -254,7 +254,6 @@ def scale(curve, sx, sy=None, origin=0j):
         raise TypeError("Input `curve` should be a Path, Line, "
                         "QuadraticBezier, CubicBezier, or Arc object.")
 
-
 def transform(curve, tf):
     """Transforms the curve by the homogeneous transformation matrix tf"""
     def to_point(p):
@@ -274,9 +273,28 @@ def transform(curve, tf):
     elif isinstance(curve, Arc):
         new_start = to_complex(tf.dot(to_point(curve.start)))
         new_end = to_complex(tf.dot(to_point(curve.end)))
-        new_radius = to_complex(tf.dot(to_vector(curve.radius)))
-        return Arc(new_start, radius=new_radius, rotation=curve.rotation,
-                   large_arc=curve.large_arc, sweep=curve.sweep, end=new_end)
+        
+        # Based on https://math.stackexchange.com/questions/2349726/compute-the-major-and-minor-axis-of-an-ellipse-after-linearly-transforming-it
+        rx2 = curve.radius.real ** 2
+        ry2 = curve.radius.imag ** 2
+
+        Q = np.array([[1/rx2, 0], [0, 1/ry2]])
+        invT = np.linalg.inv(tf[:2,:2])
+        D = invT.T @ Q @ invT
+
+        eigvals = np.linalg.eigvals(D)
+
+        rx = 1 / np.sqrt(eigvals[0])
+        ry = 1 / np.sqrt(eigvals[1])
+
+        new_radius = complex(rx, ry)
+
+        if new_radius.real == 0 or new_radius.imag == 0 :
+            return Line(new_start, new_end)
+        else : 
+            return Arc(new_start, radius=new_radius, rotation=curve.rotation,
+                       large_arc=curve.large_arc, sweep=curve.sweep, end=new_end)
+
     else:
         raise TypeError("Input `curve` should be a Path, Line, "
                         "QuadraticBezier, CubicBezier, or Arc object.")
