@@ -6,7 +6,10 @@ Arc."""
 from __future__ import division, absolute_import, print_function
 from math import sqrt, cos, sin, acos, asin, degrees, radians, log, pi, ceil
 from cmath import exp, sqrt as csqrt, phase
-from collections import MutableSequence
+try:
+    from collections.abc import MutableSequence  # noqa
+except ImportError:
+    from collections import MutableSequence  # noqa
 from warnings import warn
 from operator import itemgetter
 import numpy as np
