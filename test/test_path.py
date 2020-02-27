@@ -1774,17 +1774,31 @@ class TestPathTools(unittest.TestCase):
         self.assertAlmostEqual(ccw_half_circle.area(chord_length=1e-3), 3926.9908169872415, places=6)
 
     def test_is_contained_by(self):
-        enclosed_path = Path()
-        enclosed_path.append(Line((10+10j), (90+90j)))
-
-        not_enclosed_path = Path()
-        not_enclosed_path.append(Line((200+200j), (200+0j)))
-
         enclosing_shape = Path()
         enclosing_shape.append(Line((0+0j), (0+100j)))
         enclosing_shape.append(Line((0+100j), (100+100j)))
         enclosing_shape.append(Line((100+100j), (100+0j)))
         enclosing_shape.append(Line((100+0j), (0+0j)))
+
+        enclosed_path = Path()
+        enclosed_path.append(Line((10+10j), (90+90j)))
+        self.assertTrue(enclosed_path.is_contained_by(enclosing_shape))
+
+        not_enclosed_path = Path()
+        not_enclosed_path.append(Line((200+200j), (200+0j)))
+        self.assertFalse(not_enclosed_path.is_contained_by(enclosing_shape))
+
+        intersecting_path = Path()
+        intersecting_path.append(Line((50+50j), (200+50j)))
+        self.assertFalse(intersecting_path.is_contained_by(enclosing_shape))
+
+        larger_shape = Path()
+        larger_shape.append(Line((-10-10j), (-10+110j)))
+        larger_shape.append(Line((-10+110j), (110+110j)))
+        larger_shape.append(Line((110+110j), (110+-10j)))
+        larger_shape.append(Line((110-10j), (-10-10j)))
+        self.assertFalse(larger_shape.is_contained_by(enclosing_shape))
+        self.assertTrue(enclosing_shape.is_contained_by(larger_shape))
 
 
 if __name__ == '__main__':
