@@ -93,8 +93,8 @@ def rect2pathd(rect):
 
 def line2pathd(l):
     return (
-        'M' + l.attrib['x1'] + ' ' + l.attrib['y1']
-        + 'L' + l.attrib['x2'] + ' ' + l.attrib['y2']
+        'M' + l.attrib.get('x1', '0') + ' ' + l.attrib.get('y1', '0')
+        + 'L' + l.attrib.get('x2', '0') + ' ' + l.attrib.get('y2', '0')
     )
 
 
