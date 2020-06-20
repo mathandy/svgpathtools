@@ -275,8 +275,12 @@ def transform(curve, tf):
         new_start = to_complex(tf.dot(to_point(curve.start)))
         new_end = to_complex(tf.dot(to_point(curve.end)))
         new_radius = to_complex(tf.dot(to_vector(curve.radius)))
+        if tf[0][0] * tf[1][1] >= 0.0:
+            new_sweep = curve.sweep
+        else:
+            new_sweep = not curve.sweep
         return Arc(new_start, radius=new_radius, rotation=curve.rotation,
-                   large_arc=curve.large_arc, sweep=curve.sweep, end=new_end)
+                   large_arc=curve.large_arc, sweep=new_sweep, end=new_end)
     else:
         raise TypeError("Input `curve` should be a Path, Line, "
                         "QuadraticBezier, CubicBezier, or Arc object.")
