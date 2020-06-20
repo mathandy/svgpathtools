@@ -16,7 +16,6 @@ from svgpathtools.path import _NotImplemented4ArcException
 # take too long and be too error prone. Instead the curves have been verified
 # to be correct visually with the disvg() function.
 
-
 def random_line():
     x = (random.random() - 0.5) * 2000
     y = (random.random() - 0.5) * 2000
@@ -1782,6 +1781,33 @@ class TestPathTools(unittest.TestCase):
         ccw_half_circle.append(Arc(start=(0+0j), radius=(50+50j), rotation=0, large_arc=False, sweep=True, end=(0+100j)))
         self.assertAlmostEqual(ccw_half_circle.area(), 3926.9908169872415, places=3)
         self.assertAlmostEqual(ccw_half_circle.area(chord_length=1e-3), 3926.9908169872415, places=6)
+
+    def test_is_contained_by(self):
+        enclosing_shape = Path()
+        enclosing_shape.append(Line((0+0j), (0+100j)))
+        enclosing_shape.append(Line((0+100j), (100+100j)))
+        enclosing_shape.append(Line((100+100j), (100+0j)))
+        enclosing_shape.append(Line((100+0j), (0+0j)))
+
+        enclosed_path = Path()
+        enclosed_path.append(Line((10+10j), (90+90j)))
+        self.assertTrue(enclosed_path.is_contained_by(enclosing_shape))
+
+        not_enclosed_path = Path()
+        not_enclosed_path.append(Line((200+200j), (200+0j)))
+        self.assertFalse(not_enclosed_path.is_contained_by(enclosing_shape))
+
+        intersecting_path = Path()
+        intersecting_path.append(Line((50+50j), (200+50j)))
+        self.assertFalse(intersecting_path.is_contained_by(enclosing_shape))
+
+        larger_shape = Path()
+        larger_shape.append(Line((-10-10j), (-10+110j)))
+        larger_shape.append(Line((-10+110j), (110+110j)))
+        larger_shape.append(Line((110+110j), (110+-10j)))
+        larger_shape.append(Line((110-10j), (-10-10j)))
+        self.assertFalse(larger_shape.is_contained_by(enclosing_shape))
+        self.assertTrue(enclosing_shape.is_contained_by(larger_shape))
 
 
 if __name__ == '__main__':

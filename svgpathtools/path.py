@@ -115,7 +115,6 @@ def polygon(*points):
     return Path(*[Line(points[i], points[(i + 1) % len(points)])
                   for i in range(len(points))])
 
-
 # Conversion###################################################################
 
 def bpoints2bezier(bpoints):
@@ -2700,3 +2699,22 @@ class Path(MutableSequence):
     def scaled(self, sx, sy=None, origin=0j):
         """Scale transform.  See `scale` function for further explanation."""
         return scale(self, sx=sx, sy=sy, origin=origin)
+
+    def is_contained_by(self, other):
+        """Returns true if the path is fully contained in other closed path"""
+        assert isinstance(other, Path)
+        assert other.isclosed()
+        assert self != other
+
+        if self.intersect(other, justonemode=True):
+            return False
+
+        pt = self.point(0)
+        xmin, xmax, ymin, ymax = other.bbox()
+        pt_in_bbox = (xmin <= pt.real <= xmax) and (ymin <= pt.imag <= ymax)
+
+        if not pt_in_bbox:
+            return False
+
+        opt = complex(xmin-1, ymin-1)
+        return path_encloses_pt(pt, opt, other)
