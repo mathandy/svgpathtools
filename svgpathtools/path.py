@@ -2199,6 +2199,8 @@ class Path(MutableSequence):
     _closed = False
     _start = None
     _end = None
+    attributes = None
+    meta = None  # meant as container for storage of arbitrary meta data
 
     def __init__(self, *segments, **kw):
         self._segments = list(segments)
