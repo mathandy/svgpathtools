@@ -90,8 +90,13 @@ def rect2pathd(rect):
          "".format(x0, y0, x1, y1, x2, y2, x3, y3))
     return d
 
+
 def line2pathd(l):
-    return 'M' + l['x1'] + ' ' + l['y1'] + 'L' + l['x2'] + ' ' + l['y2']
+    return (
+        'M' + l.attrib.get('x1', '0') + ' ' + l.attrib.get('y1', '0')
+        + 'L' + l.attrib.get('x2', '0') + ' ' + l.attrib.get('y2', '0')
+    )
+
 
 def svg2paths(svg_file_location,
               return_svg_attributes=False,
