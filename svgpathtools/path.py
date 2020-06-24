@@ -576,6 +576,10 @@ class Line(object):
         distance = self.end - self.start
         return self.start + distance*t
 
+    def points(self, ts):
+        """Faster than running Path.point many times."""
+        return self.poly(ts)
+
     def length(self, t0=0, t1=1, error=None, min_depth=None):
         """returns the length of the line segment between t0 and t1."""
         return abs(self.end - self.start)*(t1-t0)
@@ -814,6 +818,10 @@ class QuadraticBezier(object):
     def point(self, t):
         """returns the coordinates of the Bezier curve evaluated at t."""
         return (1 - t)**2*self.start + 2*(1 - t)*t*self.control + t**2*self.end
+
+    def points(self, ts):
+        """Faster than running Path.point many times."""
+        return self.poly(ts)
 
     def length(self, t0=0, t1=1, error=None, min_depth=None):
         if t0 == 1 and t1 == 0:
@@ -1072,6 +1080,10 @@ class CubicBezier(object):
                 3*(self.start + self.control2) - 6*self.control1 + t*(
                     -self.start + 3*(self.control1 - self.control2) + self.end
                 )))
+
+    def points(self, ts):
+        """Faster than running Path.point many times."""
+        return self.poly(ts)
 
     def length(self, t0=0, t1=1, error=LENGTH_ERROR, min_depth=LENGTH_MIN_DEPTH):
         """Calculate the length of the path up to a certain position"""
