@@ -15,15 +15,14 @@ Example:
 
         >> from svgpathtools import *
         >> doc = Document('my_file.html')
-        >> results = doc.flatten_all_paths()
-        >> for result in results:
-        >>     path = result.path
+        >> for path in doc.flatten_all_paths():
         >>     # Do something with the transformed Path object.
-        >>     element = result.element
-        >>     # Inspect the raw SVG element. This gives access to the
-        >>     # path's attributes
+        >>     foo(path)
+        >>     # Inspect the raw SVG element, e.g. change its attributes
+        >>     foo(path.element)
         >>     transform = result.transform
         >>     # Use the transform that was applied to the path.
+        >>     foo(path.transform)
         >> foo(doc.tree)  # do stuff using ElementTree's functionality
         >> doc.display()  # display doc in OS's default application
         >> doc.save('my_new_file.html')
@@ -41,6 +40,8 @@ import collections
 import xml.etree.ElementTree as etree
 from xml.etree.ElementTree import Element, SubElement, register_namespace
 import warnings
+from tempfile import gettempdir
+from time import time
 
 # Internal dependencies
 from .parser import parse_path
@@ -126,10 +127,7 @@ def flatten_all_paths(group, group_filter=lambda x: True,
 
     stack = [new_stack_element(group, np.identity(3))]
 
-    FlattenedPath = collections.namedtuple('FlattenedPath',
-                                           ['path', 'element', 'transform'])
     paths = []
-
     while stack:
         top = stack.pop()
 
@@ -142,7 +140,9 @@ def flatten_all_paths(group, group_filter=lambda x: True,
                 path_tf = top.transform.dot(
                     parse_transform(path_elem.get('transform')))
                 path = transform(parse_path(converter(path_elem)), path_tf)
-                paths.append(FlattenedPath(path, path_elem, path_tf))
+                path.element = path_elem
+                path.transform = path_tf
+                paths.append(path)
 
         stack.extend(get_relevant_children(top.group, top.transform))
 
@@ -222,7 +222,7 @@ def flatten_group(group_to_flatten, root, recursive=True,
 
 
 class Document:
-    def __init__(self, filename):
+    def __init__(self, filepath):
         """A container for a DOM-style SVG document.
 
         The `Document` class provides a simple interface to modify and analyze 
@@ -230,21 +230,20 @@ class Document:
         parsed into an ElementTree object (stored in the `tree` attribute).
 
         This class provides functions for extracting SVG data into Path objects.
-        The Path output objects will be transformed based on their parent groups.
+        The output Path objects will be transformed based on their parent groups.
         
         Args:
-            filename (str): The filename of the DOM-style object.
+            filepath (str): The filepath of the DOM-style object.
         """
 
         # remember location of original svg file
-        if filename is not None and os.path.dirname(filename) == '':
-            self.original_filename = os.path.join(os.getcwd(), filename)
-        else:
-            self.original_filename = filename
+        self.original_filepath = filepath
+        if filepath is not None and os.path.dirname(filepath) == '':
+            self.original_filepath = os.path.join(os.getcwd(), filepath)
 
-        if filename is not None:
+        if filepath is not None:
             # parse svg to ElementTree object
-            self.tree = etree.parse(filename)
+            self.tree = etree.parse(filepath)
         else:
             self.tree = etree.ElementTree(Element('svg'))
 
@@ -412,18 +411,21 @@ class Document:
         return SubElement(parent, '{{{0}}}g'.format(
             SVG_NAMESPACE['svg']), group_attribs)
 
-    def save(self, filename):
-        with open(filename, 'w') as output_svg:
+    def save(self, filepath):
+        with open(filepath, 'w') as output_svg:
             output_svg.write(etree.tostring(self.tree.getroot()))
 
-    def display(self, filename=None):
+    def display(self, filepath=None):
         """Displays/opens the doc using the OS's default application."""
 
-        if filename is None:
-            filename = self.original_filename
+        if filepath is None:
+            orig_name, ext = \
+                os.path.splitext(os.path.basename(self.original_filepath))
+            filepath = os.path.join(gettempdir(),
+                orig_name + '_' + str(time()).replace('.', '-') + ext)
 
         # write to a (by default temporary) file
-        with open(filename, 'w') as output_svg:
-            output_svg.write(etree.tostring(self.tree.getroot()))
+        with open(filepath, 'w') as output_svg:
+            output_svg.write(etree.tostring(self.tree.getroot()).decode())
 
-        open_in_browser(filename)
+        open_in_browser(filepath)
