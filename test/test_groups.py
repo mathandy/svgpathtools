@@ -26,7 +26,7 @@ class TestGroups(unittest.TestCase):
         #    end point relative to the start point
         # * name is the path name (value of the test:name attribute in
         #    the SVG document)
-        # * paths is the output of doc.flatten_all_paths()
+        # * paths is the output of doc.flattened_paths()
         v_s_vals.append(1.0)
         v_e_relative_vals.append(0.0)
         v_s = np.array(v_s_vals)
@@ -38,7 +38,7 @@ class TestGroups(unittest.TestCase):
         self.check_values(tf.dot(v_e), actual.path.end)
 
     def test_group_flatten(self):
-        # Test the Document.flatten_all_paths() function against the
+        # Test the Document.flattened_paths() function against the
         # groups.svg test file.
         # There are 12 paths in that file, with various levels of being
         # nested inside of group transforms.
@@ -48,7 +48,7 @@ class TestGroups(unittest.TestCase):
         # that are specified by the SVG standard.
         doc = Document(join(dirname(__file__), 'groups.svg'))
 
-        result = doc.flatten_all_paths()
+        result = doc.flattened_paths()
         self.assertEqual(12, len(result))
 
         tf_matrix_group = np.array([[1.5, 0.0, -40.0],

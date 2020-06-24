@@ -15,7 +15,7 @@ Example:
 
         >> from svgpathtools import *
         >> doc = Document('my_file.html')
-        >> for path in doc.flatten_all_paths():
+        >> for path in doc.flattened_paths():
         >>     # Do something with the transformed Path object.
         >>     foo(path)
         >>     # Inspect the raw SVG element, e.g. change its attributes
@@ -196,7 +196,7 @@ def flatten_group(group_to_flatten, root, recursive=True,
                 for group in route:
                     # Add each group from the root to the parent of the desired group
                     # to the list of groups that we should traverse. This makes sure
-                    # that flatten_all_paths will not stop before reaching the desired
+                    # that flattened_paths will not stop before reaching the desired
                     # group.
                     desired_groups.add(id(group))
                     for key in path_conversions.keys():
@@ -249,11 +249,10 @@ class Document:
 
         self.root = self.tree.getroot()
 
-    def flatten_all_paths(self, group_filter=lambda x: True,
-                          path_filter=lambda x: True,
-                          path_conversions=CONVERSIONS):
+    def flattened_paths(self, group_filter=lambda x: True,
+                        path_filter=lambda x: True, path_conversions=CONVERSIONS):
         """Forward the tree of this document into the more general
-        flatten_all_paths function and return the result."""
+        flattened_paths function and return the result."""
         return flatten_all_paths(self.tree.getroot(), group_filter,
                                  path_filter, path_conversions)
 
