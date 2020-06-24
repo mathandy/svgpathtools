@@ -253,7 +253,11 @@ class Document:
 
     def paths(self, group_filter=lambda x: True,
               path_filter=lambda x: True, path_conversions=CONVERSIONS):
-        """Returns a list of all paths in the document."""
+        """Returns a list of all paths in the document.
+
+        Note that any transform attributes are applied before returning
+        the paths.
+        """
         return flattened_paths(self.tree.getroot(), group_filter,
                                path_filter, path_conversions)
 
@@ -418,7 +422,7 @@ class Document:
         return parseString(repr(self)).toprettyxml(**kwargs)
 
     def save(self, filepath, prettify=False, **kwargs):
-        with open(filepath, 'w') as output_svg:
+        with open(filepath, 'w+') as output_svg:
             if prettify:
                 output_svg.write(self.pretty(**kwargs))
             else:
@@ -438,6 +442,6 @@ class Document:
 
         # write to a (by default temporary) file
         with open(filepath, 'w') as output_svg:
-            output_svg.write(self.as_string())
+            output_svg.write(repr(self))
 
         open_in_browser(filepath)
