@@ -6,6 +6,7 @@ Arc."""
 from __future__ import division, absolute_import, print_function
 from math import sqrt, cos, sin, acos, asin, degrees, radians, log, pi, ceil
 from cmath import exp, sqrt as csqrt, phase
+import re
 try:
     from collections.abc import MutableSequence  # noqa
 except ImportError:
@@ -26,6 +27,17 @@ from .bezier import (bezier_intersections, bezier_bounding_box, split_bezier,
 from .misctools import BugException
 from .polytools import rational_limit, polyroots, polyroots01, imag, real
 
+# To maintain forward/backward compatibility
+try:
+    str = basestring
+except NameError:
+    pass
+
+COMMANDS = set('MmZzLlHhVvCcSsQqTtAa')
+UPPERCASE = set('MZLHVCSQTA')
+
+COMMAND_RE = re.compile("([MmZzLlHhVvCcSsQqTtAa])")
+FLOAT_RE = re.compile("[-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?")
 
 # Default Parameters ##########################################################
 
@@ -2216,11 +2228,24 @@ class Path(MutableSequence):
     meta = None  # meant as container for storage of arbitrary meta data
 
     def __init__(self, *segments, **kw):
-        self._segments = list(segments)
         self._length = None
         self._lengths = None
         if 'closed' in kw:
             self.closed = kw['closed']  # DEPRECATED
+        if len(segments) >= 1:
+            if isinstance(segments[0], str):
+                if len(segments) >= 2:
+                    current_pos = segments[1]
+                elif 'current_pos' in kw:
+                    current_pos = kw['current_pos']
+                else:
+                    current_pos = 0j
+                self._segments = list()
+                self._parse_path(segments[0], current_pos)
+            else:
+                self._segments = list(segments)
+        else:
+            self._segments = list()
         if self._segments:
             self._start = self._segments[0].start
             self._end = self._segments[-1].end
@@ -2850,3 +2875,179 @@ class Path(MutableSequence):
 
         opt = complex(xmin-1, ymin-1)
         return path_encloses_pt(pt, opt, other)
+
+    def _tokenize_path(self, pathdef):
+        for x in COMMAND_RE.split(pathdef):
+            if x in COMMANDS:
+                yield x
+            for token in FLOAT_RE.findall(x):
+                yield token
+
+    def _parse_path(self, pathdef, current_pos=0j, tree_element=None):
+        # In the SVG specs, initial movetos are absolute, even if
+        # specified as 'm'. This is the default behavior here as well.
+        # But if you pass in a current_pos variable, the initial moveto
+        # will be relative to that current_pos. This is useful.
+        elements = list(self._tokenize_path(pathdef))
+        # Reverse for easy use of .pop()
+        elements.reverse()
+
+        segments = self._segments
+
+        start_pos = None
+        command = None
+
+        while elements:
+
+            if elements[-1] in COMMANDS:
+                # New command.
+                last_command = command  # Used by S and T
+                command = elements.pop()
+                absolute = command in UPPERCASE
+                command = command.upper()
+            else:
+                # If this element starts with numbers, it is an implicit command
+                # and we don't change the command. Check that it's allowed:
+                if command is None:
+                    raise ValueError("Unallowed implicit command in %s, position %s" % (
+                        pathdef, len(pathdef.split()) - len(elements)))
+
+            if command == 'M':
+                # Moveto command.
+                x = elements.pop()
+                y = elements.pop()
+                pos = float(x) + float(y) * 1j
+                if absolute:
+                    current_pos = pos
+                else:
+                    current_pos += pos
+
+                # when M is called, reset start_pos
+                # This behavior of Z is defined in svg spec:
+                # http://www.w3.org/TR/SVG/paths.html#PathDataClosePathCommand
+                start_pos = current_pos
+
+                # Implicit moveto commands are treated as lineto commands.
+                # So we set command to lineto here, in case there are
+                # further implicit commands after this moveto.
+                command = 'L'
+
+            elif command == 'Z':
+                # Close path
+                if not (current_pos == start_pos):
+                    segments.append(Line(current_pos, start_pos))
+                self.closed = True
+                current_pos = start_pos
+                command = None
+
+            elif command == 'L':
+                x = elements.pop()
+                y = elements.pop()
+                pos = float(x) + float(y) * 1j
+                if not absolute:
+                    pos += current_pos
+                segments.append(Line(current_pos, pos))
+                current_pos = pos
+
+            elif command == 'H':
+                x = elements.pop()
+                pos = float(x) + current_pos.imag * 1j
+                if not absolute:
+                    pos += current_pos.real
+                segments.append(Line(current_pos, pos))
+                current_pos = pos
+
+            elif command == 'V':
+                y = elements.pop()
+                pos = current_pos.real + float(y) * 1j
+                if not absolute:
+                    pos += current_pos.imag * 1j
+                segments.append(Line(current_pos, pos))
+                current_pos = pos
+
+            elif command == 'C':
+                control1 = float(elements.pop()) + float(elements.pop()) * 1j
+                control2 = float(elements.pop()) + float(elements.pop()) * 1j
+                end = float(elements.pop()) + float(elements.pop()) * 1j
+
+                if not absolute:
+                    control1 += current_pos
+                    control2 += current_pos
+                    end += current_pos
+
+                segments.append(CubicBezier(current_pos, control1, control2, end))
+                current_pos = end
+
+            elif command == 'S':
+                # Smooth curve. First control point is the "reflection" of
+                # the second control point in the previous path.
+
+                if last_command not in 'CS':
+                    # If there is no previous command or if the previous command
+                    # was not an C, c, S or s, assume the first control point is
+                    # coincident with the current point.
+                    control1 = current_pos
+                else:
+                    # The first control point is assumed to be the reflection of
+                    # the second control point on the previous command relative
+                    # to the current point.
+                    control1 = current_pos + current_pos - segments[-1].control2
+
+                control2 = float(elements.pop()) + float(elements.pop()) * 1j
+                end = float(elements.pop()) + float(elements.pop()) * 1j
+
+                if not absolute:
+                    control2 += current_pos
+                    end += current_pos
+
+                segments.append(CubicBezier(current_pos, control1, control2, end))
+                current_pos = end
+
+            elif command == 'Q':
+                control = float(elements.pop()) + float(elements.pop()) * 1j
+                end = float(elements.pop()) + float(elements.pop()) * 1j
+
+                if not absolute:
+                    control += current_pos
+                    end += current_pos
+
+                segments.append(QuadraticBezier(current_pos, control, end))
+                current_pos = end
+
+            elif command == 'T':
+                # Smooth curve. Control point is the "reflection" of
+                # the second control point in the previous path.
+
+                if last_command not in 'QT':
+                    # If there is no previous command or if the previous command
+                    # was not an Q, q, T or t, assume the first control point is
+                    # coincident with the current point.
+                    control = current_pos
+                else:
+                    # The control point is assumed to be the reflection of
+                    # the control point on the previous command relative
+                    # to the current point.
+                    control = current_pos + current_pos - segments[-1].control
+
+                end = float(elements.pop()) + float(elements.pop()) * 1j
+
+                if not absolute:
+                    end += current_pos
+
+                segments.append(QuadraticBezier(current_pos, control, end))
+                current_pos = end
+
+            elif command == 'A':
+                radius = float(elements.pop()) + float(elements.pop()) * 1j
+                rotation = float(elements.pop())
+                arc = float(elements.pop())
+                sweep = float(elements.pop())
+                end = float(elements.pop()) + float(elements.pop()) * 1j
+
+                if not absolute:
+                    end += current_pos
+
+                segments.append(Arc(current_pos, radius, rotation, arc, sweep, end))
+                current_pos = end
+
+        return segments

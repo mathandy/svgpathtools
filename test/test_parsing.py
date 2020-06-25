@@ -247,3 +247,33 @@ class TestParser(unittest.TestCase):
                    skewX(40)
                    scale(10 0.5)""")
         ))
+
+    def test_pathd_init(self):
+        path0 = Path('')
+        path1 = parse_path("M 100 100 L 300 100 L 200 300 z")
+        path2 = Path("M 100 100 L 300 100 L 200 300 z")
+        self.assertEqual(path1, path2)
+
+        path1 = parse_path("m 100 100 L 300 100 L 200 300 z", current_pos=50+50j)
+        path2 = Path("m 100 100 L 300 100 L 200 300 z")
+        self.assertNotEqual(path1, path2)
+
+        path1 = parse_path("m 100 100 L 300 100 L 200 300 z")
+        path2 = Path("m 100 100 L 300 100 L 200 300 z", current_pos=50 + 50j)
+        self.assertNotEqual(path1, path2)
+
+        path1 = parse_path("m 100 100 L 300 100 L 200 300 z", current_pos=50 + 50j)
+        path2 = Path("m 100 100 L 300 100 L 200 300 z", current_pos=50 + 50j)
+        self.assertEqual(path1, path2)
+
+        path1 = parse_path("m 100 100 L 300 100 L 200 300 z", 50+50j)
+        path2 = Path("m 100 100 L 300 100 L 200 300 z")
+        self.assertNotEqual(path1, path2)
+
+        path1 = parse_path("m 100 100 L 300 100 L 200 300 z")
+        path2 = Path("m 100 100 L 300 100 L 200 300 z", 50 + 50j)
+        self.assertNotEqual(path1, path2)
+
+        path1 = parse_path("m 100 100 L 300 100 L 200 300 z", 50 + 50j)
+        path2 = Path("m 100 100 L 300 100 L 200 300 z", 50 + 50j)
+        self.assertEqual(path1, path2)
