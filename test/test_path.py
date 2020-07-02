@@ -8,7 +8,7 @@ import random
 
 # Internal dependencies
 from svgpathtools import *
-from svgpathtools.path import _NotImplemented4ArcException
+from svgpathtools.path import _NotImplemented4ArcException, bezier_radialrange
 
 # An important note for those doing any debugging:
 # ------------------------------------------------
@@ -161,7 +161,19 @@ class LineTest(unittest.TestCase):
                 computed_t = l.point_to_t(p)
                 self.assertAlmostEqual(orig_t, computed_t)
 
+    def test_radialrange(self):
+        def crand():
+            return 100*(np.random.rand() + np.random.rand()*1j)
 
+        for _ in range(100):
+            z = crand()
+            l = Line(crand(), crand())
+            (min_da, min_ta), (max_da, max_ta) = l.radialrange(z)
+            (min_db, min_tb), (max_db, max_tb) = bezier_radialrange(l, z)
+            self.assertAlmostEqual(min_da, min_db)
+            self.assertAlmostEqual(min_ta, min_tb)
+            self.assertAlmostEqual(max_da, max_db)
+            self.assertAlmostEqual(max_ta, max_tb)
 
 
 class CubicBezierTest(unittest.TestCase):

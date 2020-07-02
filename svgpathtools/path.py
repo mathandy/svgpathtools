@@ -730,11 +730,41 @@ class Line(object):
         pt = self.point(t)
         return Line(self.start, pt), Line(pt, self.end)
 
-    def radialrange(self, origin, return_all_global_extrema=False):
-        """returns the tuples (d_min, t_min) and (d_max, t_max) which minimize
-        and maximize, respectively, the distance d = |self.point(t)-origin|."""
-        return bezier_radialrange(self, origin,
-                return_all_global_extrema=return_all_global_extrema)
+    def radialrange(self, origin, **kwargs):
+        """compute points in self that are min and max distance to origin.
+
+        Args:
+            origin (complex): the point extremize distance to
+
+        Returns:
+            tuples (d_min, t_min) and (d_max, t_max) which minimize and
+            maximize, respectively, the distance d = |self.point(t)-origin|.
+        """
+
+        x, y = origin.real, origin.imag
+        p0, p1 = self.start, self.end
+        x0, y0, x1, y1 = p0.real, p0.imag, p1.real, p1.imag
+
+        dx, dy = x1 - x0, y1 - y0
+        numerator, denominator = dx * (x - x0) + dy * (y - y0), dx * dx + dy * dy
+        t = numerator / denominator
+
+        if 0 < t < 1:
+            # get distance to origin at 0, 1, and t
+            d0, d1, dt = (
+                abs(p0 - origin),
+                abs(p1 - origin),
+                abs(self.point(t) - origin)
+            )
+            if d0 < d1:
+                return (dt, t), (d1, 1)
+            return (dt, t), (d0, 0)
+        else:
+            # get distance to origin at t = 0 and t = 1
+            d0, d1 = abs(p0 - origin), abs(p1 - origin)
+            if d0 < d1:
+                return (d0, 0), (d1, 1)
+            return (d1, 1), (d0, 0)
 
     def rotated(self, degs, origin=None):
         """Returns a copy of self rotated by `degs` degrees (CCW) around the
