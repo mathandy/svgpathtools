@@ -1,3 +1,8 @@
+"""Tests related to SVG groups.
+
+To run these tests, you can use (from root svgpathtools directory):
+$ python -m unittest test.test_groups.TestGroups.test_group_flatten
+"""
 from __future__ import division, absolute_import, print_function
 import unittest
 from svgpathtools import *
@@ -34,8 +39,8 @@ class TestGroups(unittest.TestCase):
 
         actual = get_desired_path(name, paths)
 
-        self.check_values(tf.dot(v_s), actual.path.start)
-        self.check_values(tf.dot(v_e), actual.path.end)
+        self.check_values(tf.dot(v_s), actual.start)
+        self.check_values(tf.dot(v_e), actual.end)
 
     def test_group_flatten(self):
         # Test the Document.paths() function against the
