@@ -50,7 +50,11 @@ def ellipse2pathd(ellipse):
 def polyline2pathd(polyline, is_polygon=False):
     """converts the string from a polyline points-attribute to a string for a
     Path object d-attribute"""
-    points = COORD_PAIR_TMPLT.findall(polyline.get('points', ''))
+    if isinstance(polyline, str):
+        points = polyline
+    else:
+        points = COORD_PAIR_TMPLT.findall(polyline.get('points', ''))
+
     closed = (float(points[0][0]) == float(points[-1][0]) and
               float(points[0][1]) == float(points[-1][1]))
 
