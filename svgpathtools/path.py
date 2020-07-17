@@ -2941,6 +2941,7 @@ class Path(MutableSequence):
                 if command is None:
                     raise ValueError("Unallowed implicit command in %s, position %s" % (
                         pathdef, len(pathdef.split()) - len(elements)))
+                last_command = command  # Used by S and T
 
             if command == 'M':
                 # Moveto command.
