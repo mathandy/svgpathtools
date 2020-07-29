@@ -26,6 +26,7 @@ from .bezier import (bezier_intersections, bezier_bounding_box, split_bezier,
                      bezier2polynomial)
 from .misctools import BugException
 from .polytools import rational_limit, polyroots, polyroots01, imag, real
+from .arctobezier import arc_to_bezier
 
 # To maintain forward/backward compatibility
 try:
@@ -36,8 +37,8 @@ except NameError:
 COMMANDS = set('MmZzLlHhVvCcSsQqTtAa')
 UPPERCASE = set('MZLHVCSQTA')
 
-COMMAND_RE = re.compile("([MmZzLlHhVvCcSsQqTtAa])")
-FLOAT_RE = re.compile("[-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?")
+COMMAND_RE = re.compile(r"([MmZzLlHhVvCcSsQqTtAa])")
+FLOAT_RE = re.compile(r"[-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?")
 
 # Default Parameters ##########################################################
 
@@ -2152,7 +2153,6 @@ class Arc(object):
                 xtrema.append(self.point(tx).real)
             if 0 <= ty <= 1:
                 ytrema.append(self.point(ty).imag)
-        xmin = max(xtrema)
         return min(xtrema), max(xtrema), min(ytrema), max(ytrema)
 
     def split(self, t):
@@ -2235,15 +2235,14 @@ class Arc(object):
         """Scale transform.  See `scale` function for further explanation."""
         return scale(self, sx=sx, sy=sy, origin=origin)
 
-
-def is_bezier_segment(x):
-    return (isinstance(x, Line) or
-            isinstance(x, QuadraticBezier) or
-            isinstance(x, CubicBezier))
-
-
-def is_path_segment(x):
-    return is_bezier_segment(x) or isinstance(x, Arc)
+    def as_beziers(self):
+        approx = arc_to_bezier(self.start, self.end, self.radius, self.rotation, self.large_arc, self.sweep)
+        cubs = []
+        p = self.start
+        for x in approx:
+            cubs.append(CubicBezier(p, *x))
+            p = x[-1]
+        return cubs
 
 
 class Path(MutableSequence):
@@ -2723,9 +2722,10 @@ class Path(MutableSequence):
 
         def seg2lines(seg):
             """Find piecewise-linear approximation of `seg`."""
-            num_lines = int(ceil(seg.length() / chord_length))
-            pts = [seg.point(t) for t in np.linspace(0, 1, num_lines+1)]
-            return [Line(pts[i], pts[i+1]) for i in range(num_lines)]
+            return seg.as_beziers()
+            # num_lines = min(int(ceil(seg.length() / chord_length)), 4096)
+            # pts = [seg.point(t) for t in np.linspace(0, 1, num_lines+1)]
+            # return [Line(pts[i], pts[i+1]) for i in range(num_lines)]
 
         assert self.isclosed()
 

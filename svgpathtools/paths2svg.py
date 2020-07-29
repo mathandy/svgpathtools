@@ -83,10 +83,9 @@ def big_bounding_box(paths_n_stuff):
     return xmin, xmax, ymin, ymax
 
 
-def disvg(paths=None, colors=None,
+def svg2fo(paths, fileobject, colors=None,
           filename=os_path.join(getcwd(), 'disvg_output.svg'),
           stroke_widths=None, nodes=None, node_colors=None, node_radii=None,
-          openinbrowser=True, timestamp=False,
           margin_size=0.1, mindim=600, dimensions=None,
           viewbox=None, text=None, text_path=None, font_size=None,
           attributes=None, svg_attributes=None, svgwrite_debug=False, paths2Drawing=False):
@@ -191,19 +190,6 @@ def disvg(paths=None, colors=None,
     _default_path_color = '#000000'  # black
     _default_node_color = '#ff0000'  # red
     _default_font_size = 12
-
-
-    # append directory to filename (if not included)
-    if os_path.dirname(filename) == '':
-        filename = os_path.join(getcwd(), filename)
-
-    # append time stamp to filename
-    if timestamp:
-        fbname, fext = os_path.splitext(filename)
-        dirname = os_path.dirname(filename)
-        tstamp = str(time()).replace('.', '')
-        stfilename = os_path.split(fbname)[1] + '_' + tstamp + fext
-        filename = os_path.join(dirname, stfilename)
 
     # check paths and colors are set
     if isinstance(paths, Path) or is_path_segment(paths):
@@ -386,10 +372,68 @@ def disvg(paths=None, colors=None,
     if paths2Drawing:
         return dwg
       
+    dwg.write(fileobject)
+
+
+def svg2str(paths, **kwargs):
+    """Takes in a list of paths and returns a SVG containing said paths as a string.
+    REQUIRED INPUTS:
+        :param paths - a list of paths
+
+    OPTIONAL INPUT:
+        :param filename - the desired location/filename of the SVG file
+        created (by default the SVG will be stored in the current working
+        directory and named 'disvg_output.svg').
+
+        :param openinbrowser -  Set to True to automatically open the created
+        SVG in the user's default web browser.
+
+        :param timestamp - if True, then the a timestamp will be appended to
+        the output SVG's filename.  This will fix issues with rapidly opening
+        multiple SVGs in your browser.
+    """
+    import io
+    with io.StringIO() as f:
+        svg2fo(paths, f, **kwargs)
+        return f.getvalue()
+
+def disvg(paths,
+          filename=os_path.join(getcwd(), 'disvg_output.svg'),
+          openinbrowser=True, timestamp=False,
+          **kwargs):
+    """Takes in a list of paths and creates an SVG file containing said paths.
+    REQUIRED INPUTS:
+        :param paths - a list of paths
+
+    OPTIONAL INPUT:
+        :param filename - the desired location/filename of the SVG file
+        created (by default the SVG will be stored in the current working
+        directory and named 'disvg_output.svg').
+
+        :param openinbrowser -  Set to True to automatically open the created
+        SVG in the user's default web browser.
+
+        :param timestamp - if True, then the a timestamp will be appended to
+        the output SVG's filename.  This will fix issues with rapidly opening
+        multiple SVGs in your browser.
+    """
+    # append directory to filename (if not included)
+    if os_path.dirname(filename) == '':
+        filename = os_path.join(getcwd(), filename)
+
+    # append time stamp to filename
+    if timestamp:
+        fbname, fext = os_path.splitext(filename)
+        dirname = os_path.dirname(filename)
+        tstamp = str(time()).replace('.', '')
+        stfilename = os_path.split(fbname)[1] + '_' + tstamp + fext
+        filename = os_path.join(dirname, stfilename)
+
+    xmlstring = svg2str(paths, **kwargs)
+	
     # save svg
     if not os_path.exists(os_path.dirname(filename)):
         makedirs(os_path.dirname(filename))
-    dwg.save()
 
     # re-open the svg, make the xml pretty, and save it again
     xmlstring = md_xml_parse(filename).toprettyxml()
@@ -403,7 +447,6 @@ def disvg(paths=None, colors=None,
         except:
             print("Failed to open output SVG in browser.  SVG saved to:")
             print(filename)
-
 
 def wsvg(paths=None, colors=None,
           filename=os_path.join(getcwd(), 'disvg_output.svg'),
