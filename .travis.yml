@@ -1,8 +1,15 @@
 language: python
 python:
-  - "2.7"
-  - "3.6"
+- '2.7'
+- '3.6'
 install:
-  - pip install numpy svgwrite scipy
+- pip install numpy svgwrite scipy
 script:
-  - python -m unittest discover test
+- python -m unittest discover test
+deploy:
+  provider: pypi
+  username: __token__
+  password:
+    secure: gLYhmMxa0txJV+svk2vomf6XGatWnulPnwDW2tpRxB2Upt//QSllG8xNPnLp9SxJpmUhmh4Vh44YwJt+mr8aw1458200cFWp6QRR6913rUHsRrZ6qLI+lFJmFOT5XS4hcxRTKMkTNHlXi85EPB/CUirqcelqSlcA1nYGlLgxAoKXu1qfZczBLeSnLYnMotPI3VOdRrw1w+5EdzIekbHJS6P7hgwqqrynKRoiyj/yazpqbkPse8o3PMuovDvDyyhKHGbp/+95LlEKYsmjVOTsQgIyM6gboyHDU5YIkpDEzWo2IfxF3Q0ZKL6YvZaWzsJKqXx22m8SbQ3dbyvGZDP+Ts2jBAhHJ2hmcR6sfNY0f7gTEXzeK8u2sVk97dYrviWTbb9xwKkUC0FwFy81g24SYuLEDmdHN/2uBfVSI0+6MV87spRDC+yZCKdaU8RfRPxkLfqWot8zjkSQpke7Rx1OXib9mdh6g65ev9Cj3ndBhb0ltpRY0gix9MByKxDQvOsHIByF+aNCJThUMmj2BlaQ7Ek2GUnbmWRv++jpDkvwIqoUwzWZkEipyRx4U/24Ni429II+RFSSG/rNsgg4q6QpMM9VMmWpAbGpzeQELtUYl/zfeycIYI/keZHpciJ+2tUh2vWeGcVnY679CHJQREREgJFPNZlax8PGcrQEwysCK/Y=
+  on:
+    tags: true
