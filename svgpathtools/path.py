@@ -2967,7 +2967,7 @@ class Path(MutableSequence):
                 # Close path
                 if not (current_pos == start_pos):
                     segments.append(Line(current_pos, start_pos))
-                self.closed = True
+                    self.closed = True
                 current_pos = start_pos
                 command = None
 
@@ -3077,8 +3077,10 @@ class Path(MutableSequence):
 
                 if not absolute:
                     end += current_pos
-
-                segments.append(Arc(current_pos, radius, rotation, arc, sweep, end))
+                if abs(radius.real) > 0 and abs(radius.imag) > 0:
+                    segments.append(Arc(current_pos, radius, rotation, arc, sweep, end))
+                else:
+                    segments.append(Line(current_pos, end))
                 current_pos = end
 
         return segments
