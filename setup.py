@@ -3,7 +3,7 @@ import codecs
 import os
 
 
-VERSION = '1.4'
+VERSION = '1.4.1'
 AUTHOR_NAME = 'Andy Port'
 AUTHOR_EMAIL = 'AndyAPort@gmail.com'
 
@@ -24,15 +24,14 @@ setup(name='svgpathtools',
       description=('A collection of tools for manipulating and analyzing SVG '
                    'Path objects and Bezier curves.'),
       long_description=read("README.md"),
+      long_description_content_type='text/markdown',
       author=AUTHOR_NAME,
       author_email=AUTHOR_EMAIL,
       url='https://github.com/mathandy/svgpathtools',
       # download_url = 'http://github.com/mathandy/svgpathtools/tarball/'+VERSION,
       license='MIT',
-      
       install_requires=['numpy', 'svgwrite'],
       platforms="OS Independent",
-      # test_suite='tests',
       requires=['numpy', 'svgwrite'],
       keywords=['svg', 'svg path', 'svg.path', 'bezier', 'parse svg path', 'display svg'],
       classifiers=[
