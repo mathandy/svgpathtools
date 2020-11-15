@@ -23,7 +23,7 @@ setup(name='svgpathtools',
       version=VERSION,
       description=('A collection of tools for manipulating and analyzing SVG '
                    'Path objects and Bezier curves.'),
-      long_description=read("README.rst"),
+      long_description=read("README.md"),
       # long_description=open('README.rst').read(),
       author=AUTHOR_NAME,
       author_email=AUTHOR_EMAIL,
