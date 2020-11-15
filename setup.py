@@ -24,7 +24,6 @@ setup(name='svgpathtools',
       description=('A collection of tools for manipulating and analyzing SVG '
                    'Path objects and Bezier curves.'),
       long_description=read("README.md"),
-      # long_description=open('README.rst').read(),
       author=AUTHOR_NAME,
       author_email=AUTHOR_EMAIL,
       url='https://github.com/mathandy/svgpathtools',
@@ -36,7 +35,7 @@ setup(name='svgpathtools',
       # test_suite='tests',
       requires=['numpy', 'svgwrite'],
       keywords=['svg', 'svg path', 'svg.path', 'bezier', 'parse svg path', 'display svg'],
-      classifiers = [
+      classifiers=[
             "Development Status :: 4 - Beta",
             "Intended Audience :: Developers",
             "License :: OSI Approved :: MIT License",
