@@ -1,4 +1,3 @@
-
 svgpathtools
 ============
 
@@ -29,7 +28,7 @@ Some included tools:
 -  find a **bounding box** for a path or segment
 -  **reverse** segment/path orientation
 -  **crop** and **split** paths and segments
--  **smooth** paths (i.e. smooth away kinks to make paths
+-  **smooth** paths (i.e. smooth away kinks to make paths
    differentiable)
 -  **transition maps** from path domain to segment domain and back (T2t
    and t2T)
@@ -47,9 +46,22 @@ Prerequisites
 Setup
 -----
 
+If not already installed, you can **install the prerequisites** using
+pip.
+
 .. code:: bash
 
-    $ pip install svgpathtools
+   $ pip install numpy
+
+.. code:: bash
+
+   $ pip install svgwrite
+
+Then **install svgpathtools**:
+
+.. code:: bash
+
+   $ pip install svgpathtools
 
 Alternative Setup
 ~~~~~~~~~~~~~~~~~
@@ -59,9 +71,9 @@ You can download the source from Github and install by using the command
 
 .. code:: bash
 
-    $ python setup.py install
+   $ python setup.py install
 
-Credit where credit's due
+Credit where credit’s due
 -------------------------
 
 Much of the core of this module was taken from `the svg.path (v2.0)
@@ -98,11 +110,11 @@ information on what each parameter means.
 on discontinuous Path objects. A simple workaround is provided, however,
 by the ``Path.continuous_subpaths()`` method. `↩ <#a1>`__
 
-.. code:: ipython2
+.. code:: ipython3
 
     from __future__ import division, print_function
 
-.. code:: ipython2
+.. code:: ipython3
 
     # Coordinates are given as points in the complex plane
     from svgpathtools import Path, Line, QuadraticBezier, CubicBezier, Arc
@@ -139,7 +151,7 @@ The ``Path`` class is a mutable sequence, so it behaves much like a
 list. So segments can **append**\ ed, **insert**\ ed, set by index,
 **del**\ eted, **enumerate**\ d, **slice**\ d out, etc.
 
-.. code:: ipython2
+.. code:: ipython3
 
     # Let's append another to the end of it
     path.append(CubicBezier(250+350j, 275+350j, 250+225j, 200+100j))
@@ -206,7 +218,7 @@ Reading SVGSs
 | Note: Line, Polyline, Polygon, and Path SVG elements can all be
   converted to Path objects using this function.
 
-.. code:: ipython2
+.. code:: ipython3
 
     # Read SVG into a list of path objects and list of dictionaries of attributes 
     from svgpathtools import svg2paths, wsvg
@@ -239,16 +251,16 @@ Writing SVGSs (and some geometric functions and methods)
 The **wsvg()** function creates an SVG file from a list of path. This
 function can do many things (see docstring in *paths2svg.py* for more
 information) and is meant to be quick and easy to use. Note: Use the
-convenience function **disvg()** (or set 'openinbrowser=True') to
+convenience function **disvg()** (or set ‘openinbrowser=True’) to
 automatically attempt to open the created svg file in your default SVG
 viewer.
 
-.. code:: ipython2
+.. code:: ipython3
 
     # Let's make a new SVG that's identical to the first
     wsvg(paths, attributes=attributes, svg_attributes=svg_attributes, filename='output1.svg')
 
-.. figure:: https://cdn.rawgit.com/mathandy/svgpathtools/master/output1.svg
+.. figure:: output1.svg
    :alt: output1.svg
 
    output1.svg
@@ -268,14 +280,14 @@ over the domain 0 <= t <= 1.
 | **Note:** In this document and in inline documentation and doctrings,
   I use a capital ``T`` when referring to the parameterization of a Path
   object and a lower case ``t`` when referring speaking about path
-  segment objects (i.e. Line, QaudraticBezier, CubicBezier, and Arc
+  segment objects (i.e. Line, QaudraticBezier, CubicBezier, and Arc
   objects).
 | Given a ``T`` value, the ``Path.T2t()`` method can be used to find the
   corresponding segment index, ``k``, and segment parameter, ``t``, such
   that ``path.point(T)=path[k].point(t)``.
 | There is also a ``Path.t2T()`` method to solve the inverse problem.
 
-.. code:: ipython2
+.. code:: ipython3
 
     # Example:
     
@@ -313,7 +325,7 @@ Bezier curves as NumPy polynomial objects
   ``numpy.poly1d`` objects. This is done easily using the
   ``Line.poly()``, ``QuadraticBezier.poly()`` and ``CubicBezier.poly()``
   methods.
-| There's also a ``polynomial2bezier()`` function in the pathtools.py
+| There’s also a ``polynomial2bezier()`` function in the pathtools.py
   submodule to convert polynomials back to Bezier curves.
 
 **Note:** cubic Bezier curves are parameterized as
@@ -328,7 +340,7 @@ form
 
 .. math:: \mathcal{B}(t) = c_0t^3 + c_1t^2 +c_2t+c3
 
- where
+where
 
 .. math::
 
@@ -344,7 +356,7 @@ form
 ``QuadraticBezier.poly()`` and ``Line.poly()`` are `defined
 similarly <https://en.wikipedia.org/wiki/B%C3%A9zier_curve#General_definition>`__.
 
-.. code:: ipython2
+.. code:: ipython3
 
     # Example:
     b = CubicBezier(300+100j, 100+100j, 200+200j, 200+300j)
@@ -392,7 +404,7 @@ different ways.
 Tangent vectors (and more on NumPy polynomials)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code:: ipython2
+.. code:: ipython3
 
     t = 0.5
     ### Method 1: the easy way
@@ -434,7 +446,7 @@ Tangent vectors (and more on NumPy polynomials)
 Translations (shifts), reversing orientation, and normal vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code:: ipython2
+.. code:: ipython3
 
     # Speaking of tangents, let's add a normal vector to the picture
     n = b.normal(t)
@@ -456,7 +468,7 @@ Translations (shifts), reversing orientation, and normal vectors
          'bgpkgp', nodes=[b.point(t), br.point(t)], filename='vectorframes.svg', 
          text=["b's tangent", "br's tangent"], text_path=[tangent_line, tangent_line_r])
 
-.. figure:: https://cdn.rawgit.com/mathandy/svgpathtools/master/vectorframes.svg
+.. figure:: vectorframes.svg
    :alt: vectorframes.svg
 
    vectorframes.svg
@@ -464,7 +476,7 @@ Translations (shifts), reversing orientation, and normal vectors
 Rotations and Translations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code:: ipython2
+.. code:: ipython3
 
     # Let's take a Line and an Arc and make some pictures
     top_half = Arc(start=-1, radius=1+2j, rotation=0, large_arc=1, sweep=1, end=1)
@@ -483,21 +495,21 @@ Rotations and Translations
     decorated_ellipse = decorated_ellipse.translated(4+0j)
     wsvg([top_half, midline, decorated_ellipse], filename='decorated_ellipse.svg')
 
-.. figure:: https://cdn.rawgit.com/mathandy/svgpathtools/master/decorated_ellipse.svg
-   :alt: decorated\_ellipse.svg
+.. figure:: decorated_ellipse.svg
+   :alt: decorated_ellipse.svg
 
-   decorated\_ellipse.svg
+   decorated_ellipse.svg
 
 arc length and inverse arc length
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Here we'll create an SVG that shows off the parametric and geometric
-midpoints of the paths from ``test.svg``. We'll need to compute use the
+Here we’ll create an SVG that shows off the parametric and geometric
+midpoints of the paths from ``test.svg``. We’ll need to compute use the
 ``Path.length()``, ``Line.length()``, ``QuadraticBezier.length()``,
 ``CubicBezier.length()``, and ``Arc.length()`` methods, as well as the
 related inverse arc length methods ``.ilength()`` function to do this.
 
-.. code:: ipython2
+.. code:: ipython3
 
     # First we'll load the path data from the file test.svg
     paths, attributes = svg2paths('test.svg')
@@ -531,7 +543,7 @@ related inverse arc length methods ``.ilength()`` function to do this.
     wsvg(paths, nodes=dots, node_colors=ncols, node_radii=nradii, 
          attributes=attributes, filename='output2.svg')
 
-.. figure:: https://cdn.rawgit.com/mathandy/svgpathtools/master/output2.svg
+.. figure:: output2.svg
    :alt: output2.svg
 
    output2.svg
@@ -539,7 +551,7 @@ related inverse arc length methods ``.ilength()`` function to do this.
 Intersections between Bezier curves
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code:: ipython2
+.. code:: ipython3
 
     # Let's find all intersections between redpath and the other 
     redpath = paths[0]
@@ -552,18 +564,18 @@ Intersections between Bezier curves
     disvg(paths, filename='output_intersections.svg', attributes=attributes,
           nodes = intersections, node_radii = [5]*len(intersections))
 
-.. figure:: https://cdn.rawgit.com/mathandy/svgpathtools/master/output_intersections.svg
-   :alt: output\_intersections.svg
+.. figure:: output_intersections.svg
+   :alt: output_intersections.svg
 
-   output\_intersections.svg
+   output_intersections.svg
 
 An Advanced Application: Offsetting Paths
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Here we'll find the `offset
+Here we’ll find the `offset
 curve <https://en.wikipedia.org/wiki/Parallel_curve>`__ for a few paths.
 
-.. code:: ipython2
+.. code:: ipython3
 
     from svgpathtools import parse_path, Line, Path, wsvg
     def offset_curve(path, offset_distance, steps=1000):
@@ -572,8 +584,9 @@ curve <https://en.wikipedia.org/wiki/Parallel_curve>`__ for a few paths.
         of the 'parallel' offset curve."""
         nls = []
         for seg in path:
+            ct = 1
             for k in range(steps):
-                t = k / float(steps)
+                t = k / steps
                 offset_vector = offset_distance * seg.normal(t)
                 nl = Line(seg.point(t), seg.point(t) + offset_vector)
                 nls.append(nl)
@@ -595,21 +608,21 @@ curve <https://en.wikipedia.org/wiki/Parallel_curve>`__ for a few paths.
         for distances in offset_distances:
             offset_paths.append(offset_curve(path, distances))
     
-    # Note: This will take a few moments
+    # Let's take a look
     wsvg(paths + offset_paths, 'g'*len(paths) + 'r'*len(offset_paths), filename='offset_curves.svg')
 
-.. figure:: https://cdn.rawgit.com/mathandy/svgpathtools/master/offset_curves.svg
-   :alt: offset\_curves.svg
+.. figure:: offset_curves.svg
+   :alt: offset_curves.svg
 
-   offset\_curves.svg
+   offset_curves.svg
 
 Compatibility Notes for users of svg.path (v2.0)
 ------------------------------------------------
 
--  renamed Arc.arc attribute as Arc.large\_arc
+-  renamed Arc.arc attribute as Arc.large_arc
 
 -  Path.d() : For behavior similar\ `2 <#f2>`__\  to svg.path (v2.0),
-   set both useSandT and use\_closed\_attrib to be True.
+   set both useSandT and use_closed_attrib to be True.
 
 2 The behavior would be identical, but the string formatting used in
 this method has been changed to use default format (instead of the
