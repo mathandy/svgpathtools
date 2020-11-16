@@ -2967,7 +2967,7 @@ class Path(MutableSequence):
                 # Close path
                 if not (current_pos == start_pos):
                     segments.append(Line(current_pos, start_pos))
-                self.closed = True
+                self._closed = True
                 current_pos = start_pos
                 command = None
 
@@ -3069,6 +3069,7 @@ class Path(MutableSequence):
                 current_pos = end
 
             elif command == 'A':
+
                 radius = float(elements.pop()) + float(elements.pop()) * 1j
                 rotation = float(elements.pop())
                 arc = float(elements.pop())
@@ -3078,7 +3079,19 @@ class Path(MutableSequence):
                 if not absolute:
                     end += current_pos
 
-                segments.append(Arc(current_pos, radius, rotation, arc, sweep, end))
+                if radius.real == 0 or radius.imag == 0:
+                    # Note: In browsers AFAIK, zero radius arcs are displayed
+                    # as lines (see "examples/zero-radius-arcs.svg").
+                    # Thus zero radius arcs are substituted for lines here.
+                    warn(f'Replacing degenerate (zero radius) Arc with a '
+                         f'Line: Arc(start={current_pos}, radius={radius}, '
+                         f'rotation={rotation}, large_arc={arc}, '
+                         f'sweep={sweep}, end={end}) -> '
+                         f'Line(start={current_pos}, end={end})')
+                    segments.append(Line(current_pos, end))
+                else:
+                    segments.append(
+                        Arc(current_pos, radius, rotation, arc, sweep, end))
                 current_pos = end
 
         return segments

@@ -1,0 +1,22 @@
+<svg version="1.1"
+     baseProfile="full"
+     width="1000" height="1000"
+     xmlns="http://www.w3.org/2000/svg">
+	
+   <path d="M50,50 A 40 40 0 1 0 100 100Z" stroke="blue" stroke-width="4" fill="yellow"/>
+   <circle cx="50" cy="50" r="5" stroke="green" stroke-width="1" fill="none"/>
+   <circle cx="100" cy="100" r="5" stroke="red" stroke-width="1" fill="none"/>
+   
+   <path d="M150,150 A 0 40 0 1 0 200 200Z" stroke="beige" stroke-width="4" fill="yellow"/>
+   <circle cx="150" cy="150" r="5" stroke="green" stroke-width="1" fill="none"/>
+   <circle cx="200" cy="200" r="5" stroke="red" stroke-width="1" fill="none"/>
+   
+   <path d="M250,250 A 40 0 0 1 0 300 300Z" stroke="purple" stroke-width="4" fill="yellow"/>
+   <circle cx="250" cy="250" r="5" stroke="green" stroke-width="1" fill="none"/>
+   <circle cx="300" cy="300" r="5" stroke="red" stroke-width="1" fill="none"/>
+   
+   <path d="M350,350 A 0 0 0 1 0 400 400Z" stroke="orange" stroke-width="4" fill="yellow"/>
+   <circle cx="350" cy="350" r="5" stroke="green" stroke-width="1" fill="none"/>
+   <circle cx="400" cy="400" r="5" stroke="red" stroke-width="1" fill="none"/>
+</svg> 
+ 
