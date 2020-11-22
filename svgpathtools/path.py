@@ -4,7 +4,7 @@ Arc."""
 
 # External dependencies
 from __future__ import division, absolute_import, print_function
-from math import sqrt, cos, sin, acos, asin, degrees, radians, log, pi, ceil
+from math import sqrt, cos, sin, tan, acos, asin, degrees, radians, log, pi, ceil
 from cmath import exp, sqrt as csqrt, phase
 import re
 try:
@@ -2235,6 +2235,86 @@ class Arc(object):
         """Scale transform.  See `scale` function for further explanation."""
         return scale(self, sx=sx, sy=sy, origin=origin)
 
+    def as_cubic_curves(self, curves=1):
+        """Generates cubic curves to approximate this arc"""
+        slice_t = radians(self.delta) / float(curves)
+
+        current_t = radians(self.theta)
+        rx = self.radius.real # * self.radius_scale
+        ry = self.radius.imag # * self.radius_scale
+        p_start = self.start
+
+        theta = radians(self.rotation)
+        x0 = self.center.real
+        y0 = self.center.imag
+        cos_theta = cos(theta)
+        sin_theta = sin(theta)
+
+        for i in range(curves):
+            next_t = current_t + slice_t
+
+            alpha = sin(slice_t) * (sqrt(4 + 3 * pow(tan((slice_t) / 2.0), 2)) - 1) / 3.0
+
+            cos_start_t = cos(current_t)
+            sin_start_t = sin(current_t)
+
+            ePrimen1x = -rx * cos_theta * sin_start_t - ry * sin_theta * cos_start_t
+            ePrimen1y = -rx * sin_theta * sin_start_t + ry * cos_theta * cos_start_t
+
+            cos_end_t = cos(next_t)
+            sin_end_t = sin(next_t)
+
+            p2En2x = x0 + rx * cos_end_t * cos_theta - ry * sin_end_t * sin_theta
+            p2En2y = y0 + rx * cos_end_t * sin_theta + ry * sin_end_t * cos_theta
+            p_end = p2En2x + p2En2y * 1j
+            if i == curves - 1:
+                p_end = self.end
+
+            ePrimen2x = -rx * cos_theta * sin_end_t - ry * sin_theta * cos_end_t
+            ePrimen2y = -rx * sin_theta * sin_end_t + ry * cos_theta * cos_end_t
+
+            p_c1 = (p_start.real + alpha * ePrimen1x) + (p_start.imag + alpha * ePrimen1y) * 1j
+            p_c2 = (p_end.real - alpha * ePrimen2x) + (p_end.imag - alpha * ePrimen2y) * 1j
+
+            yield CubicBezier(p_start, p_c1, p_c2, p_end)
+            p_start = p_end
+            current_t = next_t
+
+    def as_quad_curves(self, curves=1):
+        """Generates quadratic curves to approximate this arc"""
+        slice_t = radians(self.delta) / float(curves)
+
+        current_t = radians(self.theta)
+        a = self.radius.real  # * self.radius_scale
+        b = self.radius.imag  # * self.radius_scale
+        p_start = self.start
+
+        theta = radians(self.rotation)
+        cx = self.center.real
+        cy = self.center.imag
+
+        cos_theta = cos(theta)
+        sin_theta = sin(theta)
+
+        for i in range(curves):
+            next_t = current_t + slice_t
+            mid_t = (next_t + current_t) / 2
+            cos_end_t = cos(next_t)
+            sin_end_t = sin(next_t)
+            p2En2x = cx + a * cos_end_t * cos_theta - b * sin_end_t * sin_theta
+            p2En2y = cy + a * cos_end_t * sin_theta + b * sin_end_t * cos_theta
+            p_end = p2En2x + p2En2y * 1j
+            if i == curves - 1:
+                p_end = self.end
+            cos_mid_t = cos(mid_t)
+            sin_mid_t = sin(mid_t)
+            alpha = (4.0 - cos(slice_t)) / 3.0
+            px = cx + alpha * (a * cos_mid_t * cos_theta - b * sin_mid_t * sin_theta)
+            py = cy + alpha * (a * cos_mid_t * sin_theta + b * sin_mid_t * cos_theta)
+            yield QuadraticBezier(p_start, px + py * 1j, p_end)
+            p_start = p_end
+            current_t = next_t
+
 
 def is_bezier_segment(x):
     return (isinstance(x, Line) or
@@ -2905,6 +2985,32 @@ class Path(MutableSequence):
 
         opt = complex(xmin-1, ymin-1)
         return path_encloses_pt(pt, opt, other)
+
+    def approximate_arcs_with_cubics(self, error=0.1):
+        """
+        Iterates through this path and replaces any Arcs with cubic bezier curves.
+        """
+        tau = pi * 2
+        sweep_limit = degrees(tau * error)
+        for s in range(len(self)-1, -1, -1):
+            segment = self[s]
+            if not isinstance(segment, Arc):
+                continue
+            arc_required = int(ceil(abs(segment.delta) / sweep_limit))
+            self[s:s+1] = list(segment.as_cubic_curves(arc_required))
+
+    def approximate_arcs_with_quads(self, error=0.1):
+        """
+        Iterates through this path and replaces any Arcs with cubic bezier curves.
+        """
+        tau = pi * 2
+        sweep_limit = degrees(tau * error)
+        for s in range(len(self)-1, -1, -1):
+            segment = self[s]
+            if not isinstance(segment, Arc):
+                continue
+            arc_required = int(ceil(abs(segment.delta) / sweep_limit))
+            self[s:s+1] = list(segment.as_quad_curves(arc_required))
 
     def _tokenize_path(self, pathdef):
         for x in COMMAND_RE.split(pathdef):
