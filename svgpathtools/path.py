@@ -3001,7 +3001,7 @@ class Path(MutableSequence):
 
     def approximate_arcs_with_quads(self, error=0.1):
         """
-        Iterates through this path and replaces any Arcs with cubic bezier curves.
+        Iterates through this path and replaces any Arcs with quadratic bezier curves.
         """
         tau = pi * 2
         sweep_limit = degrees(tau * error)
