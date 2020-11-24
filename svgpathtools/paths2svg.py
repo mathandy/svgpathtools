@@ -185,13 +185,11 @@ def disvg(paths=None, colors=None,
         names, or use a pause command (e.g. time.sleep(1)) between uses.
     """
 
-
     _default_relative_node_radius = 5e-3
     _default_relative_stroke_width = 1e-3
     _default_path_color = '#000000'  # black
     _default_node_color = '#ff0000'  # red
     _default_font_size = 12
-
 
     # append directory to filename (if not included)
     if os_path.dirname(filename) == '':
@@ -206,7 +204,8 @@ def disvg(paths=None, colors=None,
         filename = os_path.join(dirname, stfilename)
 
     # check paths and colors are set
-    if isinstance(paths, Path) or is_path_segment(paths):
+    # if isinstance(paths, Path) or is_path_segment(paths):
+    if is_path_segment(paths):
         paths = [paths]
     if paths:
         if not colors:
@@ -246,6 +245,7 @@ def disvg(paths=None, colors=None,
             dimensions = viewbox.split(' ')[2:4]
     elif dimensions:
         dimensions = tuple(map(str, dimensions))
+
         def strip_units(s):
             return re.search(r'\d*\.?\d*', s.strip()).group()
         viewbox = '0 0 %s %s' % tuple(map(strip_units, dimensions))
@@ -269,7 +269,7 @@ def disvg(paths=None, colors=None,
         if paths:
             if not stroke_widths:
                 sw = max(dx, dy) * _default_relative_stroke_width
-                stroke_widths = [sw]*len(paths)
+                stroke_widths = [sw] * len(paths)
                 max_stroke_width = sw
             else:
                 assert len(paths) == len(stroke_widths)
@@ -281,19 +281,19 @@ def disvg(paths=None, colors=None,
         if nodes:
             if not node_radii:
                 r = max(dx, dy) * _default_relative_node_radius
-                node_radii = [r]*len(nodes)
-                max_node_diameter = 2*r
+                node_radii = [r] * len(nodes)
+                max_node_diameter = 2 * r
             else:
                 assert len(nodes) == len(node_radii)
-                max_node_diameter = 2*max(node_radii)
+                max_node_diameter = 2 * max(node_radii)
         else:
             max_node_diameter = 0
 
         extra_space_for_style = max(max_stroke_width, max_node_diameter)
-        xmin -= margin_size*dx + extra_space_for_style/2
-        ymin -= margin_size*dy + extra_space_for_style/2
-        dx += 2*margin_size*dx + extra_space_for_style
-        dy += 2*margin_size*dy + extra_space_for_style
+        xmin -= margin_size * dx + extra_space_for_style / 2
+        ymin -= margin_size * dy + extra_space_for_style / 2
+        dx += 2 * margin_size * dx + extra_space_for_style
+        dy += 2 * margin_size * dy + extra_space_for_style
         viewbox = "%s %s %s %s" % (xmin, ymin, dx, dy)
 
         if dx > dy:
@@ -349,15 +349,15 @@ def disvg(paths=None, colors=None,
 
     # add texts
     if text:
-        assert isinstance(text, str) or (isinstance(text, list) and
-                                         isinstance(text_path, list) and
-                                         len(text_path) == len(text))
+        assert isinstance(text, str) or (isinstance(text, list)
+                                         and isinstance(text_path, list)
+                                         and len(text_path) == len(text))
         if isinstance(text, str):
             text = [text]
             if not font_size:
                 font_size = [_default_font_size]
             if not text_path:
-                pos = complex(xmin + margin_size*dx, ymin + margin_size*dy)
+                pos = complex(xmin + margin_size * dx, ymin + margin_size * dy)
                 text_path = [Line(pos, pos + 1).d()]
         else:
             if font_size:
@@ -381,11 +381,11 @@ def disvg(paths=None, colors=None,
             pathid = 'tp' + str(idx)
             dwg.defs.add(dwg.path(d=ps, id=pathid))
             txter = dwg.add(dwg.text('', font_size=font_size[idx]))
-            txter.add(txt.TextPath('#'+pathid, s))
+            txter.add(txt.TextPath('#' + pathid, s))
 
     if paths2Drawing:
         return dwg
-      
+
     # save svg
     if not os_path.exists(os_path.dirname(filename)):
         makedirs(os_path.dirname(filename))
@@ -406,12 +406,12 @@ def disvg(paths=None, colors=None,
 
 
 def wsvg(paths=None, colors=None,
-          filename=os_path.join(getcwd(), 'disvg_output.svg'),
-          stroke_widths=None, nodes=None, node_colors=None, node_radii=None,
-          openinbrowser=False, timestamp=False,
-          margin_size=0.1, mindim=600, dimensions=None,
-          viewbox=None, text=None, text_path=None, font_size=None,
-          attributes=None, svg_attributes=None, svgwrite_debug=False, paths2Drawing=False):
+         filename=os_path.join(getcwd(), 'disvg_output.svg'),
+         stroke_widths=None, nodes=None, node_colors=None, node_radii=None,
+         openinbrowser=False, timestamp=False,
+         margin_size=0.1, mindim=600, dimensions=None,
+         viewbox=None, text=None, text_path=None, font_size=None,
+         attributes=None, svg_attributes=None, svgwrite_debug=False, paths2Drawing=False):
     """Convenience function; identical to disvg() except that
     openinbrowser=False by default.  See disvg() docstring for more info."""
     return disvg(paths, colors=colors, filename=filename,
@@ -422,18 +422,18 @@ def wsvg(paths=None, colors=None,
                  viewbox=viewbox, text=text, text_path=text_path, font_size=font_size,
                  attributes=attributes, svg_attributes=svg_attributes,
                  svgwrite_debug=svgwrite_debug, paths2Drawing=paths2Drawing)
-    
-    
+
+
 def paths2Drawing(paths=None, colors=None,
-          filename=os_path.join(getcwd(), 'disvg_output.svg'),
-          stroke_widths=None, nodes=None, node_colors=None, node_radii=None,
-          openinbrowser=False, timestamp=False,
-          margin_size=0.1, mindim=600, dimensions=None,
-          viewbox=None, text=None, text_path=None, font_size=None,
-          attributes=None, svg_attributes=None, svgwrite_debug=False, paths2Drawing=True):
+                  filename=os_path.join(getcwd(), 'disvg_output.svg'),
+                  stroke_widths=None, nodes=None, node_colors=None, node_radii=None,
+                  openinbrowser=False, timestamp=False,
+                  margin_size=0.1, mindim=600, dimensions=None,
+                  viewbox=None, text=None, text_path=None, font_size=None,
+                  attributes=None, svg_attributes=None, svgwrite_debug=False, paths2Drawing=True):
     """Convenience function; identical to disvg() except that
     paths2Drawing=True by default.  See disvg() docstring for more info."""
-    return disvg(paths, colors=colors, filename=filename, 
+    return disvg(paths, colors=colors, filename=filename,
                  stroke_widths=stroke_widths, nodes=nodes,
                  node_colors=node_colors, node_radii=node_radii,
                  openinbrowser=openinbrowser, timestamp=timestamp,
