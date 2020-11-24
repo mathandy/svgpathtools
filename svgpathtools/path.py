@@ -6,6 +6,8 @@ Arc."""
 from __future__ import division, absolute_import, print_function
 from math import sqrt, cos, sin, acos, asin, degrees, radians, log, pi, ceil
 from cmath import exp, sqrt as csqrt, phase
+from scipy.optimize import newton
+from copy import deepcopy
 import re
 try:
     from collections.abc import MutableSequence  # noqa
@@ -1019,6 +1021,36 @@ class QuadraticBezier(object):
         bpoints1, bpoints2 = split_bezier(self.bpoints(), t)
         return QuadraticBezier(*bpoints1), QuadraticBezier(*bpoints2)
 
+    def split_extremum_y(self, t_tol=0.001, fprime_tol=0.001):
+        """
+        Split self in 2 curves at its extremum Point.
+
+        Args
+        ----
+            t_tol:      tolerance under which t1 and t2 are considered the same
+                        (default 0.001)
+            fprime_tol: tolerance under which fprime(t) is considered zero
+                        (default 0.001)
+
+        Returns
+        -------
+            c1, c2:     two segments, whose union is this segment and which
+                        join at the extremum point of self. If the extremum is
+                        the start, end, or if the curve is a line or a point,
+                        c1 is a copy of self and c2 is None.
+
+        """
+        try:
+            def fprime(t): return self.derivative(t).imag
+            s = newton(fprime, 0.5, tol=fprime_tol, maxiter=1000)
+            if s <= t_tol or 1 - s <= t_tol:
+                raise Exception()
+            c1, c2 = self.split(s)
+        except BaseException:
+            c1, c2 = deepcopy(self), None
+
+        return c1, c2
+    
     def cropped(self, t0, t1):
         """returns a cropped copy of this segment which starts at
         self.point(t0) and ends at self.point(t1)."""
@@ -1266,6 +1298,35 @@ class CubicBezier(object):
         self.point(t)."""
         bpoints1, bpoints2 = split_bezier(self.bpoints(), t)
         return CubicBezier(*bpoints1), CubicBezier(*bpoints2)
+    def split_extremum_y(self, t_tol=0.001, fprime_tol=0.001):
+        """
+        Split self in 2 curves at its extremum Point.
+
+        Args
+        ----
+            t_tol:      tolerance under which t1 and t2 are considered the same
+                        (default 0.001)
+            fprime_tol: tolerance under which fprime(t) is considered zero
+                        (default 0.001)
+
+        Returns
+        -------
+            c1, c2:     two segments, whose union is this segment and which
+                        join at the extremum point of self. If the extremum is
+                        the start, end, or if the curve is a line or a point,
+                        c1 is a copy of self and c2 is None.
+
+        """
+        try:
+            def fprime(t): return self.derivative(t).imag
+            s = newton(fprime, 0.5, tol=fprime_tol, maxiter=1000)
+            if s <= t_tol or 1 - s <= t_tol:
+                raise Exception()
+            c1, c2 = self.split(s)
+        except BaseException:
+            c1, c2 = deepcopy(self), None
+
+        return c1, c2
 
     def cropped(self, t0, t1):
         """returns a cropped copy of this segment which starts at
@@ -2160,6 +2221,37 @@ class Arc(object):
         at self.point(t)."""
         return self.cropped(0, t), self.cropped(t, 1)
 
+
+    def split_extremum_y(self, t_tol=0.001, fprime_tol=0.001):
+        """
+        Split self in 2 curves at its extremum Point.
+
+        Args
+        ----
+            t_tol:      tolerance under which t1 and t2 are considered the same
+                        (default 0.001)
+            fprime_tol: tolerance under which fprime(t) is considered zero
+                        (default 0.001)
+
+        Returns
+        -------
+            c1, c2:     two segments, whose union is this segment and which
+                        join at the extremum point of self. If the extremum is
+                        the start, end, or if the curve is a line or a point,
+                        c1 is a copy of self and c2 is None.
+
+        """
+        try:
+            def fprime(t): return self.derivative(t).imag
+            s = newton(fprime, 0.5, tol=fprime_tol, maxiter=1000)
+            if s <= t_tol or 1 - s <= t_tol:
+                raise Exception()
+            c1, c2 = self.split(s)
+        except BaseException:
+            c1, c2 = deepcopy(self), None
+
+        return c1, c2
+    
     def cropped(self, t0, t1):
         """returns a cropped copy of this segment which starts at
         self.point(t0) and ends at self.point(t1)."""
