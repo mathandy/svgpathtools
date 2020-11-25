@@ -54,7 +54,7 @@ import unittest
 
 def visualize_path(path, label, addpoints=None, pathnodes=True):
     """Create an SVG file named label.svg containing path."""
-    direct = './data/split_function'
+    direct = './data/split_extremum_y_function'
     directory = Path(direct)
     # it seems that xmldom cannot use PosixPath
     filename = str(directory / str(label + '.svg'))
