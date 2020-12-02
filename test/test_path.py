@@ -473,6 +473,34 @@ class QuadraticBezierTest(unittest.TestCase):
         self.assertFalse(segment == Arc(0j, 100 + 50j, 0, 0, 0, 100 + 50j))
         self.assertTrue(Arc(0j, 100 + 50j, 0, 0, 0, 100 + 50j) != segment)
 
+    def test_issue_61(self):
+        """
+        Tests against issue regebro/svg.path#61 mathandy/svgpathtools#113
+        """
+        p = Path('M 206.5,525 Q 162.5,583 162.5,583')
+        self.assertAlmostEqual(p.length(), 72.80109889280519)
+        p = Path('M 425.781 446.289 Q 410.40000000000003 373.047 410.4 373.047')
+        self.assertAlmostEqual(p.length(), 74.83959997888816)
+        p = Path('M 639.648 568.115 Q 606.6890000000001 507.568 606.689 507.568')
+        self.assertAlmostEqual(p.length(), 68.93645544992873)
+        p = Path('M 288.818 616.699 Q 301.025 547.3629999999999 301.025 547.363')
+        self.assertAlmostEqual(p.length(), 70.40235610403947)
+        p = Path('M 339.927 706.25 Q 243.92700000000002 806.25 243.927 806.25')
+        self.assertAlmostEqual(p.length(), 138.6217876093077)
+        p = Path('M 539.795 702.637 Q 548.0959999999999 803.4669999999999 548.096 803.467')
+        self.assertAlmostEqual(p.length(), 101.17111989594662)
+        p = Path('M 537.815 555.042 Q 570.1680000000001 499.1600000000001 570.168 499.16')
+        self.assertAlmostEqual(p.length(), 64.57177814649368)
+        p = Path('M 615.297 470.503 Q 538.797 694.5029999999999 538.797 694.503')
+        self.assertAlmostEqual(p.length(), 236.70287281737836)
+
+    def test_issue_96(self):
+        """
+        Corrects:
+        https://github.com/mathandy/svgpathtools/issues/95
+        """
+        p = Path('M261 166 L261 166')
+        self.assertEqual(p.length(), 0)
 
 class ArcTest(unittest.TestCase):
 
