@@ -494,13 +494,18 @@ class QuadraticBezierTest(unittest.TestCase):
         p = Path('M 615.297 470.503 Q 538.797 694.5029999999999 538.797 694.503')
         self.assertAlmostEqual(p.length(), 236.70287281737836)
 
-    def test_issue_96(self):
+    def test_issue_95(self):
         """
         Corrects:
         https://github.com/mathandy/svgpathtools/issues/95
         """
         p = Path('M261 166 L261 166')
         self.assertEqual(p.length(), 0)
+
+    def test_issue_71(self):
+        p = Path("M327 468z")
+        m = p.closed
+        q = p.d()  # Failing to Crash is good.
 
 class ArcTest(unittest.TestCase):
 
