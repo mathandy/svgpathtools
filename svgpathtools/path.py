@@ -2432,25 +2432,31 @@ class Path(MutableSequence):
         self._length = sum(lengths)
         self._lengths = [each/self._length for each in lengths]
 
-    def point(self, pos):
+    def point(self, T):
 
         # Shortcuts
-        if pos == 0.0:
-            return self._segments[0].point(pos)
-        if pos == 1.0:
-            return self._segments[-1].point(pos)
+        if T == 0.0:
+            return self._segments[0].point(T)
+        if T == 1.0:
+            return self._segments[-1].point(T)
 
         self._calc_lengths()
         # Find which segment the point we search for is located on:
-        segment_start = 0
-        for index, segment in enumerate(self._segments):
-            segment_end = segment_start + self._lengths[index]
-            if segment_end >= pos:
-                # This is the segment! How far in on the segment is the point?
-                segment_pos = (pos - segment_start)/(
-                    segment_end - segment_start)
-                return segment.point(segment_pos)
-            segment_start = segment_end
+        cumulative_relative_lengths = np.cumsum(self._lengths)
+
+        if hasattr(T, '__iter__'):
+            T = np.array(T).reshape(1, len(T))
+            relevant_seg_indices = np.argmax(cumulative_relative_lengths[:, None] >= T, axis=0)
+            T0, T1 = cumulative_relative_lengths[relevant_seg_indices - 1],\
+                     cumulative_relative_lengths[relevant_seg_indices]
+            t = (T - T0) / (T1 - T0)
+            return [self[i].point(tval) for i, tval in zip(relevant_seg_indices, t)]
+        else:  # assume T is a scalar
+            relevant_seg_index = np.argmax(cumulative_relative_lengths >= T)
+            T0, T1 = cumulative_relative_lengths[relevant_seg_index - 1],\
+                     cumulative_relative_lengths[relevant_seg_index]
+            t = (T - T0) / (T1 - T0)
+            return self[relevant_seg_index].point(t)
 
     def length(self, T0=0, T1=1, error=LENGTH_ERROR, min_depth=LENGTH_MIN_DEPTH):
         self._calc_lengths(error=error, min_depth=min_depth)
