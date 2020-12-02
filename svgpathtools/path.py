@@ -316,7 +316,7 @@ def bezier_unit_tangent(seg, t):
     This can be undone with:
     >>> numpy.seterr(**old_numpy_error_settings)
     """
-    assert 0 <= t <= 1
+
     dseg = seg.derivative(t)
 
     # Note: dseg might be numpy value, use np.seterr(invalid='raise')
