@@ -658,6 +658,33 @@ class ArcTest(unittest.TestCase):
                 computed_t = a.point_to_t(p)
                 self.assertAlmostEqual(orig_t, computed_t, msg="arc %s at t=%f is point %s, but got %f back" % (a, orig_t, p, computed_t))
 
+    def test_approx_quad(self):
+        n = 100
+        for i in range(n):
+            arc = random_arc()
+            if arc.radius.real > 2000 or arc.radius.imag > 2000:
+                continue  # Random Arc too large, by autoscale.
+            path1 = Path(arc)
+            path2 = Path(*path1)
+            path2.approximate_arcs_with_quads(error=0.05)
+            d = abs(path1.length() - path2.length())
+            # Error less than 1% typically less than 0.5%
+            self.assertAlmostEqual(d, 0.0, delta=20)
+
+    def test_approx_cubic(self):
+        n = 100
+        for i in range(n):
+            arc = random_arc()
+            if arc.radius.real > 2000 or arc.radius.imag > 2000:
+                continue  # Random Arc too large, by autoscale.
+            path1 = Path(arc)
+            path2 = Path(*path1)
+            path2.approximate_arcs_with_cubics(error=0.1)
+            d = abs(path1.length() - path2.length())
+            # Error less than 0.1% typically less than 0.001%
+            self.assertAlmostEqual(d,0.0, delta=2)
+
+
 
 class TestPath(unittest.TestCase):
 
