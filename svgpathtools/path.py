@@ -875,31 +875,32 @@ class QuadraticBezier(object):
 
         if abs(a) < 1e-12:
             s = abs(b)*(t1 - t0)
-        elif abs(a_dot_b + abs(a)*abs(b)) < 1e-12:
-            tstar = abs(b)/(2*abs(a))
-            if t1 < tstar:
-                return abs(a)*(t0**2 - t1**2) - abs(b)*(t0 - t1)
-            elif tstar < t0:
-                return abs(a)*(t1**2 - t0**2) - abs(b)*(t1 - t0)
-            else:
-                return abs(a)*(t1**2 + t0**2) - abs(b)*(t1 + t0) + \
-                    abs(b)**2/(2*abs(a))
         else:
-            c2 = 4*(a.real**2 + a.imag**2)
-            c1 = 4*a_dot_b
-            c0 = b.real**2 + b.imag**2
+            try:
+                c2 = 4*(a.real**2 + a.imag**2)
+                c1 = 4*a_dot_b
+                c0 = b.real**2 + b.imag**2
 
-            beta = c1/(2*c2)
-            gamma = c0/c2 - beta**2
+                beta = c1/(2*c2)
+                gamma = c0/c2 - beta**2
 
-            dq1_mag = sqrt(c2*t1**2 + c1*t1 + c0)
-            dq0_mag = sqrt(c2*t0**2 + c1*t0 + c0)
-            logarand = (sqrt(c2)*(t1 + beta) + dq1_mag) / \
-                       (sqrt(c2)*(t0 + beta) + dq0_mag)
+                dq1_mag = sqrt(c2*t1**2 + c1*t1 + c0)
+                dq0_mag = sqrt(c2*t0**2 + c1*t0 + c0)
+                logarand = (sqrt(c2)*(t1 + beta) + dq1_mag) / \
+                           (sqrt(c2)*(t0 + beta) + dq0_mag)
 
-            s = (t1 + beta)*dq1_mag - (t0 + beta)*dq0_mag + \
-                gamma*sqrt(c2)*log(logarand)
-            s /= 2
+                s = (t1 + beta)*dq1_mag - (t0 + beta)*dq0_mag + \
+                    gamma*sqrt(c2)*log(logarand)
+                s /= 2
+            except (ZeroDivisionError, ValueError):
+                tstar = abs(b) / (2 * abs(a))
+                if t1 < tstar:
+                    return abs(a) * (t0 ** 2 - t1 ** 2) - abs(b) * (t0 - t1)
+                elif tstar < t0:
+                    return abs(a) * (t1 ** 2 - t0 ** 2) - abs(b) * (t1 - t0)
+                else:
+                    return abs(a) * (t1 ** 2 + t0 ** 2) - abs(b) * (t1 + t0) + \
+                           abs(b) ** 2 / (2 * abs(a))
 
         if t0 == 1 and t1 == 0:
             self._length_info['length'] = s
@@ -2428,7 +2429,10 @@ class Path(MutableSequence):
         lengths = [each.length(error=error, min_depth=min_depth) for each in
                    self._segments]
         self._length = sum(lengths)
-        self._lengths = [each/self._length for each in lengths]
+        if self._length == 0:
+            self._lengths = lengths  # all lengths are 0.
+        else:
+            self._lengths = [each/self._length for each in lengths]
 
     def point(self, pos):
 
