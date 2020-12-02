@@ -214,10 +214,6 @@ def disvg(paths=None, colors=None, filename=None, stroke_widths=None,
         timestamp = True if timestamp is None else timestamp
         filename = os_path.join(gettempdir(), 'disvg_output.svg')
 
-    # append directory to filename (if not included)
-    if os_path.dirname(filename) == '':
-        filename = os_path.join(getcwd(), filename)
-
     # append time stamp to filename
     if timestamp:
         fbname, fext = os_path.splitext(filename)
