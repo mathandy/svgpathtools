@@ -1737,7 +1737,7 @@ class Arc(object):
         phi = radians(self.rotation)
         rx = self.radius.real
         ry = self.radius.imag
-        k = (self.delta*2*pi/360)**n  # ((d/dt)angle)**n
+        k = (self.delta*pi/180)**n  # ((d/dt)angle)**n
 
         if n % 4 == 0 and n > 0:
             return rx*cos(phi)*cos(angle) - ry*sin(phi)*sin(angle) + 1j*(
