@@ -1,5 +1,7 @@
-"""This submodule contains tools for creating svg files from paths and path
-segments."""
+"""This submodule: basic tools for creating svg files from path data.
+
+See also the document.py submodule.
+"""
 
 # External dependencies:
 from __future__ import division, absolute_import, print_function
@@ -16,7 +18,7 @@ import re
 from .path import Path, Line, is_path_segment
 from .misctools import open_in_browser
 
-# Used to convert a string colors (identified by single chars) to a list.
+# color shorthand for inputting color list as string of chars.
 color_dict = {'a': 'aqua',
               'b': 'blue',
               'c': 'cyan',
@@ -59,8 +61,16 @@ def is3tuple(c):
 
 
 def big_bounding_box(paths_n_stuff):
-    """Finds a BB containing a collection of paths, Bezier path segments, and
-    points (given as complex numbers)."""
+    """returns minimal upright bounding box.
+
+    Args:
+        paths_n_stuff: iterable of Paths, Bezier path segments, and
+            points (given as complex numbers).
+
+    Returns:
+        extrema of bounding box, (xmin, xmax, ymin, ymax)
+
+    """
     bbs = []
     for thing in paths_n_stuff:
         if is_path_segment(thing) or isinstance(thing, Path):
@@ -73,9 +83,9 @@ def big_bounding_box(paths_n_stuff):
                 bbs.append((complexthing.real, complexthing.real,
                             complexthing.imag, complexthing.imag))
             except ValueError:
-                raise TypeError(
-                    "paths_n_stuff can only contains Path, CubicBezier, "
-                    "QuadraticBezier, Line, and complex objects.")
+                raise TypeError("paths_n_stuff can only contains Path, "
+                                "CubicBezier, QuadraticBezier, Line, "
+                                "and complex objects.")
     xmins, xmaxs, ymins, ymaxs = list(zip(*bbs))
     xmin = min(xmins)
     xmax = max(xmaxs)
@@ -91,7 +101,8 @@ def disvg(paths=None, colors=None, filename=None, stroke_widths=None,
           text_path=None, font_size=None, attributes=None,
           svg_attributes=None, svgwrite_debug=False,
           paths2Drawing=False):
-    """Takes in a list of paths and creates an SVG file containing said paths.
+    """Creates (and optionally displays) an SVG file.
+
     REQUIRED INPUTS:
         :param paths - a list of paths
 
@@ -188,6 +199,9 @@ def disvg(paths=None, colors=None, filename=None, stroke_widths=None,
         svgviewer/browser will likely fail to load some of the SVGs in time.
         To fix this, use the timestamp attribute, or give the files unique
         names, or use a pause command (e.g. time.sleep(1)) between uses.
+
+    SEE ALSO:
+        * document.py
     """
 
     _default_relative_node_radius = 5e-3
@@ -412,12 +426,13 @@ def disvg(paths=None, colors=None, filename=None, stroke_widths=None,
             print(filename)
 
 
-def wsvg(paths=None, colors=None, filename=None,
-          stroke_widths=None, nodes=None, node_colors=None, node_radii=None,
-          openinbrowser=False, timestamp=False,
-          margin_size=0.1, mindim=600, dimensions=None,
-          viewbox=None, text=None, text_path=None, font_size=None,
-          attributes=None, svg_attributes=None, svgwrite_debug=False, paths2Drawing=False):
+def wsvg(paths=None, colors=None, filename=None, stroke_widths=None,
+         nodes=None, node_colors=None, node_radii=None,
+         openinbrowser=False, timestamp=False, margin_size=0.1,
+         mindim=600, dimensions=None, viewbox=None, text=None,
+         text_path=None, font_size=None, attributes=None,
+         svg_attributes=None, svgwrite_debug=False,
+         paths2Drawing=False):
     """Create SVG and write to disk.
 
     Note: This is identical to `disvg()` except that `openinbrowser`
@@ -431,10 +446,12 @@ def wsvg(paths=None, colors=None, filename=None,
                  stroke_widths=stroke_widths, nodes=nodes,
                  node_colors=node_colors, node_radii=node_radii,
                  openinbrowser=openinbrowser, timestamp=timestamp,
-                 margin_size=margin_size, mindim=mindim, dimensions=dimensions,
-                 viewbox=viewbox, text=text, text_path=text_path, font_size=font_size,
+                 margin_size=margin_size, mindim=mindim,
+                 dimensions=dimensions, viewbox=viewbox, text=text,
+                 text_path=text_path, font_size=font_size,
                  attributes=attributes, svg_attributes=svg_attributes,
-                 svgwrite_debug=svgwrite_debug, paths2Drawing=paths2Drawing)
+                 svgwrite_debug=svgwrite_debug,
+                 paths2Drawing=paths2Drawing)
     
     
 def paths2Drawing(paths=None, colors=None, filename=None,
@@ -456,7 +473,9 @@ def paths2Drawing(paths=None, colors=None, filename=None,
                  stroke_widths=stroke_widths, nodes=nodes,
                  node_colors=node_colors, node_radii=node_radii,
                  openinbrowser=openinbrowser, timestamp=timestamp,
-                 margin_size=margin_size, mindim=mindim, dimensions=dimensions,
-                 viewbox=viewbox, text=text, text_path=text_path, font_size=font_size,
+                 margin_size=margin_size, mindim=mindim,
+                 dimensions=dimensions, viewbox=viewbox, text=text,
+                 text_path=text_path, font_size=font_size,
                  attributes=attributes, svg_attributes=svg_attributes,
-                 svgwrite_debug=svgwrite_debug, paths2Drawing=paths2Drawing)
+                 svgwrite_debug=svgwrite_debug,
+                 paths2Drawing=paths2Drawing)
