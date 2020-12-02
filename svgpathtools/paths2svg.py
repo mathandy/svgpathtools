@@ -5,6 +5,7 @@ segments."""
 from __future__ import division, absolute_import, print_function
 from math import ceil
 from os import getcwd, path as os_path, makedirs
+from tempfile import gettempdir
 from xml.dom.minidom import parse as md_xml_parse
 from svgwrite import Drawing, text as txt
 from time import time
@@ -83,13 +84,13 @@ def big_bounding_box(paths_n_stuff):
     return xmin, xmax, ymin, ymax
 
 
-def disvg(paths=None, colors=None,
-          filename=os_path.join(getcwd(), 'disvg_output.svg'),
-          stroke_widths=None, nodes=None, node_colors=None, node_radii=None,
-          openinbrowser=True, timestamp=False,
-          margin_size=0.1, mindim=600, dimensions=None,
-          viewbox=None, text=None, text_path=None, font_size=None,
-          attributes=None, svg_attributes=None, svgwrite_debug=False, paths2Drawing=False):
+def disvg(paths=None, colors=None, filename=None, stroke_widths=None,
+          nodes=None, node_colors=None, node_radii=None,
+          openinbrowser=True, timestamp=None, margin_size=0.1,
+          mindim=600, dimensions=None, viewbox=None, text=None,
+          text_path=None, font_size=None, attributes=None,
+          svg_attributes=None, svgwrite_debug=False,
+          paths2Drawing=False):
     """Takes in a list of paths and creates an SVG file containing said paths.
     REQUIRED INPUTS:
         :param paths - a list of paths
@@ -105,8 +106,10 @@ def disvg(paths=None, colors=None,
         3) a list of rgb 3-tuples -- e.g. colors = [(255, 0, 0), ...].
 
         :param filename - the desired location/filename of the SVG file
-        created (by default the SVG will be stored in the current working
-        directory and named 'disvg_output.svg').
+        created (by default the SVG will be named 'disvg_output.svg' or
+        'disvg_output_<timestamp>.svg' and stored in the temporary
+        directory returned by `tempfile.gettempdir()`.  See `timestamp`
+        for information on the timestamp.
 
         :param stroke_widths - a list of stroke_widths to use for paths
         (default is 0.5% of the SVG's width or length)
@@ -131,9 +134,11 @@ def disvg(paths=None, colors=None,
         :param openinbrowser -  Set to True to automatically open the created
         SVG in the user's default web browser.
 
-        :param timestamp - if True, then the a timestamp will be appended to
-        the output SVG's filename.  This will fix issues with rapidly opening
-        multiple SVGs in your browser.
+        :param timestamp - if true, then the a timestamp will be
+        appended to the output SVG's filename.  This is meant as a
+        workaround for issues related to rapidly opening multiple
+        SVGs in your browser using `disvg`. This defaults to true if
+        `filename is None` and false otherwise.
 
         :param margin_size - The min margin (empty area framing the collection
         of paths) size used for creating the canvas and background of the SVG.
@@ -185,13 +190,15 @@ def disvg(paths=None, colors=None,
         names, or use a pause command (e.g. time.sleep(1)) between uses.
     """
 
-
     _default_relative_node_radius = 5e-3
     _default_relative_stroke_width = 1e-3
     _default_path_color = '#000000'  # black
     _default_node_color = '#ff0000'  # red
     _default_font_size = 12
 
+    if filename is None:
+        timestamp = True if timestamp is None else timestamp
+        filename = os_path.join(gettempdir(), 'disvg_output.svg')
 
     # append directory to filename (if not included)
     if os_path.dirname(filename) == '':
@@ -405,15 +412,21 @@ def disvg(paths=None, colors=None,
             print(filename)
 
 
-def wsvg(paths=None, colors=None,
-          filename=os_path.join(getcwd(), 'disvg_output.svg'),
+def wsvg(paths=None, colors=None, filename=None,
           stroke_widths=None, nodes=None, node_colors=None, node_radii=None,
           openinbrowser=False, timestamp=False,
           margin_size=0.1, mindim=600, dimensions=None,
           viewbox=None, text=None, text_path=None, font_size=None,
           attributes=None, svg_attributes=None, svgwrite_debug=False, paths2Drawing=False):
-    """Convenience function; identical to disvg() except that
-    openinbrowser=False by default.  See disvg() docstring for more info."""
+    """Create SVG and write to disk.
+
+    Note: This is identical to `disvg()` except that `openinbrowser`
+    is false by default and an assertion error is raised if `filename
+    is None`.
+
+    See `disvg()` docstring for more info.
+    """
+    assert filename is not None
     return disvg(paths, colors=colors, filename=filename,
                  stroke_widths=stroke_widths, nodes=nodes,
                  node_colors=node_colors, node_radii=node_radii,
@@ -424,15 +437,21 @@ def wsvg(paths=None, colors=None,
                  svgwrite_debug=svgwrite_debug, paths2Drawing=paths2Drawing)
     
     
-def paths2Drawing(paths=None, colors=None,
-          filename=os_path.join(getcwd(), 'disvg_output.svg'),
-          stroke_widths=None, nodes=None, node_colors=None, node_radii=None,
-          openinbrowser=False, timestamp=False,
-          margin_size=0.1, mindim=600, dimensions=None,
-          viewbox=None, text=None, text_path=None, font_size=None,
-          attributes=None, svg_attributes=None, svgwrite_debug=False, paths2Drawing=True):
-    """Convenience function; identical to disvg() except that
-    paths2Drawing=True by default.  See disvg() docstring for more info."""
+def paths2Drawing(paths=None, colors=None, filename=None,
+                  stroke_widths=None, nodes=None, node_colors=None,
+                  node_radii=None, openinbrowser=False, timestamp=False,
+                  margin_size=0.1, mindim=600, dimensions=None,
+                  viewbox=None, text=None, text_path=None,
+                  font_size=None, attributes=None, svg_attributes=None,
+                  svgwrite_debug=False, paths2Drawing=True):
+    """Create and return `svg.Drawing` object.
+
+    Note: This is identical to `disvg()` except that `paths2Drawing`
+    is true by default and an assertion error is raised if `filename
+    is None`.
+
+    See `disvg()` docstring for more info.
+    """
     return disvg(paths, colors=colors, filename=filename, 
                  stroke_widths=stroke_widths, nodes=nodes,
                  node_colors=node_colors, node_radii=node_radii,
