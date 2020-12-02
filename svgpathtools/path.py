@@ -3195,11 +3195,12 @@ class Path(MutableSequence):
                     # Note: In browsers AFAIK, zero radius arcs are displayed
                     # as lines (see "examples/zero-radius-arcs.svg").
                     # Thus zero radius arcs are substituted for lines here.
-                    warn(f'Replacing degenerate (zero radius) Arc with a '
-                         f'Line: Arc(start={current_pos}, radius={radius}, '
-                         f'rotation={rotation}, large_arc={arc}, '
-                         f'sweep={sweep}, end={end}) -> '
-                         f'Line(start={current_pos}, end={end})')
+                    warn('Replacing degenerate (zero radius) Arc with a Line: '
+                         'Arc(start={}, radius={}, rotation={}, large_arc={}, '
+                         'sweep={}, end={})'.format(
+                        current_pos, radius, rotation, arc, sweep, end) +
+                         ' --> Line(start={}, end={})'
+                         ''.format(current_pos, end))
                     segments.append(Line(current_pos, end))
                 else:
                     segments.append(
