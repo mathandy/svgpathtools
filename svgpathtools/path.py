@@ -4,8 +4,6 @@ Arc."""
 
 # External dependencies
 from __future__ import division, absolute_import, print_function
-from math import sqrt, cos, sin, tan, acos, asin, degrees, radians, log, pi, ceil
-from cmath import exp, sqrt as csqrt, phase
 import re
 try:
     from collections.abc import MutableSequence  # noqa
@@ -14,6 +12,13 @@ except ImportError:
 from warnings import warn
 from operator import itemgetter
 import numpy as np
+
+# these imports were originally from math and cmath, now are from numpy
+# in order to encourage code that generalizes to vector inputs
+from numpy import sqrt, cos, sin, tan, arccos as acos, arcsin as asin, \
+    degrees, radians, log, pi, ceil
+from numpy import exp, sqrt as csqrt, angle as phase
+
 try:
     from scipy.integrate import quad
     _quad_available = True
@@ -859,7 +864,8 @@ class QuadraticBezier(object):
 
     def point(self, t):
         """returns the coordinates of the Bezier curve evaluated at t."""
-        return (1 - t)**2*self.start + 2*(1 - t)*t*self.control + t**2*self.end
+        tc = 1 - t
+        return tc*tc*self.start + 2*tc*t*self.control + t*t*self.end
 
     def points(self, ts):
         """Faster than running Path.point many times."""
@@ -1522,20 +1528,16 @@ class Arc(object):
             self.delta += 360
 
     def point(self, t):
-        if t == 0:
-            return self.start
-        if t == 1:
-            return self.end
-        angle = radians(self.theta + t*self.delta)
+
+        angle = (self.theta + t*self.delta)*pi/180
         cosphi = self.rot_matrix.real
         sinphi = self.rot_matrix.imag
         rx = self.radius.real
         ry = self.radius.imag
 
-        # z = self.rot_matrix*(rx*cos(angle) + 1j*ry*sin(angle)) + self.center
         x = rx*cosphi*cos(angle) - ry*sinphi*sin(angle) + self.center.real
         y = rx*sinphi*cos(angle) + ry*cosphi*sin(angle) + self.center.imag
-        return complex(x, y)
+        return x + y*1j
 
     def point_to_t(self, point):
         """If the point lies on the Arc, returns its `t` parameter.
