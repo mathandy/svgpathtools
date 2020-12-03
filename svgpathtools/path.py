@@ -4,10 +4,6 @@ Arc."""
 
 # External dependencies
 from __future__ import division, absolute_import, print_function
-from math import sqrt, cos, sin, acos, asin, degrees, radians, log, pi, ceil
-from cmath import exp, sqrt as csqrt, phase
-from scipy.optimize import newton
-from copy import deepcopy
 import re
 try:
     from collections.abc import MutableSequence  # noqa
@@ -16,6 +12,13 @@ except ImportError:
 from warnings import warn
 from operator import itemgetter
 import numpy as np
+
+# these imports were originally from math and cmath, now are from numpy
+# in order to encourage code that generalizes to vector inputs
+from numpy import sqrt, cos, sin, tan, arccos as acos, arcsin as asin, \
+    degrees, radians, log, pi, ceil
+from numpy import exp, sqrt as csqrt, angle as phase
+
 try:
     from scipy.integrate import quad
     _quad_available = True
@@ -28,6 +31,8 @@ from .bezier import (bezier_intersections, bezier_bounding_box, split_bezier,
                      bezier2polynomial)
 from .misctools import BugException
 from .polytools import rational_limit, polyroots, polyroots01, imag, real
+from scipy.optimize import newton
+from copy import deepcopy
 
 # To maintain forward/backward compatibility
 try:
@@ -313,7 +318,7 @@ def bezier_unit_tangent(seg, t):
     This can be undone with:
     >>> numpy.seterr(**old_numpy_error_settings)
     """
-    assert 0 <= t <= 1
+
     dseg = seg.derivative(t)
 
     # Note: dseg might be numpy value, use np.seterr(invalid='raise')
@@ -861,8 +866,9 @@ class QuadraticBezier(object):
 
     def point(self, t):
         """returns the coordinates of the Bezier curve evaluated at t."""
-        return (1 - t)**2*self.start + 2*(1 - t)*t*self.control + t**2*self.end
-
+        tc = 1 - t
+        return tc*tc*self.start + 2*tc*t*self.control + t*t*self.end
+    
     def points(self, ts):
         """Faster than running Path.point many times."""
         return self.poly(ts)
@@ -1583,20 +1589,16 @@ class Arc(object):
             self.delta += 360
 
     def point(self, t):
-        if t == 0:
-            return self.start
-        if t == 1:
-            return self.end
-        angle = radians(self.theta + t*self.delta)
+       
+        angle = (self.theta + t*self.delta)*pi/180
         cosphi = self.rot_matrix.real
         sinphi = self.rot_matrix.imag
         rx = self.radius.real
         ry = self.radius.imag
 
-        # z = self.rot_matrix*(rx*cos(angle) + 1j*ry*sin(angle)) + self.center
         x = rx*cosphi*cos(angle) - ry*sinphi*sin(angle) + self.center.real
         y = rx*sinphi*cos(angle) + ry*cosphi*sin(angle) + self.center.imag
-        return complex(x, y)
+        return x + y*1j
 
     def point_to_t(self, point):
         """If the point lies on the Arc, returns its `t` parameter.
@@ -1796,7 +1798,7 @@ class Arc(object):
         phi = radians(self.rotation)
         rx = self.radius.real
         ry = self.radius.imag
-        k = (self.delta*2*pi/360)**n  # ((d/dt)angle)**n
+        k = (self.delta*pi/180)**n  # ((d/dt)angle)**n
 
         if n % 4 == 0 and n > 0:
             return rx*cos(phi)*cos(angle) - ry*sin(phi)*sin(angle) + 1j*(
@@ -2327,6 +2329,85 @@ class Arc(object):
         """Scale transform.  See `scale` function for further explanation."""
         return scale(self, sx=sx, sy=sy, origin=origin)
 
+    def as_cubic_curves(self, curves=1):
+        """Generates cubic curves to approximate this arc"""
+        slice_t = radians(self.delta) / float(curves)
+
+        current_t = radians(self.theta)
+        rx = self.radius.real # * self.radius_scale
+        ry = self.radius.imag # * self.radius_scale
+        p_start = self.start
+
+        theta = radians(self.rotation)
+        x0 = self.center.real
+        y0 = self.center.imag
+        cos_theta = cos(theta)
+        sin_theta = sin(theta)
+
+        for i in range(curves):
+            next_t = current_t + slice_t
+
+            alpha = sin(slice_t) * (sqrt(4 + 3 * pow(tan((slice_t) / 2.0), 2)) - 1) / 3.0
+
+            cos_start_t = cos(current_t)
+            sin_start_t = sin(current_t)
+
+            ePrimen1x = -rx * cos_theta * sin_start_t - ry * sin_theta * cos_start_t
+            ePrimen1y = -rx * sin_theta * sin_start_t + ry * cos_theta * cos_start_t
+
+            cos_end_t = cos(next_t)
+            sin_end_t = sin(next_t)
+
+            p2En2x = x0 + rx * cos_end_t * cos_theta - ry * sin_end_t * sin_theta
+            p2En2y = y0 + rx * cos_end_t * sin_theta + ry * sin_end_t * cos_theta
+            p_end = p2En2x + p2En2y * 1j
+            if i == curves - 1:
+                p_end = self.end
+
+            ePrimen2x = -rx * cos_theta * sin_end_t - ry * sin_theta * cos_end_t
+            ePrimen2y = -rx * sin_theta * sin_end_t + ry * cos_theta * cos_end_t
+
+            p_c1 = (p_start.real + alpha * ePrimen1x) + (p_start.imag + alpha * ePrimen1y) * 1j
+            p_c2 = (p_end.real - alpha * ePrimen2x) + (p_end.imag - alpha * ePrimen2y) * 1j
+
+            yield CubicBezier(p_start, p_c1, p_c2, p_end)
+            p_start = p_end
+            current_t = next_t
+
+    def as_quad_curves(self, curves=1):
+        """Generates quadratic curves to approximate this arc"""
+        slice_t = radians(self.delta) / float(curves)
+
+        current_t = radians(self.theta)
+        a = self.radius.real  # * self.radius_scale
+        b = self.radius.imag  # * self.radius_scale
+        p_start = self.start
+
+        theta = radians(self.rotation)
+        cx = self.center.real
+        cy = self.center.imag
+
+        cos_theta = cos(theta)
+        sin_theta = sin(theta)
+
+        for i in range(curves):
+            next_t = current_t + slice_t
+            mid_t = (next_t + current_t) / 2
+            cos_end_t = cos(next_t)
+            sin_end_t = sin(next_t)
+            p2En2x = cx + a * cos_end_t * cos_theta - b * sin_end_t * sin_theta
+            p2En2y = cy + a * cos_end_t * sin_theta + b * sin_end_t * cos_theta
+            p_end = p2En2x + p2En2y * 1j
+            if i == curves - 1:
+                p_end = self.end
+            cos_mid_t = cos(mid_t)
+            sin_mid_t = sin(mid_t)
+            alpha = (4.0 - cos(slice_t)) / 3.0
+            px = cx + alpha * (a * cos_mid_t * cos_theta - b * sin_mid_t * sin_theta)
+            py = cy + alpha * (a * cos_mid_t * sin_theta + b * sin_mid_t * cos_theta)
+            yield QuadraticBezier(p_start, px + py * 1j, p_end)
+            p_start = p_end
+            current_t = next_t
 
 def is_bezier_segment(x):
     return (isinstance(x, Line) or
@@ -2997,6 +3078,32 @@ class Path(MutableSequence):
 
         opt = complex(xmin-1, ymin-1)
         return path_encloses_pt(pt, opt, other)
+    
+    def approximate_arcs_with_cubics(self, error=0.1):
+        """
+        Iterates through this path and replaces any Arcs with cubic bezier curves.
+        """
+        tau = pi * 2
+        sweep_limit = degrees(tau * error)
+        for s in range(len(self)-1, -1, -1):
+            segment = self[s]
+            if not isinstance(segment, Arc):
+                continue
+            arc_required = int(ceil(abs(segment.delta) / sweep_limit))
+            self[s:s+1] = list(segment.as_cubic_curves(arc_required))
+
+    def approximate_arcs_with_quads(self, error=0.1):
+        """
+        Iterates through this path and replaces any Arcs with quadratic bezier curves.
+        """
+        tau = pi * 2
+        sweep_limit = degrees(tau * error)
+        for s in range(len(self)-1, -1, -1):
+            segment = self[s]
+            if not isinstance(segment, Arc):
+                continue
+            arc_required = int(ceil(abs(segment.delta) / sweep_limit))
+            self[s:s+1] = list(segment.as_quad_curves(arc_required))
 
     def _tokenize_path(self, pathdef):
         for x in COMMAND_RE.split(pathdef):
@@ -3175,11 +3282,12 @@ class Path(MutableSequence):
                     # Note: In browsers AFAIK, zero radius arcs are displayed
                     # as lines (see "examples/zero-radius-arcs.svg").
                     # Thus zero radius arcs are substituted for lines here.
-                    warn(f'Replacing degenerate (zero radius) Arc with a '
-                         f'Line: Arc(start={current_pos}, radius={radius}, '
-                         f'rotation={rotation}, large_arc={arc}, '
-                         f'sweep={sweep}, end={end}) -> '
-                         f'Line(start={current_pos}, end={end})')
+                    warn('Replacing degenerate (zero radius) Arc with a Line: '
+                         'Arc(start={}, radius={}, rotation={}, large_arc={}, '
+                         'sweep={}, end={})'.format(
+                        current_pos, radius, rotation, arc, sweep, end) +
+                         ' --> Line(start={}, end={})'
+                         ''.format(current_pos, end))
                     segments.append(Line(current_pos, end))
                 else:
                     segments.append(
