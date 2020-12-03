@@ -204,8 +204,7 @@ def disvg(paths=None, colors=None,
         filename = os_path.join(dirname, stfilename)
 
     # check paths and colors are set
-    # if isinstance(paths, Path) or is_path_segment(paths):
-    if is_path_segment(paths):
+    if isinstance(paths, Path) or is_path_segment(paths):
         paths = [paths]
     if paths:
         if not colors:

@@ -45,7 +45,7 @@ def visualize_path(path, label, addpoints=None, pathnodes=True, colors=None):
             nodes += lis
             node_colors += [pointscolors[i]] * len(lis)
 
-    wsvg(path,
+    wsvg(path._segments,
          filename=filename,
          nodes=nodes,
          node_colors=node_colors,
