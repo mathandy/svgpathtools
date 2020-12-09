@@ -153,7 +153,7 @@ def svg2paths(svg_file_location,
         return dict(list(zip(keys, values)))
 
     # Use minidom to extract path strings from input SVG
-    paths = [dom2dict(el) for el in doc.getElementsByTagName('path')]
+    paths = [dom2dict(el) for el in doc.getElementsByTagNameNS('http://www.w3.org/2000/svg', 'path')]
     d_strings = [el['d'] for el in paths]
     attribute_dictionary_list = paths
 

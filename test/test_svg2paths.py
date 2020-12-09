@@ -50,3 +50,12 @@ class TestSVG2Paths(unittest.TestCase):
         self.assertTrue(len(path_circle)==2)
         self.assertTrue(path_circle==path_circle_correct)
         self.assertTrue(path_circle.isclosed())
+
+    def test_svg2paths_namespaces(self):
+
+        paths, _ = svg2paths(join(dirname(__file__), 'namespaces.svg'))
+        self.assertTrue(len(paths)==1)
+
+
+if __name__ == '__main__':
+    unittest.main()
