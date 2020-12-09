@@ -1381,9 +1381,9 @@ class Test_intersect(unittest.TestCase):
                 self.assertAlmostEqual(xy[0], yx[1])
                 self.assertAlmostEqual(xy[1], yx[0])
                 self.assertAlmostEqual(x.point(xy[0]), y.point(yx[0]))
-            self.assertTrue(len(xiy), len(yix))
-            self.assertTrue(len(xiy), 2)
-            self.assertTrue(len(yix), 2)
+            self.assertTrue(len(xiy) == len(yix))
+            self.assertTrue(len(xiy) == 2)
+            self.assertTrue(len(yix) == 2)
 
         # test each segment against another segment of same type
         for x in segdict:
@@ -1400,9 +1400,9 @@ class Test_intersect(unittest.TestCase):
                 self.assertAlmostEqual(xy[0], yx[1])
                 self.assertAlmostEqual(xy[1], yx[0])
                 self.assertAlmostEqual(x.point(xy[0]), y.point(yx[0]))
-            self.assertTrue(len(xiy), len(yix))
-            self.assertTrue(len(xiy), 1)
-            self.assertTrue(len(yix), 1)
+            self.assertTrue(len(xiy) == len(yix))
+            self.assertTrue(len(xiy) == 1)
+            self.assertTrue(len(yix) == 1)
         ###################################################################
 
     def test_line_line_0(self):
@@ -1574,7 +1574,6 @@ class Test_intersect(unittest.TestCase):
         a0 = Arc(start=(-12.8272110776+72.6464538932j), radius=(44.029+44.029j), rotation=0.0, large_arc=False, sweep=False, end=(-60.6807543328+75.3104334473j))
         a1 = Arc(start=(-60.6807101078+75.3104011248j), radius=(44.029+44.029j), rotation=0.0, large_arc=False, sweep=False, end=(-77.7490636234+120.096609353j))
         intersections = a0.intersect(a1)
-        print("intersections: %s" % intersections)
         assert_intersections(a0, a1, intersections, 1)
 
     def test_arc_arc_2(self):
