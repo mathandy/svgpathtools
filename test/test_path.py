@@ -656,7 +656,9 @@ class ArcTest(unittest.TestCase):
                 orig_t = random.random()
                 p = a.point(orig_t)
                 computed_t = a.point_to_t(p)
-                self.assertAlmostEqual(orig_t, computed_t, msg="arc %s at t=%f is point %s, but got %f back" % (a, orig_t, p, computed_t))
+                self.assertAlmostEqual(orig_t, computed_t, 
+                    msg="arc %s at t=%f is point %s, but got %f back"
+                        "" % (a, orig_t, p, computed_t))
 
     def test_approx_quad(self):
         n = 100
@@ -1379,9 +1381,7 @@ class Test_intersect(unittest.TestCase):
                 self.assertAlmostEqual(xy[0], yx[1])
                 self.assertAlmostEqual(xy[1], yx[0])
                 self.assertAlmostEqual(x.point(xy[0]), y.point(yx[0]))
-            self.assertTrue(len(xiy), len(yix))
-            self.assertTrue(len(xiy), 2)
-            self.assertTrue(len(yix), 2)
+            self.assertTrue(len(xiy) == len(yix))
 
         # test each segment against another segment of same type
         for x in segdict:
@@ -1398,9 +1398,9 @@ class Test_intersect(unittest.TestCase):
                 self.assertAlmostEqual(xy[0], yx[1])
                 self.assertAlmostEqual(xy[1], yx[0])
                 self.assertAlmostEqual(x.point(xy[0]), y.point(yx[0]))
-            self.assertTrue(len(xiy), len(yix))
-            self.assertTrue(len(xiy), 1)
-            self.assertTrue(len(yix), 1)
+            self.assertTrue(len(xiy) == len(yix))
+            self.assertTrue(len(xiy) == 1)
+            self.assertTrue(len(yix) == 1)
         ###################################################################
 
     def test_line_line_0(self):
@@ -1572,7 +1572,6 @@ class Test_intersect(unittest.TestCase):
         a0 = Arc(start=(-12.8272110776+72.6464538932j), radius=(44.029+44.029j), rotation=0.0, large_arc=False, sweep=False, end=(-60.6807543328+75.3104334473j))
         a1 = Arc(start=(-60.6807101078+75.3104011248j), radius=(44.029+44.029j), rotation=0.0, large_arc=False, sweep=False, end=(-77.7490636234+120.096609353j))
         intersections = a0.intersect(a1)
-        print("intersections: %s" % intersections)
         assert_intersections(a0, a1, intersections, 1)
 
     def test_arc_arc_2(self):
