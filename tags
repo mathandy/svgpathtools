@@ -820,7 +820,7 @@ point	build/lib/svgpathtools/path.py	/^    def point(self, t):$/;"	m	class:Cubic
 point	build/lib/svgpathtools/path.py	/^    def point(self, t):$/;"	m	class:Line
 point	build/lib/svgpathtools/path.py	/^    def point(self, t):$/;"	m	class:QuadraticBezier
 point	examples/compute-many-points-quickly-using-numpy-arrays.py	/^    def point(self, t):$/;"	m	class:HigherOrderBezier
-point	svgpathtools/path.py	/^    def point(self, pos):$/;"	m	class:Path
+point	svgpathtools/path.py	/^    def point(self, T):$/;"	m	class:Path
 point	svgpathtools/path.py	/^    def point(self, t):$/;"	m	class:Arc
 point	svgpathtools/path.py	/^    def point(self, t):$/;"	m	class:CubicBezier
 point	svgpathtools/path.py	/^    def point(self, t):$/;"	m	class:Line
