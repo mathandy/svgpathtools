@@ -1382,8 +1382,6 @@ class Test_intersect(unittest.TestCase):
                 self.assertAlmostEqual(xy[1], yx[0])
                 self.assertAlmostEqual(x.point(xy[0]), y.point(yx[0]))
             self.assertTrue(len(xiy) == len(yix))
-            self.assertTrue(len(xiy) == 2)
-            self.assertTrue(len(yix) == 2)
 
         # test each segment against another segment of same type
         for x in segdict:
