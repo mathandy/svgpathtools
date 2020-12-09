@@ -12,6 +12,7 @@ except ImportError:
 from warnings import warn
 from operator import itemgetter
 import numpy as np
+from itertools import tee
 
 # these imports were originally from math and cmath, now are from numpy
 # in order to encourage code that generalizes to vector inputs
@@ -132,6 +133,7 @@ def polygon(*points):
     return Path(*[Line(points[i], points[(i + 1) % len(points)])
                   for i in range(len(points))])
 
+
 # Conversion###################################################################
 
 def bpoints2bezier(bpoints):
@@ -180,6 +182,16 @@ def bez2poly(bez, numpy_ordering=True, return_poly1d=False):
 
 
 # Geometric####################################################################
+def transform_segments_together(path, transformation):
+    """Makes sure that, if joints were continuous, they're kept that way."""
+    transformed_segs = [transformation(seg) for seg in path]
+    joint_was_continuous = [sa.end == sb.start for sa, sb in path.joints()]
+
+    for i, (sa, sb)in enumerate(path.joints()):
+        if sa.end == sb.start:
+            transformed_segs[i].end = transformed_segs[(i + 1) % len(path)].start
+    return Path(*transformed_segs)
+
 
 def rotate(curve, degs, origin=None):
     """Returns curve rotated by `degs` degrees (CCW) around the point `origin`
@@ -196,7 +208,8 @@ def rotate(curve, degs, origin=None):
             origin = curve.point(0.5)
 
     if isinstance(curve, Path):
-        return Path(*[rotate(seg, degs, origin=origin) for seg in curve])
+        transformation = lambda seg: rotate(seg, degs, origin=origin)
+        return transform_segments_together(curve, transformation)
     elif is_bezier_segment(curve):
         return bpoints2bezier([transform(bpt) for bpt in curve.bpoints()])
     elif isinstance(curve, Arc):
@@ -214,7 +227,8 @@ def translate(curve, z0):
     """Shifts the curve by the complex quantity z such that
     translate(curve, z0).point(t) = curve.point(t) + z0"""
     if isinstance(curve, Path):
-        return Path(*[translate(seg, z0) for seg in curve])
+        transformation = lambda seg: translate(seg, z0)
+        return transform_segments_together(curve, transformation)
     elif is_bezier_segment(curve):
         return bpoints2bezier([bpt + z0 for bpt in curve.bpoints()])
     elif isinstance(curve, Arc):
@@ -255,7 +269,8 @@ def scale(curve, sx, sy=None, origin=0j):
         return poly2bez(p)
 
     if isinstance(curve, Path):
-        return Path(*[scale(seg, sx, sy, origin) for seg in curve])
+        transformation = lambda seg: scale(seg, sx, sy, origin)
+        return transform_segments_together(curve, transformation)
     elif is_bezier_segment(curve):
         return scale_bezier(curve)
     elif isinstance(curve, Arc):
@@ -286,7 +301,9 @@ def transform(curve, tf):
         return v.item(0) + 1j * v.item(1)
 
     if isinstance(curve, Path):
-        return Path(*[transform(segment, tf) for segment in curve])
+        transformation = lambda seg: transform(seg, tf)
+        return transform_segments_together(curve, transformation)
+
     elif is_bezier_segment(curve):
         return bpoints2bezier([to_complex(tf.dot(to_point(p)))
                                for p in curve.bpoints()])
@@ -3011,6 +3028,18 @@ class Path(MutableSequence):
                 continue
             arc_required = int(ceil(abs(segment.delta) / sweep_limit))
             self[s:s+1] = list(segment.as_quad_curves(arc_required))
+
+    def joints(self):
+        """returns generator of segment joints 
+        
+        I.e. Path(s0, s1, s2, ..., sn).joints() returns generator 
+            (s0, s1), (s1, s2), ..., (sn, s0)
+
+        credit: https://docs.python.org/3/library/itertools.html#recipes
+        """
+        a, b = tee(self)
+        next(b, None)
+        return zip(a, b)
 
     def _tokenize_path(self, pathdef):
         for x in COMMAND_RE.split(pathdef):
