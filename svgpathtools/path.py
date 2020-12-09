@@ -1462,10 +1462,8 @@ class Arc(object):
         # plugging our transformed endpoints (x_1', y_1') and (x_2', y_2')
         tmp = rx_sqd*y1p_sqd + ry_sqd*x1p_sqd
         radicand = (rx_sqd*ry_sqd - tmp) / tmp
-        try:
-            radical = sqrt(radicand)
-        except ValueError:
-            radical = 0
+        radical = 0 if np.isclose(radicand, 0) else sqrt(radicand)
+
         if self.large_arc == self.sweep:
             cp = -radical*(rx*y1p/ry - 1j*ry*x1p/rx)
         else:
