@@ -4,6 +4,8 @@ Arc."""
 
 # External dependencies
 from __future__ import division, absolute_import, print_function
+from scipy.optimize import newton
+from copy import deepcopy
 import re
 try:
     from collections.abc import MutableSequence  # noqa
@@ -12,6 +14,7 @@ except ImportError:
 from warnings import warn
 from operator import itemgetter
 import numpy as np
+from itertools import tee
 
 # these imports were originally from math and cmath, now are from numpy
 # in order to encourage code that generalizes to vector inputs
@@ -31,8 +34,6 @@ from .bezier import (bezier_intersections, bezier_bounding_box, split_bezier,
                      bezier2polynomial)
 from .misctools import BugException
 from .polytools import rational_limit, polyroots, polyroots01, imag, real
-from scipy.optimize import newton
-from copy import deepcopy
 
 # To maintain forward/backward compatibility
 try:
@@ -121,18 +122,19 @@ def bbox2path(xmin, xmax, ymin, ymax):
 
 
 def polyline(*points):
-    """Converts a list of points to a Path composed of lines connecting those 
+    """Converts a list of points to a Path composed of lines connecting those
     points (i.e. a linear spline or polyline).  See also `polygon()`."""
     return Path(*[Line(points[i], points[i+1])
                   for i in range(len(points) - 1)])
 
 
 def polygon(*points):
-    """Converts a list of points to a Path composed of lines connecting those 
-    points, then closes the path by connecting the last point to the first.  
+    """Converts a list of points to a Path composed of lines connecting those
+    points, then closes the path by connecting the last point to the first.
     See also `polyline()`."""
     return Path(*[Line(points[i], points[(i + 1) % len(points)])
                   for i in range(len(points))])
+
 
 # Conversion###################################################################
 
@@ -182,6 +184,16 @@ def bez2poly(bez, numpy_ordering=True, return_poly1d=False):
 
 
 # Geometric####################################################################
+def transform_segments_together(path, transformation):
+    """Makes sure that, if joints were continuous, they're kept that way."""
+    transformed_segs = [transformation(seg) for seg in path]
+    joint_was_continuous = [sa.end == sb.start for sa, sb in path.joints()]
+
+    for i, (sa, sb)in enumerate(path.joints()):
+        if sa.end == sb.start:
+            transformed_segs[i].end = transformed_segs[(i + 1) % len(path)].start
+    return Path(*transformed_segs)
+
 
 def rotate(curve, degs, origin=None):
     """Returns curve rotated by `degs` degrees (CCW) around the point `origin`
@@ -198,7 +210,8 @@ def rotate(curve, degs, origin=None):
             origin = curve.point(0.5)
 
     if isinstance(curve, Path):
-        return Path(*[rotate(seg, degs, origin=origin) for seg in curve])
+        transformation = lambda seg: rotate(seg, degs, origin=origin)
+        return transform_segments_together(curve, transformation)
     elif is_bezier_segment(curve):
         return bpoints2bezier([transform(bpt) for bpt in curve.bpoints()])
     elif isinstance(curve, Arc):
@@ -216,7 +229,8 @@ def translate(curve, z0):
     """Shifts the curve by the complex quantity z such that
     translate(curve, z0).point(t) = curve.point(t) + z0"""
     if isinstance(curve, Path):
-        return Path(*[translate(seg, z0) for seg in curve])
+        transformation = lambda seg: translate(seg, z0)
+        return transform_segments_together(curve, transformation)
     elif is_bezier_segment(curve):
         return bpoints2bezier([bpt + z0 for bpt in curve.bpoints()])
     elif isinstance(curve, Arc):
@@ -234,10 +248,10 @@ def scale(curve, sx, sy=None, origin=0j):
 
     Notes:
     ------
-    * If `sy` is not specified, it is assumed to be equal to `sx` and 
+    * If `sy` is not specified, it is assumed to be equal to `sx` and
     a scalar transformation of `curve` about `origin` will be returned.
     I.e.
-        scale(curve, sx, origin).point(t) == 
+        scale(curve, sx, origin).point(t) ==
             ((curve.point(t) - origin) * sx) + origin
     """
 
@@ -249,7 +263,7 @@ def scale(curve, sx, sy=None, origin=0j):
     def _scale(z):
         if sy is None:
             return sx*z
-        return sx*z.real + isy*z.imag          
+        return sx*z.real + isy*z.imag
 
     def scale_bezier(bez):
         p = [_scale(c) for c in bez2poly(bez)]
@@ -257,16 +271,17 @@ def scale(curve, sx, sy=None, origin=0j):
         return poly2bez(p)
 
     if isinstance(curve, Path):
-        return Path(*[scale(seg, sx, sy, origin) for seg in curve])
+        transformation = lambda seg: scale(seg, sx, sy, origin)
+        return transform_segments_together(curve, transformation)
     elif is_bezier_segment(curve):
         return scale_bezier(curve)
     elif isinstance(curve, Arc):
         if sy is None or sy == sx:
             return Arc(start=sx*(curve.start - origin) + origin,
                        radius=sx*curve.radius,
-                       rotation=curve.rotation, 
-                       large_arc=curve.large_arc, 
-                       sweep=curve.sweep, 
+                       rotation=curve.rotation,
+                       large_arc=curve.large_arc,
+                       sweep=curve.sweep,
                        end=sx*(curve.end - origin) + origin)
         else:
             raise Exception("\nFor `Arc` objects, only scale transforms "
@@ -288,7 +303,9 @@ def transform(curve, tf):
         return v.item(0) + 1j * v.item(1)
 
     if isinstance(curve, Path):
-        return Path(*[transform(segment, tf) for segment in curve])
+        transformation = lambda seg: transform(seg, tf)
+        return transform_segments_together(curve, transformation)
+
     elif is_bezier_segment(curve):
         return bpoints2bezier([to_complex(tf.dot(to_point(p)))
                                for p in curve.bpoints()])
@@ -868,7 +885,7 @@ class QuadraticBezier(object):
         """returns the coordinates of the Bezier curve evaluated at t."""
         tc = 1 - t
         return tc*tc*self.start + 2*tc*t*self.control + t*t*self.end
-    
+
     def points(self, ts):
         """Faster than running Path.point many times."""
         return self.poly(ts)
@@ -1056,7 +1073,7 @@ class QuadraticBezier(object):
             c1, c2 = deepcopy(self), None
 
         return c1, c2
-    
+
     def cropped(self, t0, t1):
         """returns a cropped copy of this segment which starts at
         self.point(t0) and ends at self.point(t1)."""
@@ -1304,6 +1321,7 @@ class CubicBezier(object):
         self.point(t)."""
         bpoints1, bpoints2 = split_bezier(self.bpoints(), t)
         return CubicBezier(*bpoints1), CubicBezier(*bpoints2)
+
     def split_extremum_y(self, t_tol=0.001, fprime_tol=0.001):
         """
         Split self in 2 curves at its extremum Point.
@@ -1523,10 +1541,8 @@ class Arc(object):
         # plugging our transformed endpoints (x_1', y_1') and (x_2', y_2')
         tmp = rx_sqd*y1p_sqd + ry_sqd*x1p_sqd
         radicand = (rx_sqd*ry_sqd - tmp) / tmp
-        try:
-            radical = sqrt(radicand)
-        except ValueError:
-            radical = 0
+        radical = 0 if np.isclose(radicand, 0) else sqrt(radicand)
+
         if self.large_arc == self.sweep:
             cp = -radical*(rx*y1p/ry - 1j*ry*x1p/rx)
         else:
@@ -1567,7 +1583,7 @@ class Arc(object):
 
         acosand = u1.real*u2.real + u1.imag*u2.imag
         acosand = np.clip(acosand.real, -1, 1) + np.clip(acosand.imag, -1, 1)
-        
+
         if det_uv > 0:
             self.delta = degrees(acos(acosand))
         elif det_uv < 0:
@@ -1589,7 +1605,7 @@ class Arc(object):
             self.delta += 360
 
     def point(self, t):
-       
+
         angle = (self.theta + t*self.delta)*pi/180
         cosphi = self.rot_matrix.real
         sinphi = self.rot_matrix.imag
@@ -1996,8 +2012,8 @@ class Arc(object):
                     return []
 
                 x_sqrt = a * b * sqrt(discriminant)
-                x1 = (-(a * a * m * c) + x_sqrt) / denominator 
-                x2 = (-(a * a * m * c) - x_sqrt) / denominator 
+                x1 = (-(a * a * m * c) + x_sqrt) / denominator
+                x2 = (-(a * a * m * c) - x_sqrt) / denominator
                 x_values = [x1]
                 if x1 != x2:
                     x_values.append(x2)
@@ -2223,7 +2239,6 @@ class Arc(object):
         at self.point(t)."""
         return self.cropped(0, t), self.cropped(t, 1)
 
-
     def split_extremum_y(self, t_tol=0.001, fprime_tol=0.001):
         """
         Split self in 2 curves at its extremum Point.
@@ -2253,7 +2268,7 @@ class Arc(object):
             c1, c2 = deepcopy(self), None
 
         return c1, c2
-    
+
     def cropped(self, t0, t1):
         """returns a cropped copy of this segment which starts at
         self.point(t0) and ends at self.point(t1)."""
@@ -2408,6 +2423,7 @@ class Arc(object):
             yield QuadraticBezier(p_start, px + py * 1j, p_end)
             p_start = p_end
             current_t = next_t
+
 
 def is_bezier_segment(x):
     return (isinstance(x, Line) or
@@ -2650,7 +2666,7 @@ class Path(MutableSequence):
         """Returns a path d-string for the path object.
         For an explanation of useSandT and use_closed_attrib, see the
         compatibility notes in the README."""
-    
+
         if use_closed_attrib:
             self_closed = self.iscontinuous() and self.isclosed()
             if self_closed:
@@ -2660,12 +2676,12 @@ class Path(MutableSequence):
         else:
             self_closed = False
             segments = self[:]
-    
+
         current_pos = None
         parts = []
         previous_segment = None
         end = self[-1].end
-    
+
         for segment in segments:
             seg_start = segment.start
             # If the start of this segment does not coincide with the end of
@@ -2678,7 +2694,7 @@ class Path(MutableSequence):
                 else:
                     _seg_start = seg_start
                 parts.append('M {},{}'.format(_seg_start.real, _seg_start.imag))
-    
+
             if isinstance(segment, Line):
                 if rel:
                     _seg_end = segment.end - seg_start
@@ -2729,7 +2745,7 @@ class Path(MutableSequence):
                     args = (_seg_control.real, _seg_control.imag,
                             _seg_end.real, _seg_end.imag)
                     parts.append('Q {},{} {},{}'.format(*args))
-    
+
             elif isinstance(segment, Arc):
                 if rel:
                     _seg_end = segment.end - seg_start
@@ -2741,10 +2757,10 @@ class Path(MutableSequence):
                 parts.append('A {},{} {} {:d},{:d} {},{}'.format(*args))
             current_pos = segment.end
             previous_segment = segment
-    
+
         if self_closed:
             parts.append('Z')
-    
+
         s = ' '.join(parts)
         return s if not rel else s.lower()
 
@@ -2863,23 +2879,23 @@ class Path(MutableSequence):
 
     def area(self, chord_length=1e-4):
         """Find area enclosed by path.
-        
+
         Approximates any Arc segments in the Path with lines
         approximately `chord_length` long, and returns the area enclosed
         by the approximated Path.  Default chord length is 0.01.  If Arc
         segments are included in path, to ensure accurate results, make
         sure this `chord_length` is set to a reasonable value (e.g. by
         checking curvature).
-                
+
         Notes
         -----
         * Negative area results from clockwise (as opposed to
         counter-clockwise) parameterization of the input Path.
-        
+
         To Contributors
         ---------------
-        This is one of many parts of `svgpathtools` that could be 
-        improved by a noble soul implementing a piecewise-linear 
+        This is one of many parts of `svgpathtools` that could be
+        improved by a noble soul implementing a piecewise-linear
         approximation scheme for paths (one with controls to guarantee a
         desired accuracy).
         """
@@ -3078,7 +3094,7 @@ class Path(MutableSequence):
 
         opt = complex(xmin-1, ymin-1)
         return path_encloses_pt(pt, opt, other)
-    
+
     def approximate_arcs_with_cubics(self, error=0.1):
         """
         Iterates through this path and replaces any Arcs with cubic bezier curves.
@@ -3104,6 +3120,18 @@ class Path(MutableSequence):
                 continue
             arc_required = int(ceil(abs(segment.delta) / sweep_limit))
             self[s:s+1] = list(segment.as_quad_curves(arc_required))
+
+    def joints(self):
+        """returns generator of segment joints
+
+        I.e. Path(s0, s1, s2, ..., sn).joints() returns generator
+            (s0, s1), (s1, s2), ..., (sn, s0)
+
+        credit: https://docs.python.org/3/library/itertools.html#recipes
+        """
+        a, b = tee(self)
+        next(b, None)
+        return zip(a, b)
 
     def _tokenize_path(self, pathdef):
         for x in COMMAND_RE.split(pathdef):
