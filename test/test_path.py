@@ -1976,5 +1976,15 @@ class TestPathBugs(unittest.TestCase):
         m = p.closed
         q = p.d()  # Failing to Crash is good.
 
+    def test_issue_95(self):
+        """
+        Corrects:
+        https://github.com/mathandy/svgpathtools/issues/95
+        """
+        p = Path('M261 166 L261 166')
+        self.assertEqual(p.length(), 0)
+
+
+
 if __name__ == '__main__':
     unittest.main()

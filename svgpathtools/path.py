@@ -2444,7 +2444,10 @@ class Path(MutableSequence):
         lengths = [each.length(error=error, min_depth=min_depth) for each in
                    self._segments]
         self._length = sum(lengths)
-        self._lengths = [each/self._length for each in lengths]
+        if self._length == 0:
+            self._lengths = lengths  # all lengths are 0.
+        else:
+            self._lengths = [each / self._length for each in lengths]
 
     def point(self, pos):
 
