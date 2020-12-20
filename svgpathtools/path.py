@@ -2521,7 +2521,10 @@ class Path(MutableSequence):
         return self.start == self.end
 
     def _is_closable(self):
-        end = self[-1].end
+        try:
+            end = self[-1].end
+        except IndexError:
+            return True
         for segment in self:
             if segment.start == end:
                 return True
@@ -2573,7 +2576,8 @@ class Path(MutableSequence):
         """Returns a path d-string for the path object.
         For an explanation of useSandT and use_closed_attrib, see the
         compatibility notes in the README."""
-    
+        if len(self) == 0:
+            return ''
         if use_closed_attrib:
             self_closed = self.iscontinuous() and self.isclosed()
             if self_closed:

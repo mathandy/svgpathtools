@@ -1971,6 +1971,10 @@ class TestPathBugs(unittest.TestCase):
         p = Path('M 615.297 470.503 Q 538.797 694.5029999999999 538.797 694.503')
         self.assertAlmostEqual(p.length(), 236.70287281737836)
 
+    def test_issue_71(self):
+        p = Path("M327 468z")
+        m = p.closed
+        q = p.d()  # Failing to Crash is good.
 
 if __name__ == '__main__':
     unittest.main()
