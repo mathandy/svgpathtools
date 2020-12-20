@@ -1984,6 +1984,13 @@ class TestPathBugs(unittest.TestCase):
         p = Path('M261 166 L261 166')
         self.assertEqual(p.length(), 0)
 
+    def test_issue_94(self):
+        # clipping rectangle
+        p1 = Path('M0.0 0.0 L27.84765625 0.0 L27.84765625 242.6669922 L0.0 242.6669922 z')
+        # clipping rectangle
+        p2 = Path('M166.8359375,235.5478516c0,3.7773438-3.0859375,6.8691406-6.8701172,6.8691406H7.1108398c-3.7749023,0-6.8608398-3.0917969-6.8608398-6.8691406V7.1201172C0.25,3.3427734,3.3359375,0.25,7.1108398,0.25h152.8549805c3.7841797,0,6.8701172,3.0927734,6.8701172,6.8701172v228.4277344z')
+        self.assertEqual(len(p1.intersect(p2)), len(p2.intersect(p1)))
+
 
 
 if __name__ == '__main__':
