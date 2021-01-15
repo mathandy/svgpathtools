@@ -7,6 +7,7 @@ See also the document.py submodule.
 from __future__ import division, absolute_import, print_function
 from math import ceil
 from os import path as os_path, makedirs
+from io import IOBase
 from tempfile import gettempdir
 from xml.dom.minidom import parse as md_xml_parse
 from svgwrite import Drawing, text as txt
@@ -116,11 +117,12 @@ def disvg(paths=None, colors=None, filename=None, stroke_widths=None,
             'color_dict' dictionary above for a list of possibilities).
         3) a list of rgb 3-tuples -- e.g. colors = [(255, 0, 0), ...].
 
-        :param filename - the desired location/filename of the SVG file
-        created (by default the SVG will be named 'disvg_output.svg' or
-        'disvg_output_<timestamp>.svg' and stored in the temporary
-        directory returned by `tempfile.gettempdir()`.  See `timestamp`
-        for information on the timestamp.
+        :param filename - SVG data write destination which can be a file path
+        or an instance of `io.IOBase` - for example: `open()` file handle,
+        `sys.stdout`, `io.IOString` (by default the SVG will be named
+        'disvg_output.svg' or 'disvg_output_<timestamp>.svg' and stored in
+        the temporary directory returned by `tempfile.gettempdir()`.
+        See `timestamp` for information on the timestamp.)
 
         :param stroke_widths - a list of stroke_widths to use for paths
         (default is 0.5% of the SVG's width or length)
@@ -158,38 +160,38 @@ def disvg(paths=None, colors=None, filename=None, stroke_widths=None,
         SVG (default is 600).
 
         :param dimensions - The (x,y) display dimensions of the output SVG.
-        I.e. this specifies the `width` and `height` SVG attributes. Note that 
-        these also can be used to specify units other than pixels. Using this 
+        I.e. this specifies the `width` and `height` SVG attributes. Note that
+        these also can be used to specify units other than pixels. Using this
         will override the `mindim` parameter.
 
         :param viewbox - This specifies the coordinated system used in the svg.
-        The SVG `viewBox` attribute works together with the the `height` and 
-        `width` attrinutes.  Using these three attributes allows for shifting 
-        and scaling of the SVG canvas without changing the any values other 
-        than those in `viewBox`, `height`, and `width`.  `viewbox` should be 
-        input as a 4-tuple, (min_x, min_y, width, height), or a string 
-        "min_x min_y width height".  Using this will override the `mindim` 
+        The SVG `viewBox` attribute works together with the the `height` and
+        `width` attrinutes.  Using these three attributes allows for shifting
+        and scaling of the SVG canvas without changing the any values other
+        than those in `viewBox`, `height`, and `width`.  `viewbox` should be
+        input as a 4-tuple, (min_x, min_y, width, height), or a string
+        "min_x min_y width height".  Using this will override the `mindim`
         parameter.
 
         :param attributes - a list of dictionaries of attributes for the input
         paths.  Note: This will override any other conflicting settings.
 
         :param svg_attributes - a dictionary of attributes for output svg.
-        
-        :param svgwrite_debug - This parameter turns on/off `svgwrite`'s 
-        debugging mode.  By default svgwrite_debug=False.  This increases 
-        speed and also prevents `svgwrite` from raising of an error when not 
+
+        :param svgwrite_debug - This parameter turns on/off `svgwrite`'s
+        debugging mode.  By default svgwrite_debug=False.  This increases
+        speed and also prevents `svgwrite` from raising of an error when not
         all `svg_attributes` key-value pairs are understood.
-        
-        :param paths2Drawing - If true, an `svgwrite.Drawing` object is 
-        returned and no file is written.  This `Drawing` can later be saved 
+
+        :param paths2Drawing - If true, an `svgwrite.Drawing` object is
+        returned and no file is written.  This `Drawing` can later be saved
         using the `svgwrite.Drawing.save()` method.
 
     NOTES:
-        * The `svg_attributes` parameter will override any other conflicting 
+        * The `svg_attributes` parameter will override any other conflicting
         settings.
 
-        * Any `extra` parameters that `svgwrite.Drawing()` accepts can be 
+        * Any `extra` parameters that `svgwrite.Drawing()` accepts can be
         controlled by passing them in through `svg_attributes`.
 
         * The unit of length here is assumed to be pixels in all variables.
@@ -210,17 +212,19 @@ def disvg(paths=None, colors=None, filename=None, stroke_widths=None,
     _default_node_color = '#ff0000'  # red
     _default_font_size = 12
 
-    if filename is None:
-        timestamp = True if timestamp is None else timestamp
-        filename = os_path.join(gettempdir(), 'disvg_output.svg')
+    # skip filename string processing if IO stream is used
+    if not isinstance(filename, IOBase):
+        if filename is None:
+            timestamp = True if timestamp is None else timestamp
+            filename = os_path.join(gettempdir(), 'disvg_output.svg')
 
-    # append time stamp to filename
-    if timestamp:
-        fbname, fext = os_path.splitext(filename)
-        dirname = os_path.dirname(filename)
-        tstamp = str(time()).replace('.', '')
-        stfilename = os_path.split(fbname)[1] + '_' + tstamp + fext
-        filename = os_path.join(dirname, stfilename)
+        # append time stamp to filename
+        if timestamp:
+            fbname, fext = os_path.splitext(filename)
+            dirname = os_path.dirname(filename)
+            tstamp = str(time()).replace('.', '')
+            stfilename = os_path.split(fbname)[1] + '_' + tstamp + fext
+            filename = os_path.join(dirname, stfilename)
 
     # check paths and colors are set
     if isinstance(paths, Path) or is_path_segment(paths):
@@ -402,24 +406,27 @@ def disvg(paths=None, colors=None, filename=None, stroke_widths=None,
 
     if paths2Drawing:
         return dwg
-      
-    # save svg
-    if not os_path.exists(os_path.dirname(filename)):
-        makedirs(os_path.dirname(filename))
-    dwg.save()
 
-    # re-open the svg, make the xml pretty, and save it again
-    xmlstring = md_xml_parse(filename).toprettyxml()
-    with open(filename, 'w') as f:
-        f.write(xmlstring)
+    if isinstance(filename, IOBase):
+        dwg.write(filename, pretty=True)
 
-    # try to open in web browser
-    if openinbrowser:
-        try:
-            open_in_browser(filename)
-        except:
-            print("Failed to open output SVG in browser.  SVG saved to:")
-            print(filename)
+        if openinbrowser:
+            print("Warning - cannot open browser preview: output was written to an anonymous data stream")
+    else:
+        # save svg to file indicated by path
+        filename = os_path.realpath(filename)
+        if not os_path.exists(os_path.dirname(filename)):
+            makedirs(os_path.dirname(filename))
+
+        dwg.save(pretty=True)
+
+        # try to open in web browser
+        if openinbrowser:
+            try:
+                open_in_browser(filename)
+            except:
+                print("Failed to open output SVG in browser.  SVG saved to:")
+                print(filename)
 
 
 def wsvg(paths=None, colors=None, filename=None, stroke_widths=None,
@@ -448,8 +455,8 @@ def wsvg(paths=None, colors=None, filename=None, stroke_widths=None,
                  attributes=attributes, svg_attributes=svg_attributes,
                  svgwrite_debug=svgwrite_debug,
                  paths2Drawing=paths2Drawing)
-    
-    
+
+
 def paths2Drawing(paths=None, colors=None, filename=None,
                   stroke_widths=None, nodes=None, node_colors=None,
                   node_radii=None, openinbrowser=False, timestamp=False,
@@ -465,7 +472,7 @@ def paths2Drawing(paths=None, colors=None, filename=None,
 
     See `disvg()` docstring for more info.
     """
-    return disvg(paths, colors=colors, filename=filename, 
+    return disvg(paths, colors=colors, filename=filename,
                  stroke_widths=stroke_widths, nodes=nodes,
                  node_colors=node_colors, node_radii=node_radii,
                  openinbrowser=openinbrowser, timestamp=timestamp,
