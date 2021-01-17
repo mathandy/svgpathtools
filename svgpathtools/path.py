@@ -18,7 +18,7 @@ from itertools import tee
 # in order to encourage code that generalizes to vector inputs
 from numpy import sqrt, cos, sin, tan, arccos as acos, arcsin as asin, \
     degrees, radians, log, pi, ceil
-from numpy import exp, sqrt as csqrt, angle as phase
+from numpy import exp, sqrt as csqrt, angle as phase, isnan
 
 try:
     from scipy.integrate import quad
@@ -898,31 +898,30 @@ class QuadraticBezier(object):
 
         if abs(a) < 1e-12:
             s = abs(b)*(t1 - t0)
-        elif abs(a_dot_b + abs(a)*abs(b)) < 1e-12:
-            tstar = abs(b)/(2*abs(a))
-            if t1 < tstar:
-                return abs(a)*(t0**2 - t1**2) - abs(b)*(t0 - t1)
-            elif tstar < t0:
-                return abs(a)*(t1**2 - t0**2) - abs(b)*(t1 - t0)
-            else:
-                return abs(a)*(t1**2 + t0**2) - abs(b)*(t1 + t0) + \
-                    abs(b)**2/(2*abs(a))
         else:
-            c2 = 4*(a.real**2 + a.imag**2)
-            c1 = 4*a_dot_b
-            c0 = b.real**2 + b.imag**2
+            c2 = 4 * (a.real ** 2 + a.imag ** 2)
+            c1 = 4 * a_dot_b
+            c0 = b.real ** 2 + b.imag ** 2
 
-            beta = c1/(2*c2)
-            gamma = c0/c2 - beta**2
+            beta = c1 / (2 * c2)
+            gamma = c0 / c2 - beta ** 2
 
-            dq1_mag = sqrt(c2*t1**2 + c1*t1 + c0)
-            dq0_mag = sqrt(c2*t0**2 + c1*t0 + c0)
-            logarand = (sqrt(c2)*(t1 + beta) + dq1_mag) / \
-                       (sqrt(c2)*(t0 + beta) + dq0_mag)
-
-            s = (t1 + beta)*dq1_mag - (t0 + beta)*dq0_mag + \
-                gamma*sqrt(c2)*log(logarand)
+            dq1_mag = sqrt(c2 * t1 ** 2 + c1 * t1 + c0)
+            dq0_mag = sqrt(c2 * t0 ** 2 + c1 * t0 + c0)
+            logarand = (sqrt(c2) * (t1 + beta) + dq1_mag) / \
+                       (sqrt(c2) * (t0 + beta) + dq0_mag)
+            s = (t1 + beta) * dq1_mag - (t0 + beta) * dq0_mag + \
+                gamma * sqrt(c2) * log(logarand)
             s /= 2
+            if isnan(s):
+                tstar = abs(b) / (2 * abs(a))
+                if t1 < tstar:
+                    return abs(a) * (t0 ** 2 - t1 ** 2) - abs(b) * (t0 - t1)
+                elif tstar < t0:
+                    return abs(a) * (t1 ** 2 - t0 ** 2) - abs(b) * (t1 - t0)
+                else:
+                    return abs(a) * (t1 ** 2 + t0 ** 2) - abs(b) * (t1 + t0) + \
+                           abs(b) ** 2 / (2 * abs(a))
 
         if t0 == 1 and t1 == 0:
             self._length_info['length'] = s
@@ -2445,7 +2444,10 @@ class Path(MutableSequence):
         lengths = [each.length(error=error, min_depth=min_depth) for each in
                    self._segments]
         self._length = sum(lengths)
-        self._lengths = [each/self._length for each in lengths]
+        if self._length == 0:
+            self._lengths = lengths  # all lengths are 0.
+        else:
+            self._lengths = [each / self._length for each in lengths]
 
     def point(self, pos):
 
@@ -2522,7 +2524,10 @@ class Path(MutableSequence):
         return self.start == self.end
 
     def _is_closable(self):
-        end = self[-1].end
+        try:
+            end = self[-1].end
+        except IndexError:
+            return True
         for segment in self:
             if segment.start == end:
                 return True
@@ -2574,7 +2579,8 @@ class Path(MutableSequence):
         """Returns a path d-string for the path object.
         For an explanation of useSandT and use_closed_attrib, see the
         compatibility notes in the README."""
-    
+        if len(self) == 0:
+            return ''
         if use_closed_attrib:
             self_closed = self.iscontinuous() and self.isclosed()
             if self_closed:
@@ -2866,8 +2872,7 @@ class Path(MutableSequence):
         # redundant intersection.  This code block checks for and removes said
         # redundancies.
         if intersection_list:
-            pts = [seg1.point(_t1)
-                   for _T1, _seg1, _t1 in list(zip(*intersection_list))[0]]
+            pts = [_seg1.point(_t1) for _T1, _seg1, _t1 in list(zip(*intersection_list))[0]]
             indices2remove = []
             for ind1 in range(len(pts)):
                 for ind2 in range(ind1 + 1, len(pts)):
