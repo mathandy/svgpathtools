@@ -2456,6 +2456,8 @@ class Path(MutableSequence):
     def point(self, pos):
 
         # Shortcuts
+        if len(self._segments) == 0:
+            return None
         if pos == 0.0:
             return self._segments[0].point(pos)
         if pos == 1.0:
