@@ -2561,25 +2561,27 @@ class Path(MutableSequence):
 
     @property
     def start(self):
-        if not self._start:
+        if not self._start and len(self._segments)>0:
             self._start = self._segments[0].start
         return self._start
 
     @start.setter
     def start(self, pt):
         self._start = pt
-        self._segments[0].start = pt
+        if len(self._segments)>0:
+            self._segments[0].start = pt
 
     @property
     def end(self):
-        if not self._end:
+        if not self._end and len(self._segments)>0:
             self._end = self._segments[-1].end
         return self._end
 
     @end.setter
     def end(self, pt):
         self._end = pt
-        self._segments[-1].end = pt
+        if len(self._segments)>0:
+            self._segments[-1].end = pt
 
     def d(self, useSandT=False, use_closed_attrib=False, rel=False):
         """Returns a path d-string for the path object.
