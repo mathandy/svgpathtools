@@ -97,7 +97,7 @@ def big_bounding_box(paths_n_stuff):
 def disvg(paths=None, colors=None, filename=None, stroke_widths=None,
           nodes=None, node_colors=None, node_radii=None,
           openinbrowser=True, timestamp=None, margin_size=0.1,
-          mindim=600, dimensions=None, viewbox=None, text=None,
+          mindim=600, dimensions=None, baseunit='px', viewbox=None, text=None,
           text_path=None, font_size=None, attributes=None,
           svg_attributes=None, svgwrite_debug=False,
           paths2Drawing=False):
@@ -313,12 +313,16 @@ def disvg(paths=None, colors=None, filename=None, stroke_widths=None,
         dy += 2*margin_size*dy + extra_space_for_style
         viewbox = "%s %s %s %s" % (xmin, ymin, dx, dy)
 
-        if dx > dy:
-            szx = str(mindim) + 'px'
-            szy = str(int(ceil(mindim * dy / dx))) + 'px'
+        if mindim is None:
+            szx = "{}{}".format(dx, baseunit)
+            szy = "{}{}".format(dy, baseunit)
         else:
-            szx = str(int(ceil(mindim * dx / dy))) + 'px'
-            szy = str(mindim) + 'px'
+            if dx > dy:
+                szx = str(mindim) + baseunit
+                szy = str(int(ceil(mindim * dy / dx))) + baseunit
+            else:
+                szx = str(int(ceil(mindim * dx / dy))) + baseunit
+                szy = str(mindim) + baseunit 
         dimensions = szx, szy
 
     # Create an SVG file
@@ -425,7 +429,7 @@ def disvg(paths=None, colors=None, filename=None, stroke_widths=None,
 def wsvg(paths=None, colors=None, filename=None, stroke_widths=None,
          nodes=None, node_colors=None, node_radii=None,
          openinbrowser=False, timestamp=False, margin_size=0.1,
-         mindim=600, dimensions=None, viewbox=None, text=None,
+         mindim=600, dimensions=None, baseunit='px', viewbox=None, text=None,
          text_path=None, font_size=None, attributes=None,
          svg_attributes=None, svgwrite_debug=False,
          paths2Drawing=False):
@@ -443,7 +447,7 @@ def wsvg(paths=None, colors=None, filename=None, stroke_widths=None,
                  node_colors=node_colors, node_radii=node_radii,
                  openinbrowser=openinbrowser, timestamp=timestamp,
                  margin_size=margin_size, mindim=mindim,
-                 dimensions=dimensions, viewbox=viewbox, text=text,
+                 dimensions=dimensions, baseunit=baseunit, viewbox=viewbox, text=text,
                  text_path=text_path, font_size=font_size,
                  attributes=attributes, svg_attributes=svg_attributes,
                  svgwrite_debug=svgwrite_debug,
@@ -453,7 +457,7 @@ def wsvg(paths=None, colors=None, filename=None, stroke_widths=None,
 def paths2Drawing(paths=None, colors=None, filename=None,
                   stroke_widths=None, nodes=None, node_colors=None,
                   node_radii=None, openinbrowser=False, timestamp=False,
-                  margin_size=0.1, mindim=600, dimensions=None,
+                  margin_size=0.1, mindim=600, dimensions=None, baseunit='px',
                   viewbox=None, text=None, text_path=None,
                   font_size=None, attributes=None, svg_attributes=None,
                   svgwrite_debug=False, paths2Drawing=True):
@@ -470,7 +474,7 @@ def paths2Drawing(paths=None, colors=None, filename=None,
                  node_colors=node_colors, node_radii=node_radii,
                  openinbrowser=openinbrowser, timestamp=timestamp,
                  margin_size=margin_size, mindim=mindim,
-                 dimensions=dimensions, viewbox=viewbox, text=text,
+                 dimensions=dimensions, baseunit=baseunit, viewbox=viewbox, text=text,
                  text_path=text_path, font_size=font_size,
                  attributes=attributes, svg_attributes=svg_attributes,
                  svgwrite_debug=svgwrite_debug,
