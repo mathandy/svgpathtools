@@ -97,10 +97,10 @@ def big_bounding_box(paths_n_stuff):
 def disvg(paths=None, colors=None, filename=None, stroke_widths=None,
           nodes=None, node_colors=None, node_radii=None,
           openinbrowser=True, timestamp=None, margin_size=0.1,
-          mindim=600, dimensions=None, baseunit='px', viewbox=None, text=None,
+          mindim=600, dimensions=None, viewbox=None, text=None,
           text_path=None, font_size=None, attributes=None,
           svg_attributes=None, svgwrite_debug=False,
-          paths2Drawing=False):
+          paths2Drawing=False, baseunit='px'):
     """Creates (and optionally displays) an SVG file.
 
     REQUIRED INPUTS:
@@ -429,10 +429,10 @@ def disvg(paths=None, colors=None, filename=None, stroke_widths=None,
 def wsvg(paths=None, colors=None, filename=None, stroke_widths=None,
          nodes=None, node_colors=None, node_radii=None,
          openinbrowser=False, timestamp=False, margin_size=0.1,
-         mindim=600, dimensions=None, baseunit='px', viewbox=None, text=None,
+         mindim=600, dimensions=None, viewbox=None, text=None,
          text_path=None, font_size=None, attributes=None,
          svg_attributes=None, svgwrite_debug=False,
-         paths2Drawing=False):
+         paths2Drawing=False, baseunit='px'):
     """Create SVG and write to disk.
 
     Note: This is identical to `disvg()` except that `openinbrowser`
@@ -447,20 +447,20 @@ def wsvg(paths=None, colors=None, filename=None, stroke_widths=None,
                  node_colors=node_colors, node_radii=node_radii,
                  openinbrowser=openinbrowser, timestamp=timestamp,
                  margin_size=margin_size, mindim=mindim,
-                 dimensions=dimensions, baseunit=baseunit, viewbox=viewbox, text=text,
+                 dimensions=dimensions, viewbox=viewbox, text=text,
                  text_path=text_path, font_size=font_size,
                  attributes=attributes, svg_attributes=svg_attributes,
                  svgwrite_debug=svgwrite_debug,
-                 paths2Drawing=paths2Drawing)
+                 paths2Drawing=paths2Drawing, baseunit=baseunit)
     
     
 def paths2Drawing(paths=None, colors=None, filename=None,
                   stroke_widths=None, nodes=None, node_colors=None,
                   node_radii=None, openinbrowser=False, timestamp=False,
-                  margin_size=0.1, mindim=600, dimensions=None, baseunit='px',
+                  margin_size=0.1, mindim=600, dimensions=None,
                   viewbox=None, text=None, text_path=None,
                   font_size=None, attributes=None, svg_attributes=None,
-                  svgwrite_debug=False, paths2Drawing=True):
+                  svgwrite_debug=False, paths2Drawing=True, baseunit='px'):
     """Create and return `svg.Drawing` object.
 
     Note: This is identical to `disvg()` except that `paths2Drawing`
@@ -474,8 +474,8 @@ def paths2Drawing(paths=None, colors=None, filename=None,
                  node_colors=node_colors, node_radii=node_radii,
                  openinbrowser=openinbrowser, timestamp=timestamp,
                  margin_size=margin_size, mindim=mindim,
-                 dimensions=dimensions, baseunit=baseunit, viewbox=viewbox, text=text,
+                 dimensions=dimensions, viewbox=viewbox, text=text,
                  text_path=text_path, font_size=font_size,
                  attributes=attributes, svg_attributes=svg_attributes,
                  svgwrite_debug=svgwrite_debug,
-                 paths2Drawing=paths2Drawing)
+                 paths2Drawing=paths2Drawing, baseunit=baseunit)
