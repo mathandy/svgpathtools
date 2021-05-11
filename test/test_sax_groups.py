@@ -2,7 +2,6 @@ from __future__ import division, absolute_import, print_function
 import unittest
 from svgpathtools import *
 from os.path import join, dirname
-import numpy as np
 
 
 class TestSaxGroups(unittest.TestCase):

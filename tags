@@ -1,0 +1,1221 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+ATTR_DATA	build/lib/svgpathtools/svg_io_sax.py	/^ATTR_DATA = "d"$/;"	v
+ATTR_DATA	svgpathtools/svg_io_sax.py	/^ATTR_DATA = "d"$/;"	v
+ATTR_FILL	build/lib/svgpathtools/svg_io_sax.py	/^ATTR_FILL = "fill"$/;"	v
+ATTR_FILL	svgpathtools/svg_io_sax.py	/^ATTR_FILL = "fill"$/;"	v
+ATTR_HEIGHT	build/lib/svgpathtools/svg_io_sax.py	/^ATTR_HEIGHT = "height"$/;"	v
+ATTR_HEIGHT	svgpathtools/svg_io_sax.py	/^ATTR_HEIGHT = "height"$/;"	v
+ATTR_STROKE	build/lib/svgpathtools/svg_io_sax.py	/^ATTR_STROKE = "stroke"$/;"	v
+ATTR_STROKE	svgpathtools/svg_io_sax.py	/^ATTR_STROKE = "stroke"$/;"	v
+ATTR_STROKE_WIDTH	build/lib/svgpathtools/svg_io_sax.py	/^ATTR_STROKE_WIDTH = "stroke-width"$/;"	v
+ATTR_STROKE_WIDTH	svgpathtools/svg_io_sax.py	/^ATTR_STROKE_WIDTH = "stroke-width"$/;"	v
+ATTR_TRANSFORM	build/lib/svgpathtools/svg_io_sax.py	/^ATTR_TRANSFORM = "transform"$/;"	v
+ATTR_TRANSFORM	svgpathtools/svg_io_sax.py	/^ATTR_TRANSFORM = "transform"$/;"	v
+ATTR_VERSION	build/lib/svgpathtools/svg_io_sax.py	/^ATTR_VERSION = "version"$/;"	v
+ATTR_VERSION	svgpathtools/svg_io_sax.py	/^ATTR_VERSION = "version"$/;"	v
+ATTR_VIEWBOX	build/lib/svgpathtools/svg_io_sax.py	/^ATTR_VIEWBOX = "viewBox"$/;"	v
+ATTR_VIEWBOX	svgpathtools/svg_io_sax.py	/^ATTR_VIEWBOX = "viewBox"$/;"	v
+ATTR_WIDTH	build/lib/svgpathtools/svg_io_sax.py	/^ATTR_WIDTH = "width"$/;"	v
+ATTR_WIDTH	svgpathtools/svg_io_sax.py	/^ATTR_WIDTH = "width"$/;"	v
+ATTR_XMLNS	build/lib/svgpathtools/svg_io_sax.py	/^ATTR_XMLNS = "xmlns"$/;"	v
+ATTR_XMLNS	svgpathtools/svg_io_sax.py	/^ATTR_XMLNS = "xmlns"$/;"	v
+ATTR_XMLNS_EV	build/lib/svgpathtools/svg_io_sax.py	/^ATTR_XMLNS_EV = "xmlns:ev"$/;"	v
+ATTR_XMLNS_EV	svgpathtools/svg_io_sax.py	/^ATTR_XMLNS_EV = "xmlns:ev"$/;"	v
+ATTR_XMLNS_LINK	build/lib/svgpathtools/svg_io_sax.py	/^ATTR_XMLNS_LINK = "xmlns:xlink"$/;"	v
+ATTR_XMLNS_LINK	svgpathtools/svg_io_sax.py	/^ATTR_XMLNS_LINK = "xmlns:xlink"$/;"	v
+AUTHOR_EMAIL	setup.py	/^AUTHOR_EMAIL = 'AndyAPort@gmail.com'$/;"	v
+AUTHOR_NAME	setup.py	/^AUTHOR_NAME = 'Andy Port'$/;"	v
+ApproxSolutionSet	build/lib/svgpathtools/bezier.py	/^class ApproxSolutionSet(list):$/;"	c
+ApproxSolutionSet	svgpathtools/bezier.py	/^class ApproxSolutionSet(list):$/;"	c
+Arc	build/lib/svgpathtools/__init__.py	/^from .path import (Path, Line, QuadraticBezier, CubicBezier, Arc,$/;"	i
+Arc	build/lib/svgpathtools/path.py	/^class Arc(object):$/;"	c
+Arc	svgpathtools/__init__.py	/^from .path import (Path, Line, QuadraticBezier, CubicBezier, Arc,$/;"	i
+Arc	svgpathtools/path.py	/^class Arc(object):$/;"	c
+ArcTest	test/test_path.py	/^class ArcTest(unittest.TestCase):$/;"	c
+BPair	build/lib/svgpathtools/bezier.py	/^class BPair(object):$/;"	c
+BPair	svgpathtools/bezier.py	/^class BPair(object):$/;"	c
+BugException	build/lib/svgpathtools/misctools.py	/^BugException = Exception("This code should never be reached.  You've found a "$/;"	v
+BugException	build/lib/svgpathtools/path.py	/^from .misctools import BugException$/;"	i
+BugException	svgpathtools/misctools.py	/^BugException = Exception("This code should never be reached.  You've found a "$/;"	v
+BugException	svgpathtools/path.py	/^from .misctools import BugException$/;"	i
+CLOSED_WARNING_ON	build/lib/svgpathtools/path.py	/^CLOSED_WARNING_ON = True$/;"	v
+CLOSED_WARNING_ON	svgpathtools/path.py	/^CLOSED_WARNING_ON = True$/;"	v
+COMMANDS	build/lib/svgpathtools/path.py	/^COMMANDS = set('MmZzLlHhVvCcSsQqTtAa')$/;"	v
+COMMANDS	svgpathtools/path.py	/^COMMANDS = set('MmZzLlHhVvCcSsQqTtAa')$/;"	v
+COMMAND_RE	build/lib/svgpathtools/path.py	/^COMMAND_RE = re.compile("([MmZzLlHhVvCcSsQqTtAa])")$/;"	v
+COMMAND_RE	svgpathtools/path.py	/^COMMAND_RE = re.compile("([MmZzLlHhVvCcSsQqTtAa])")$/;"	v
+CONVERSIONS	build/lib/svgpathtools/__init__.py	/^from .document import (Document, CONVERSIONS, CONVERT_ONLY_PATHS,$/;"	i
+CONVERSIONS	build/lib/svgpathtools/document.py	/^CONVERSIONS = {'path': path2pathd,$/;"	v
+CONVERSIONS	svgpathtools/__init__.py	/^from .document import (Document, CONVERSIONS, CONVERT_ONLY_PATHS,$/;"	i
+CONVERSIONS	svgpathtools/document.py	/^CONVERSIONS = {'path': path2pathd,$/;"	v
+CONVERT_ONLY_PATHS	build/lib/svgpathtools/__init__.py	/^from .document import (Document, CONVERSIONS, CONVERT_ONLY_PATHS,$/;"	i
+CONVERT_ONLY_PATHS	build/lib/svgpathtools/document.py	/^CONVERT_ONLY_PATHS = {'path': path2pathd}$/;"	v
+CONVERT_ONLY_PATHS	svgpathtools/__init__.py	/^from .document import (Document, CONVERSIONS, CONVERT_ONLY_PATHS,$/;"	i
+CONVERT_ONLY_PATHS	svgpathtools/document.py	/^CONVERT_ONLY_PATHS = {'path': path2pathd}$/;"	v
+COORD_PAIR_TMPLT	build/lib/svgpathtools/svg_to_paths.py	/^COORD_PAIR_TMPLT = re.compile($/;"	v
+COORD_PAIR_TMPLT	svgpathtools/svg_to_paths.py	/^COORD_PAIR_TMPLT = re.compile($/;"	v
+CubicBezier	build/lib/svgpathtools/__init__.py	/^from .path import (Path, Line, QuadraticBezier, CubicBezier, Arc,$/;"	i
+CubicBezier	build/lib/svgpathtools/path.py	/^class CubicBezier(object):$/;"	c
+CubicBezier	build/lib/svgpathtools/smoothing.py	/^from .path import Path, CubicBezier, Line$/;"	i
+CubicBezier	svgpathtools/__init__.py	/^from .path import (Path, Line, QuadraticBezier, CubicBezier, Arc,$/;"	i
+CubicBezier	svgpathtools/path.py	/^class CubicBezier(object):$/;"	c
+CubicBezier	svgpathtools/smoothing.py	/^from .path import Path, CubicBezier, Line$/;"	i
+CubicBezierTest	test/test_path.py	/^class CubicBezierTest(unittest.TestCase):$/;"	c
+Document	build/lib/svgpathtools/__init__.py	/^from .document import (Document, CONVERSIONS, CONVERT_ONLY_PATHS,$/;"	i
+Document	build/lib/svgpathtools/document.py	/^class Document:$/;"	c
+Document	svgpathtools/__init__.py	/^from .document import (Document, CONVERSIONS, CONVERT_ONLY_PATHS,$/;"	i
+Document	svgpathtools/document.py	/^class Document:$/;"	c
+Drawing	build/lib/svgpathtools/paths2svg.py	/^from svgwrite import Drawing, text as txt$/;"	i
+Drawing	svgpathtools/paths2svg.py	/^from svgwrite import Drawing, text as txt$/;"	i
+Element	build/lib/svgpathtools/document.py	/^from xml.etree.ElementTree import Element, SubElement, register_namespace$/;"	i
+Element	build/lib/svgpathtools/svg_io_sax.py	/^from xml.etree.ElementTree import iterparse, Element, ElementTree, SubElement$/;"	i
+Element	svgpathtools/document.py	/^from xml.etree.ElementTree import Element, SubElement, register_namespace$/;"	i
+Element	svgpathtools/svg_io_sax.py	/^from xml.etree.ElementTree import iterparse, Element, ElementTree, SubElement$/;"	i
+ElementTree	build/lib/svgpathtools/svg_io_sax.py	/^from xml.etree.ElementTree import iterparse, Element, ElementTree, SubElement$/;"	i
+ElementTree	svgpathtools/svg_io_sax.py	/^from xml.etree.ElementTree import iterparse, Element, ElementTree, SubElement$/;"	i
+FLOAT_RE	build/lib/svgpathtools/path.py	/^FLOAT_RE = re.compile("[-+]?[0-9]*\\.?[0-9]+(?:[eE][-+]?[0-9]+)?")$/;"	v
+FLOAT_RE	svgpathtools/path.py	/^FLOAT_RE = re.compile("[-+]?[0-9]*\\.?[0-9]+(?:[eE][-+]?[0-9]+)?")$/;"	v
+HigherOrderBezier	examples/compute-many-points-quickly-using-numpy-arrays.py	/^class HigherOrderBezier:$/;"	c
+HigherOrderBezier	test/test_bezier.py	/^class HigherOrderBezier:$/;"	c
+ILENGTH_ERROR	build/lib/svgpathtools/path.py	/^ILENGTH_ERROR = 1e-12$/;"	v
+ILENGTH_ERROR	svgpathtools/path.py	/^ILENGTH_ERROR = 1e-12$/;"	v
+ILENGTH_MAXITS	build/lib/svgpathtools/path.py	/^ILENGTH_MAXITS = 10000$/;"	v
+ILENGTH_MAXITS	svgpathtools/path.py	/^ILENGTH_MAXITS = 10000$/;"	v
+ILENGTH_MIN_DEPTH	build/lib/svgpathtools/path.py	/^ILENGTH_MIN_DEPTH = 5$/;"	v
+ILENGTH_MIN_DEPTH	svgpathtools/path.py	/^ILENGTH_MIN_DEPTH = 5$/;"	v
+ILENGTH_S_TOL	build/lib/svgpathtools/path.py	/^ILENGTH_S_TOL = 1e-12$/;"	v
+ILENGTH_S_TOL	svgpathtools/path.py	/^ILENGTH_S_TOL = 1e-12$/;"	v
+LENGTH_ERROR	build/lib/svgpathtools/path.py	/^LENGTH_ERROR = 1e-12$/;"	v
+LENGTH_ERROR	svgpathtools/path.py	/^LENGTH_ERROR = 1e-12$/;"	v
+LENGTH_MIN_DEPTH	build/lib/svgpathtools/path.py	/^LENGTH_MIN_DEPTH = 5$/;"	v
+LENGTH_MIN_DEPTH	svgpathtools/path.py	/^LENGTH_MIN_DEPTH = 5$/;"	v
+Line	build/lib/svgpathtools/__init__.py	/^from .path import (Path, Line, QuadraticBezier, CubicBezier, Arc,$/;"	i
+Line	build/lib/svgpathtools/path.py	/^class Line(object):$/;"	c
+Line	build/lib/svgpathtools/paths2svg.py	/^from .path import Path, Line, is_path_segment$/;"	i
+Line	build/lib/svgpathtools/smoothing.py	/^from .path import Path, CubicBezier, Line$/;"	i
+Line	svgpathtools/__init__.py	/^from .path import (Path, Line, QuadraticBezier, CubicBezier, Arc,$/;"	i
+Line	svgpathtools/path.py	/^class Line(object):$/;"	c
+Line	svgpathtools/paths2svg.py	/^from .path import Path, Line, is_path_segment$/;"	i
+Line	svgpathtools/smoothing.py	/^from .path import Path, CubicBezier, Line$/;"	i
+LineTest	test/test_path.py	/^class LineTest(unittest.TestCase):$/;"	c
+MutableSequence	build/lib/svgpathtools/path.py	/^    from collections import MutableSequence  # noqa$/;"	i
+MutableSequence	build/lib/svgpathtools/path.py	/^    from collections.abc import MutableSequence  # noqa$/;"	i
+MutableSequence	svgpathtools/path.py	/^    from collections import MutableSequence  # noqa$/;"	i
+MutableSequence	svgpathtools/path.py	/^    from collections.abc import MutableSequence  # noqa$/;"	i
+NAME_PATH	build/lib/svgpathtools/svg_io_sax.py	/^NAME_PATH = "path"$/;"	v
+NAME_PATH	svgpathtools/svg_io_sax.py	/^NAME_PATH = "path"$/;"	v
+NAME_SVG	build/lib/svgpathtools/svg_io_sax.py	/^NAME_SVG = "svg"$/;"	v
+NAME_SVG	svgpathtools/svg_io_sax.py	/^NAME_SVG = "svg"$/;"	v
+Path	build/lib/svgpathtools/__init__.py	/^from .path import (Path, Line, QuadraticBezier, CubicBezier, Arc,$/;"	i
+Path	build/lib/svgpathtools/parser.py	/^from .path import Path$/;"	i
+Path	build/lib/svgpathtools/path.py	/^class Path(MutableSequence):$/;"	c
+Path	build/lib/svgpathtools/paths2svg.py	/^from .path import Path, Line, is_path_segment$/;"	i
+Path	build/lib/svgpathtools/smoothing.py	/^from .path import Path, CubicBezier, Line$/;"	i
+Path	svgpathtools/__init__.py	/^from .path import (Path, Line, QuadraticBezier, CubicBezier, Arc,$/;"	i
+Path	svgpathtools/parser.py	/^from .path import Path$/;"	i
+Path	svgpathtools/path.py	/^class Path(MutableSequence):$/;"	c
+Path	svgpathtools/paths2svg.py	/^from .path import Path, Line, is_path_segment$/;"	i
+Path	svgpathtools/smoothing.py	/^from .path import Path, CubicBezier, Line$/;"	i
+QuadraticBezier	build/lib/svgpathtools/__init__.py	/^from .path import (Path, Line, QuadraticBezier, CubicBezier, Arc,$/;"	i
+QuadraticBezier	build/lib/svgpathtools/path.py	/^class QuadraticBezier(object):$/;"	c
+QuadraticBezier	svgpathtools/__init__.py	/^from .path import (Path, Line, QuadraticBezier, CubicBezier, Arc,$/;"	i
+QuadraticBezier	svgpathtools/path.py	/^class QuadraticBezier(object):$/;"	c
+QuadraticBezierTest	test/test_path.py	/^class QuadraticBezierTest(unittest.TestCase):$/;"	c
+SVG_GROUP_TAG	build/lib/svgpathtools/document.py	/^SVG_GROUP_TAG = 'svg:g'$/;"	v
+SVG_GROUP_TAG	svgpathtools/document.py	/^SVG_GROUP_TAG = 'svg:g'$/;"	v
+SVG_NAMESPACE	build/lib/svgpathtools/document.py	/^SVG_NAMESPACE = {'svg': 'http:\/\/www.w3.org\/2000\/svg'}$/;"	v
+SVG_NAMESPACE	svgpathtools/document.py	/^SVG_NAMESPACE = {'svg': 'http:\/\/www.w3.org\/2000\/svg'}$/;"	v
+SaxDocument	build/lib/svgpathtools/__init__.py	/^from .svg_io_sax import SaxDocument$/;"	i
+SaxDocument	build/lib/svgpathtools/svg_io_sax.py	/^class SaxDocument:$/;"	c
+SaxDocument	svgpathtools/__init__.py	/^from .svg_io_sax import SaxDocument$/;"	i
+SaxDocument	svgpathtools/svg_io_sax.py	/^class SaxDocument:$/;"	c
+SubElement	build/lib/svgpathtools/document.py	/^from xml.etree.ElementTree import Element, SubElement, register_namespace$/;"	i
+SubElement	build/lib/svgpathtools/svg_io_sax.py	/^from xml.etree.ElementTree import iterparse, Element, ElementTree, SubElement$/;"	i
+SubElement	svgpathtools/document.py	/^from xml.etree.ElementTree import Element, SubElement, register_namespace$/;"	i
+SubElement	svgpathtools/svg_io_sax.py	/^from xml.etree.ElementTree import iterparse, Element, ElementTree, SubElement$/;"	i
+T1	examples/distance-between-two-svg-paths-example.py	/^T1 = path1.radialrange(pt2)[0][1]$/;"	v
+T2	examples/distance-between-two-svg-paths-example.py	/^T2 = fminbound(dist, 0, 1)$/;"	v
+T2t	build/lib/svgpathtools/path.py	/^    def T2t(self, T):$/;"	m	class:Path
+T2t	svgpathtools/path.py	/^    def T2t(self, T):$/;"	m	class:Path
+TestBezier2Polynomial	test/test_bezier.py	/^class TestBezier2Polynomial(unittest.TestCase):$/;"	c
+TestGeneration	test/test_generation.py	/^class TestGeneration(unittest.TestCase):$/;"	c
+TestGroups	test/test_groups.py	/^class TestGroups(unittest.TestCase):$/;"	c
+TestParser	test/test_parsing.py	/^class TestParser(unittest.TestCase):$/;"	c
+TestPath	test/test_path.py	/^class TestPath(unittest.TestCase):$/;"	c
+TestPathTools	test/test_path.py	/^class TestPathTools(unittest.TestCase):$/;"	c
+TestPolynomial2Bezier	test/test_bezier.py	/^class TestPolynomial2Bezier(unittest.TestCase):$/;"	c
+TestSVG2Paths	test/test_svg2paths.py	/^class TestSVG2Paths(unittest.TestCase):$/;"	c
+TestSaxGroups	test/test_sax_groups.py	/^class TestSaxGroups(unittest.TestCase):$/;"	c
+Test_ilength	test/test_path.py	/^class Test_ilength(unittest.TestCase):$/;"	c
+Test_intersect	test/test_path.py	/^class Test_intersect(unittest.TestCase):$/;"	c
+Test_polytools	test/test_polytools.py	/^class Test_polytools(unittest.TestCase):$/;"	c
+UPPERCASE	build/lib/svgpathtools/path.py	/^UPPERCASE = set('MZLHVCSQTA')$/;"	v
+UPPERCASE	svgpathtools/path.py	/^UPPERCASE = set('MZLHVCSQTA')$/;"	v
+USE_SCIPY_QUAD	build/lib/svgpathtools/path.py	/^USE_SCIPY_QUAD = True  # for elliptic Arc segment arc length computation$/;"	v
+USE_SCIPY_QUAD	svgpathtools/path.py	/^USE_SCIPY_QUAD = True  # for elliptic Arc segment arc length computation$/;"	v
+VALUE_NONE	build/lib/svgpathtools/svg_io_sax.py	/^VALUE_NONE = "none"$/;"	v
+VALUE_NONE	svgpathtools/svg_io_sax.py	/^VALUE_NONE = "none"$/;"	v
+VALUE_SVG_VERSION	build/lib/svgpathtools/svg_io_sax.py	/^VALUE_SVG_VERSION = "1.1"$/;"	v
+VALUE_SVG_VERSION	svgpathtools/svg_io_sax.py	/^VALUE_SVG_VERSION = "1.1"$/;"	v
+VALUE_XLINK	build/lib/svgpathtools/svg_io_sax.py	/^VALUE_XLINK = "http:\/\/www.w3.org\/1999\/xlink"$/;"	v
+VALUE_XLINK	svgpathtools/svg_io_sax.py	/^VALUE_XLINK = "http:\/\/www.w3.org\/1999\/xlink"$/;"	v
+VALUE_XMLNS	build/lib/svgpathtools/svg_io_sax.py	/^VALUE_XMLNS = "http:\/\/www.w3.org\/2000\/svg"$/;"	v
+VALUE_XMLNS	svgpathtools/svg_io_sax.py	/^VALUE_XMLNS = "http:\/\/www.w3.org\/2000\/svg"$/;"	v
+VALUE_XMLNS_EV	build/lib/svgpathtools/svg_io_sax.py	/^VALUE_XMLNS_EV = "http:\/\/www.w3.org\/2001\/xml-events"$/;"	v
+VALUE_XMLNS_EV	svgpathtools/svg_io_sax.py	/^VALUE_XMLNS_EV = "http:\/\/www.w3.org\/2001\/xml-events"$/;"	v
+VERSION	setup.py	/^VERSION = '1.4.1'$/;"	v
+_NotImplemented4ArcException	build/lib/svgpathtools/path.py	/^    Exception("This method has not yet been implemented for Arc objects.")$/;"	v
+_NotImplemented4ArcException	svgpathtools/path.py	/^    Exception("This method has not yet been implemented for Arc objects.")$/;"	v
+_NotImplemented4ArcException	test/test_path.py	/^from svgpathtools.path import _NotImplemented4ArcException, bezier_radialrange$/;"	i
+__contains__	build/lib/svgpathtools/bezier.py	/^    def __contains__(self, x):$/;"	m	class:ApproxSolutionSet	file:
+__contains__	build/lib/svgpathtools/path.py	/^    def __contains__(self, x):$/;"	m	class:Path	file:
+__contains__	svgpathtools/bezier.py	/^    def __contains__(self, x):$/;"	m	class:ApproxSolutionSet	file:
+__contains__	svgpathtools/path.py	/^    def __contains__(self, x):$/;"	m	class:Path	file:
+__delitem__	build/lib/svgpathtools/path.py	/^    def __delitem__(self, index):$/;"	m	class:Path	file:
+__delitem__	svgpathtools/path.py	/^    def __delitem__(self, index):$/;"	m	class:Path	file:
+__eq__	build/lib/svgpathtools/path.py	/^    def __eq__(self, other):$/;"	m	class:Arc	file:
+__eq__	build/lib/svgpathtools/path.py	/^    def __eq__(self, other):$/;"	m	class:CubicBezier	file:
+__eq__	build/lib/svgpathtools/path.py	/^    def __eq__(self, other):$/;"	m	class:Line	file:
+__eq__	build/lib/svgpathtools/path.py	/^    def __eq__(self, other):$/;"	m	class:Path	file:
+__eq__	build/lib/svgpathtools/path.py	/^    def __eq__(self, other):$/;"	m	class:QuadraticBezier	file:
+__eq__	svgpathtools/path.py	/^    def __eq__(self, other):$/;"	m	class:Arc	file:
+__eq__	svgpathtools/path.py	/^    def __eq__(self, other):$/;"	m	class:CubicBezier	file:
+__eq__	svgpathtools/path.py	/^    def __eq__(self, other):$/;"	m	class:Line	file:
+__eq__	svgpathtools/path.py	/^    def __eq__(self, other):$/;"	m	class:Path	file:
+__eq__	svgpathtools/path.py	/^    def __eq__(self, other):$/;"	m	class:QuadraticBezier	file:
+__getitem__	build/lib/svgpathtools/path.py	/^    def __getitem__(self, index):$/;"	m	class:Path	file:
+__getitem__	build/lib/svgpathtools/path.py	/^    def __getitem__(self, item):$/;"	m	class:CubicBezier	file:
+__getitem__	build/lib/svgpathtools/path.py	/^    def __getitem__(self, item):$/;"	m	class:Line	file:
+__getitem__	build/lib/svgpathtools/path.py	/^    def __getitem__(self, item):$/;"	m	class:QuadraticBezier	file:
+__getitem__	svgpathtools/path.py	/^    def __getitem__(self, index):$/;"	m	class:Path	file:
+__getitem__	svgpathtools/path.py	/^    def __getitem__(self, item):$/;"	m	class:CubicBezier	file:
+__getitem__	svgpathtools/path.py	/^    def __getitem__(self, item):$/;"	m	class:Line	file:
+__getitem__	svgpathtools/path.py	/^    def __getitem__(self, item):$/;"	m	class:QuadraticBezier	file:
+__hash__	build/lib/svgpathtools/path.py	/^    def __hash__(self):$/;"	m	class:Arc	file:
+__hash__	svgpathtools/path.py	/^    def __hash__(self):$/;"	m	class:Arc	file:
+__init__	build/lib/svgpathtools/bezier.py	/^    def __init__(self, bez1, bez2, t1, t2):$/;"	m	class:BPair
+__init__	build/lib/svgpathtools/bezier.py	/^    def __init__(self, tol):$/;"	m	class:ApproxSolutionSet
+__init__	build/lib/svgpathtools/document.py	/^    def __init__(self, filepath=None):$/;"	m	class:Document
+__init__	build/lib/svgpathtools/path.py	/^    def __init__(self, *segments, **kw):$/;"	m	class:Path
+__init__	build/lib/svgpathtools/path.py	/^    def __init__(self, start, control, end):$/;"	m	class:QuadraticBezier
+__init__	build/lib/svgpathtools/path.py	/^    def __init__(self, start, control1, control2, end):$/;"	m	class:CubicBezier
+__init__	build/lib/svgpathtools/path.py	/^    def __init__(self, start, end):$/;"	m	class:Line
+__init__	build/lib/svgpathtools/path.py	/^    def __init__(self, start, radius, rotation, large_arc, sweep, end,$/;"	m	class:Arc
+__init__	build/lib/svgpathtools/svg_io_sax.py	/^    def __init__(self, filename):$/;"	m	class:SaxDocument
+__init__	examples/compute-many-points-quickly-using-numpy-arrays.py	/^    def __init__(self, bpoints):$/;"	m	class:HigherOrderBezier
+__init__	svgpathtools/bezier.py	/^    def __init__(self, bez1, bez2, t1, t2):$/;"	m	class:BPair
+__init__	svgpathtools/bezier.py	/^    def __init__(self, tol):$/;"	m	class:ApproxSolutionSet
+__init__	svgpathtools/document.py	/^    def __init__(self, filepath=None):$/;"	m	class:Document
+__init__	svgpathtools/path.py	/^    def __init__(self, *segments, **kw):$/;"	m	class:Path
+__init__	svgpathtools/path.py	/^    def __init__(self, start, control, end):$/;"	m	class:QuadraticBezier
+__init__	svgpathtools/path.py	/^    def __init__(self, start, control1, control2, end):$/;"	m	class:CubicBezier
+__init__	svgpathtools/path.py	/^    def __init__(self, start, end):$/;"	m	class:Line
+__init__	svgpathtools/path.py	/^    def __init__(self, start, radius, rotation, large_arc, sweep, end,$/;"	m	class:Arc
+__init__	svgpathtools/svg_io_sax.py	/^    def __init__(self, filename):$/;"	m	class:SaxDocument
+__init__	test/test_bezier.py	/^    def __init__(self, bpoints):$/;"	m	class:HigherOrderBezier
+__iter__	build/lib/svgpathtools/path.py	/^    def __iter__(self):$/;"	m	class:Path	file:
+__iter__	svgpathtools/path.py	/^    def __iter__(self):$/;"	m	class:Path	file:
+__len__	build/lib/svgpathtools/path.py	/^    def __len__(self):$/;"	m	class:CubicBezier	file:
+__len__	build/lib/svgpathtools/path.py	/^    def __len__(self):$/;"	m	class:Line	file:
+__len__	build/lib/svgpathtools/path.py	/^    def __len__(self):$/;"	m	class:Path	file:
+__len__	build/lib/svgpathtools/path.py	/^    def __len__(self):$/;"	m	class:QuadraticBezier	file:
+__len__	svgpathtools/path.py	/^    def __len__(self):$/;"	m	class:CubicBezier	file:
+__len__	svgpathtools/path.py	/^    def __len__(self):$/;"	m	class:Line	file:
+__len__	svgpathtools/path.py	/^    def __len__(self):$/;"	m	class:Path	file:
+__len__	svgpathtools/path.py	/^    def __len__(self):$/;"	m	class:QuadraticBezier	file:
+__ne__	build/lib/svgpathtools/path.py	/^    def __ne__(self, other):$/;"	m	class:Arc	file:
+__ne__	build/lib/svgpathtools/path.py	/^    def __ne__(self, other):$/;"	m	class:CubicBezier	file:
+__ne__	build/lib/svgpathtools/path.py	/^    def __ne__(self, other):$/;"	m	class:Line	file:
+__ne__	build/lib/svgpathtools/path.py	/^    def __ne__(self, other):$/;"	m	class:Path	file:
+__ne__	build/lib/svgpathtools/path.py	/^    def __ne__(self, other):$/;"	m	class:QuadraticBezier	file:
+__ne__	svgpathtools/path.py	/^    def __ne__(self, other):$/;"	m	class:Arc	file:
+__ne__	svgpathtools/path.py	/^    def __ne__(self, other):$/;"	m	class:CubicBezier	file:
+__ne__	svgpathtools/path.py	/^    def __ne__(self, other):$/;"	m	class:Line	file:
+__ne__	svgpathtools/path.py	/^    def __ne__(self, other):$/;"	m	class:Path	file:
+__ne__	svgpathtools/path.py	/^    def __ne__(self, other):$/;"	m	class:QuadraticBezier	file:
+__repr__	build/lib/svgpathtools/document.py	/^    def __repr__(self):$/;"	m	class:Document	file:
+__repr__	build/lib/svgpathtools/path.py	/^    def __repr__(self):$/;"	m	class:Arc	file:
+__repr__	build/lib/svgpathtools/path.py	/^    def __repr__(self):$/;"	m	class:CubicBezier	file:
+__repr__	build/lib/svgpathtools/path.py	/^    def __repr__(self):$/;"	m	class:Line	file:
+__repr__	build/lib/svgpathtools/path.py	/^    def __repr__(self):$/;"	m	class:Path	file:
+__repr__	build/lib/svgpathtools/path.py	/^    def __repr__(self):$/;"	m	class:QuadraticBezier	file:
+__repr__	examples/compute-many-points-quickly-using-numpy-arrays.py	/^    def __repr__(self):$/;"	m	class:HigherOrderBezier	file:
+__repr__	svgpathtools/document.py	/^    def __repr__(self):$/;"	m	class:Document	file:
+__repr__	svgpathtools/path.py	/^    def __repr__(self):$/;"	m	class:Arc	file:
+__repr__	svgpathtools/path.py	/^    def __repr__(self):$/;"	m	class:CubicBezier	file:
+__repr__	svgpathtools/path.py	/^    def __repr__(self):$/;"	m	class:Line	file:
+__repr__	svgpathtools/path.py	/^    def __repr__(self):$/;"	m	class:Path	file:
+__repr__	svgpathtools/path.py	/^    def __repr__(self):$/;"	m	class:QuadraticBezier	file:
+__repr__	test/test_bezier.py	/^    def __repr__(self):$/;"	m	class:HigherOrderBezier	file:
+__setitem__	build/lib/svgpathtools/path.py	/^    def __setitem__(self, index, value):$/;"	m	class:Path	file:
+__setitem__	svgpathtools/path.py	/^    def __setitem__(self, index, value):$/;"	m	class:Path	file:
+_calc_lengths	build/lib/svgpathtools/path.py	/^    def _calc_lengths(self, error=LENGTH_ERROR, min_depth=LENGTH_MIN_DEPTH):$/;"	m	class:Path
+_calc_lengths	svgpathtools/path.py	/^    def _calc_lengths(self, error=LENGTH_ERROR, min_depth=LENGTH_MIN_DEPTH):$/;"	m	class:Path
+_check_num_parsed_values	build/lib/svgpathtools/parser.py	/^def _check_num_parsed_values(values, allowed):$/;"	f
+_check_num_parsed_values	svgpathtools/parser.py	/^def _check_num_parsed_values(values, allowed):$/;"	f
+_closed	build/lib/svgpathtools/path.py	/^    _closed = False$/;"	v	class:Path
+_closed	svgpathtools/path.py	/^    _closed = False$/;"	v	class:Path
+_deg	build/lib/svgpathtools/path.py	/^        def _deg(rads, domain_lower_limit):$/;"	f	function:Arc.phase2t
+_deg	svgpathtools/path.py	/^        def _deg(rads, domain_lower_limit):$/;"	f	function:Arc.phase2t
+_end	build/lib/svgpathtools/path.py	/^    _end = None$/;"	v	class:Path
+_end	svgpathtools/path.py	/^    _end = None$/;"	v	class:Path
+_is_closable	build/lib/svgpathtools/path.py	/^    def _is_closable(self):$/;"	m	class:Path
+_is_closable	svgpathtools/path.py	/^    def _is_closable(self):$/;"	m	class:Path
+_is_smooth_from_warning	build/lib/svgpathtools/path.py	/^    ("The name of this method is somewhat misleading (yet kept for "$/;"	v
+_is_smooth_from_warning	svgpathtools/path.py	/^    ("The name of this method is somewhat misleading (yet kept for "$/;"	v
+_length_info	build/lib/svgpathtools/path.py	/^    _length_info = {'length': None, 'bpoints': None, 'error': None,$/;"	v	class:CubicBezier
+_length_info	build/lib/svgpathtools/path.py	/^    _length_info = {'length': None, 'bpoints': None}$/;"	v	class:QuadraticBezier
+_length_info	svgpathtools/path.py	/^    _length_info = {'length': None, 'bpoints': None, 'error': None,$/;"	v	class:CubicBezier
+_length_info	svgpathtools/path.py	/^    _length_info = {'length': None, 'bpoints': None}$/;"	v	class:QuadraticBezier
+_parameterize	build/lib/svgpathtools/path.py	/^    def _parameterize(self):$/;"	m	class:Arc
+_parameterize	svgpathtools/path.py	/^    def _parameterize(self):$/;"	m	class:Arc
+_parse_path	build/lib/svgpathtools/path.py	/^    def _parse_path(self, pathdef, current_pos=0j, tree_element=None):$/;"	m	class:Path
+_parse_path	svgpathtools/path.py	/^    def _parse_path(self, pathdef, current_pos=0j, tree_element=None):$/;"	m	class:Path
+_parse_transform_substr	build/lib/svgpathtools/parser.py	/^def _parse_transform_substr(transform_substr):$/;"	f
+_parse_transform_substr	svgpathtools/parser.py	/^def _parse_transform_substr(transform_substr):$/;"	f
+_quad_available	build/lib/svgpathtools/path.py	/^    _quad_available = False$/;"	v
+_quad_available	build/lib/svgpathtools/path.py	/^    _quad_available = True$/;"	v
+_quad_available	svgpathtools/path.py	/^    _quad_available = False$/;"	v
+_quad_available	svgpathtools/path.py	/^    _quad_available = True$/;"	v
+_radius	build/lib/svgpathtools/path.py	/^    def _radius(tau):$/;"	f	function:bezier_radialrange
+_radius	svgpathtools/path.py	/^    def _radius(tau):$/;"	f	function:bezier_radialrange
+_report_unfixable_kinks	build/lib/svgpathtools/smoothing.py	/^def _report_unfixable_kinks(_path, _kink_list):$/;"	f
+_report_unfixable_kinks	svgpathtools/smoothing.py	/^def _report_unfixable_kinks(_path, _kink_list):$/;"	f
+_scale	build/lib/svgpathtools/path.py	/^    def _scale(z):$/;"	f	function:scale
+_scale	svgpathtools/path.py	/^    def _scale(z):$/;"	f	function:scale
+_start	build/lib/svgpathtools/path.py	/^    _start = None$/;"	v	class:Path
+_start	svgpathtools/path.py	/^    _start = None$/;"	v	class:Path
+_tokenize_path	build/lib/svgpathtools/path.py	/^    def _tokenize_path(self, pathdef):$/;"	m	class:Path
+_tokenize_path	svgpathtools/path.py	/^    def _tokenize_path(self, pathdef):$/;"	m	class:Path
+absolute_import	build/lib/svgpathtools/bezier.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+absolute_import	build/lib/svgpathtools/document.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+absolute_import	build/lib/svgpathtools/misctools.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+absolute_import	build/lib/svgpathtools/parser.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+absolute_import	build/lib/svgpathtools/path.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+absolute_import	build/lib/svgpathtools/paths2svg.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+absolute_import	build/lib/svgpathtools/polytools.py	/^from __future__ import division, absolute_import$/;"	i
+absolute_import	build/lib/svgpathtools/smoothing.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+absolute_import	build/lib/svgpathtools/svg_io_sax.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+absolute_import	build/lib/svgpathtools/svg_to_paths.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+absolute_import	svgpathtools/bezier.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+absolute_import	svgpathtools/document.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+absolute_import	svgpathtools/misctools.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+absolute_import	svgpathtools/parser.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+absolute_import	svgpathtools/path.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+absolute_import	svgpathtools/paths2svg.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+absolute_import	svgpathtools/polytools.py	/^from __future__ import division, absolute_import$/;"	i
+absolute_import	svgpathtools/smoothing.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+absolute_import	svgpathtools/svg_io_sax.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+absolute_import	svgpathtools/svg_to_paths.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+absolute_import	test/test_bezier.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+absolute_import	test/test_generation.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+absolute_import	test/test_groups.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+absolute_import	test/test_parsing.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+absolute_import	test/test_path.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+absolute_import	test/test_polytools.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+absolute_import	test/test_sax_groups.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+absolute_import	test/test_svg2paths.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+acos	build/lib/svgpathtools/path.py	/^from math import sqrt, cos, sin, acos, asin, degrees, radians, log, pi, ceil$/;"	i
+acos	svgpathtools/path.py	/^    degrees, radians, log, pi, ceil$/;"	i
+add_group	build/lib/svgpathtools/document.py	/^    def add_group(self, group_attribs=None, parent=None):$/;"	m	class:Document
+add_group	svgpathtools/document.py	/^    def add_group(self, group_attribs=None, parent=None):$/;"	m	class:Document
+add_path	build/lib/svgpathtools/document.py	/^    def add_path(self, path, attribs=None, group=None):$/;"	m	class:Document
+add_path	svgpathtools/document.py	/^    def add_path(self, path, attribs=None, group=None):$/;"	m	class:Document
+angle_inv	build/lib/svgpathtools/path.py	/^        def angle_inv(ang, k):  # inverse of angle from Arc.derivative()$/;"	f	function:Arc.bbox
+angle_inv	svgpathtools/path.py	/^        def angle_inv(ang, k):  # inverse of angle from Arc.derivative()$/;"	f	function:Arc.bbox
+appadd	build/lib/svgpathtools/bezier.py	/^    def appadd(self, pt):$/;"	m	class:ApproxSolutionSet
+appadd	svgpathtools/bezier.py	/^    def appadd(self, pt):$/;"	m	class:ApproxSolutionSet
+approximate_arcs_with_cubics	svgpathtools/path.py	/^    def approximate_arcs_with_cubics(self, error=0.1):$/;"	m	class:Path
+approximate_arcs_with_quads	svgpathtools/path.py	/^    def approximate_arcs_with_quads(self, error=0.1):$/;"	m	class:Path
+area	build/lib/svgpathtools/path.py	/^    def area(self, chord_length=1e-4):$/;"	m	class:Path
+area	svgpathtools/path.py	/^    def area(self, chord_length=1e-4):$/;"	m	class:Path
+area_without_arcs	build/lib/svgpathtools/path.py	/^        def area_without_arcs(path):$/;"	f	function:Path.area
+area_without_arcs	svgpathtools/path.py	/^        def area_without_arcs(path):$/;"	f	function:Path.area
+as_cubic_curves	svgpathtools/path.py	/^    def as_cubic_curves(self, curves=1):$/;"	m	class:Arc
+as_quad_curves	svgpathtools/path.py	/^    def as_quad_curves(self, curves=1):$/;"	m	class:Arc
+asin	build/lib/svgpathtools/path.py	/^from math import sqrt, cos, sin, acos, asin, degrees, radians, log, pi, ceil$/;"	i
+asin	svgpathtools/path.py	/^    degrees, radians, log, pi, ceil$/;"	i
+assert_intersections	test/test_path.py	/^def assert_intersections(a_seg, b_seg, intersections, count):$/;"	f
+atan	build/lib/svgpathtools/path.py	/^        from math import atan, tan$/;"	i
+atan	svgpathtools/path.py	/^        from math import atan, tan$/;"	i
+author	setup.py	/^      author=AUTHOR_NAME,$/;"	v
+author_email	setup.py	/^      author_email=AUTHOR_EMAIL,$/;"	v
+bbox	build/lib/svgpathtools/path.py	/^    def bbox(self):$/;"	m	class:Arc
+bbox	build/lib/svgpathtools/path.py	/^    def bbox(self):$/;"	m	class:CubicBezier
+bbox	build/lib/svgpathtools/path.py	/^    def bbox(self):$/;"	m	class:Line
+bbox	build/lib/svgpathtools/path.py	/^    def bbox(self):$/;"	m	class:Path
+bbox	build/lib/svgpathtools/path.py	/^    def bbox(self):$/;"	m	class:QuadraticBezier
+bbox	svgpathtools/path.py	/^    def bbox(self):$/;"	m	class:Arc
+bbox	svgpathtools/path.py	/^    def bbox(self):$/;"	m	class:CubicBezier
+bbox	svgpathtools/path.py	/^    def bbox(self):$/;"	m	class:Line
+bbox	svgpathtools/path.py	/^    def bbox(self):$/;"	m	class:Path
+bbox	svgpathtools/path.py	/^    def bbox(self):$/;"	m	class:QuadraticBezier
+bbox2path	build/lib/svgpathtools/path.py	/^def bbox2path(xmin, xmax, ymin, ymax):$/;"	f
+bbox2path	svgpathtools/path.py	/^def bbox2path(xmin, xmax, ymin, ymax):$/;"	f
+bernstein	build/lib/svgpathtools/bezier.py	/^def bernstein(n, t):$/;"	f
+bernstein	svgpathtools/bezier.py	/^def bernstein(n, t):$/;"	f
+bez2poly	build/lib/svgpathtools/path.py	/^def bez2poly(bez, numpy_ordering=True, return_poly1d=False):$/;"	f
+bez2poly	svgpathtools/path.py	/^def bez2poly(bez, numpy_ordering=True, return_poly1d=False):$/;"	f
+bezier2polynomial	build/lib/svgpathtools/__init__.py	/^from .bezier import (bezier_point, bezier2polynomial,$/;"	i
+bezier2polynomial	build/lib/svgpathtools/bezier.py	/^def bezier2polynomial(p, numpy_ordering=True, return_poly1d=False):$/;"	f
+bezier2polynomial	svgpathtools/__init__.py	/^from .bezier import (bezier_point, bezier2polynomial,$/;"	i
+bezier2polynomial	svgpathtools/bezier.py	/^def bezier2polynomial(p, numpy_ordering=True, return_poly1d=False):$/;"	f
+bezier_bounding_box	build/lib/svgpathtools/bezier.py	/^def bezier_bounding_box(bez):$/;"	f
+bezier_bounding_box	build/lib/svgpathtools/path.py	/^from .bezier import (bezier_intersections, bezier_bounding_box, split_bezier,$/;"	i
+bezier_bounding_box	svgpathtools/bezier.py	/^def bezier_bounding_box(bez):$/;"	f
+bezier_bounding_box	svgpathtools/path.py	/^from .bezier import (bezier_intersections, bezier_bounding_box, split_bezier,$/;"	i
+bezier_by_line_intersections	build/lib/svgpathtools/bezier.py	/^def bezier_by_line_intersections(bezier, line):$/;"	f
+bezier_by_line_intersections	svgpathtools/bezier.py	/^def bezier_by_line_intersections(bezier, line):$/;"	f
+bezier_intersections	build/lib/svgpathtools/bezier.py	/^def bezier_intersections(bez1, bez2, longer_length, tol=1e-8, tol_deC=1e-8):$/;"	f
+bezier_intersections	build/lib/svgpathtools/path.py	/^from .bezier import (bezier_intersections, bezier_bounding_box, split_bezier,$/;"	i
+bezier_intersections	svgpathtools/bezier.py	/^def bezier_intersections(bez1, bez2, longer_length, tol=1e-8, tol_deC=1e-8):$/;"	f
+bezier_intersections	svgpathtools/path.py	/^from .bezier import (bezier_intersections, bezier_bounding_box, split_bezier,$/;"	i
+bezier_point	build/lib/svgpathtools/__init__.py	/^from .bezier import (bezier_point, bezier2polynomial,$/;"	i
+bezier_point	build/lib/svgpathtools/bezier.py	/^def bezier_point(p, t):$/;"	f
+bezier_point	svgpathtools/__init__.py	/^from .bezier import (bezier_point, bezier2polynomial,$/;"	i
+bezier_point	svgpathtools/bezier.py	/^def bezier_point(p, t):$/;"	f
+bezier_radialrange	build/lib/svgpathtools/path.py	/^def bezier_radialrange(seg, origin, return_all_global_extrema=False):$/;"	f
+bezier_radialrange	svgpathtools/path.py	/^def bezier_radialrange(seg, origin, return_all_global_extrema=False):$/;"	f
+bezier_radialrange	test/test_path.py	/^from svgpathtools.path import _NotImplemented4ArcException, bezier_radialrange$/;"	i
+bezier_real_minmax	build/lib/svgpathtools/bezier.py	/^def bezier_real_minmax(p):$/;"	f
+bezier_real_minmax	svgpathtools/bezier.py	/^def bezier_real_minmax(p):$/;"	f
+bezier_segment	build/lib/svgpathtools/path.py	/^def bezier_segment(*bpoints):$/;"	f
+bezier_segment	svgpathtools/path.py	/^def bezier_segment(*bpoints):$/;"	f
+bezier_unit_tangent	build/lib/svgpathtools/path.py	/^def bezier_unit_tangent(seg, t):$/;"	f
+bezier_unit_tangent	svgpathtools/path.py	/^def bezier_unit_tangent(seg, t):$/;"	f
+big_bounding_box	build/lib/svgpathtools/paths2svg.py	/^def big_bounding_box(paths_n_stuff):$/;"	f
+big_bounding_box	svgpathtools/paths2svg.py	/^def big_bounding_box(paths_n_stuff):$/;"	f
+box_area	build/lib/svgpathtools/bezier.py	/^def box_area(xmin, xmax, ymin, ymax):$/;"	f
+box_area	svgpathtools/bezier.py	/^def box_area(xmin, xmax, ymin, ymax):$/;"	f
+boxes_intersect	build/lib/svgpathtools/bezier.py	/^def boxes_intersect(box1, box2):$/;"	f
+boxes_intersect	svgpathtools/bezier.py	/^def boxes_intersect(box1, box2):$/;"	f
+bpoints	build/lib/svgpathtools/path.py	/^    def bpoints(self):$/;"	m	class:CubicBezier
+bpoints	build/lib/svgpathtools/path.py	/^    def bpoints(self):$/;"	m	class:Line
+bpoints	build/lib/svgpathtools/path.py	/^    def bpoints(self):$/;"	m	class:QuadraticBezier
+bpoints	examples/compute-many-points-quickly-using-numpy-arrays.py	/^    def bpoints(self):$/;"	m	class:HigherOrderBezier
+bpoints	svgpathtools/path.py	/^    def bpoints(self):$/;"	m	class:CubicBezier
+bpoints	svgpathtools/path.py	/^    def bpoints(self):$/;"	m	class:Line
+bpoints	svgpathtools/path.py	/^    def bpoints(self):$/;"	m	class:QuadraticBezier
+bpoints	test/test_bezier.py	/^    def bpoints(self):$/;"	m	class:HigherOrderBezier
+bpoints2bezier	build/lib/svgpathtools/path.py	/^def bpoints2bezier(bpoints):$/;"	f
+bpoints2bezier	svgpathtools/path.py	/^def bpoints2bezier(bpoints):$/;"	f
+bpoints2bezier	test/test_bezier.py	/^from svgpathtools.path import bpoints2bezier$/;"	i
+ceil	build/lib/svgpathtools/bezier.py	/^from math import factorial as fac, ceil, log, sqrt$/;"	i
+ceil	build/lib/svgpathtools/path.py	/^from math import sqrt, cos, sin, acos, asin, degrees, radians, log, pi, ceil$/;"	i
+ceil	build/lib/svgpathtools/paths2svg.py	/^from math import ceil$/;"	i
+ceil	svgpathtools/bezier.py	/^from math import factorial as fac, ceil, log, sqrt$/;"	i
+ceil	svgpathtools/path.py	/^    degrees, radians, log, pi, ceil$/;"	i
+ceil	svgpathtools/paths2svg.py	/^from math import ceil$/;"	i
+centeriso	build/lib/svgpathtools/path.py	/^    def centeriso(self, z):$/;"	m	class:Arc
+centeriso	svgpathtools/path.py	/^    def centeriso(self, z):$/;"	m	class:Arc
+check_group_count	test/test_groups.py	/^    def check_group_count(self, doc, expected_count):$/;"	m	class:TestGroups
+check_line	test/test_groups.py	/^    def check_line(self, tf, v_s_vals, v_e_relative_vals, name, paths):$/;"	m	class:TestGroups
+check_values	test/test_groups.py	/^    def check_values(self, v, z):$/;"	m	class:TestGroups
+check_values	test/test_sax_groups.py	/^    def check_values(self, v, z):$/;"	m	class:TestSaxGroups
+classifiers	setup.py	/^      classifiers=[$/;"	v
+closed	build/lib/svgpathtools/path.py	/^    def closed(self, value):$/;"	m	class:Path
+closed	build/lib/svgpathtools/path.py	/^    def closed(self, warning_on=CLOSED_WARNING_ON):$/;"	m	class:Path
+closed	svgpathtools/path.py	/^    def closed(self, value):$/;"	m	class:Path
+closed	svgpathtools/path.py	/^    def closed(self, warning_on=CLOSED_WARNING_ON):$/;"	m	class:Path
+closed_path	examples/determine-if-svg-path-is-contained-in-other-path-example.py	/^closed_path = Path(Line(0,5), Line(5,5+5j), Line(5+5j, 0))$/;"	v
+closest_point_in_path	build/lib/svgpathtools/path.py	/^def closest_point_in_path(pt, path):$/;"	f
+closest_point_in_path	svgpathtools/path.py	/^def closest_point_in_path(pt, path):$/;"	f
+codecs	setup.py	/^import codecs$/;"	i
+collections	build/lib/svgpathtools/document.py	/^import collections$/;"	i
+collections	svgpathtools/document.py	/^import collections$/;"	i
+color_dict	build/lib/svgpathtools/paths2svg.py	/^color_dict = {'a': 'aqua',$/;"	v
+color_dict	svgpathtools/paths2svg.py	/^color_dict = {'a': 'aqua',$/;"	v
+combinations	build/lib/svgpathtools/polytools.py	/^from itertools import combinations$/;"	i
+combinations	svgpathtools/polytools.py	/^from itertools import combinations$/;"	i
+concatpaths	build/lib/svgpathtools/path.py	/^def concatpaths(list_of_paths):$/;"	f
+concatpaths	svgpathtools/path.py	/^def concatpaths(list_of_paths):$/;"	f
+construct_rotation_tf	test/test_parsing.py	/^def construct_rotation_tf(a, x, y):$/;"	f
+contains_group	build/lib/svgpathtools/document.py	/^    def contains_group(self, group):$/;"	m	class:Document
+contains_group	svgpathtools/document.py	/^    def contains_group(self, group):$/;"	m	class:Document
+continuous_subpaths	build/lib/svgpathtools/path.py	/^    def continuous_subpaths(self):$/;"	m	class:Path
+continuous_subpaths	svgpathtools/path.py	/^    def continuous_subpaths(self):$/;"	m	class:Path
+cos	build/lib/svgpathtools/path.py	/^from math import sqrt, cos, sin, acos, asin, degrees, radians, log, pi, ceil$/;"	i
+cos	svgpathtools/path.py	/^    degrees, radians, log, pi, ceil$/;"	i
+crand	test/test_path.py	/^        def crand():$/;"	f	function:LineTest.test_radialrange
+crop_bezier	build/lib/svgpathtools/path.py	/^def crop_bezier(seg, t0, t1):$/;"	f
+crop_bezier	svgpathtools/path.py	/^def crop_bezier(seg, t0, t1):$/;"	f
+cropped	build/lib/svgpathtools/path.py	/^    def cropped(self, T0, T1):$/;"	m	class:Path
+cropped	build/lib/svgpathtools/path.py	/^    def cropped(self, t0, t1):$/;"	m	class:Arc
+cropped	build/lib/svgpathtools/path.py	/^    def cropped(self, t0, t1):$/;"	m	class:CubicBezier
+cropped	build/lib/svgpathtools/path.py	/^    def cropped(self, t0, t1):$/;"	m	class:Line
+cropped	build/lib/svgpathtools/path.py	/^    def cropped(self, t0, t1):$/;"	m	class:QuadraticBezier
+cropped	svgpathtools/path.py	/^    def cropped(self, T0, T1):$/;"	m	class:Path
+cropped	svgpathtools/path.py	/^    def cropped(self, t0, t1):$/;"	m	class:Arc
+cropped	svgpathtools/path.py	/^    def cropped(self, t0, t1):$/;"	m	class:CubicBezier
+cropped	svgpathtools/path.py	/^    def cropped(self, t0, t1):$/;"	m	class:Line
+cropped	svgpathtools/path.py	/^    def cropped(self, t0, t1):$/;"	m	class:QuadraticBezier
+csqrt	build/lib/svgpathtools/path.py	/^from cmath import exp, sqrt as csqrt, phase$/;"	i
+csqrt	svgpathtools/path.py	/^from numpy import exp, sqrt as csqrt, angle as phase$/;"	i
+curvature	build/lib/svgpathtools/path.py	/^    def curvature(self, T):$/;"	m	class:Path
+curvature	build/lib/svgpathtools/path.py	/^    def curvature(self, t):$/;"	m	class:Arc
+curvature	build/lib/svgpathtools/path.py	/^    def curvature(self, t):$/;"	m	class:CubicBezier
+curvature	build/lib/svgpathtools/path.py	/^    def curvature(self, t):$/;"	m	class:Line
+curvature	build/lib/svgpathtools/path.py	/^    def curvature(self, t):$/;"	m	class:QuadraticBezier
+curvature	svgpathtools/path.py	/^    def curvature(self, T):$/;"	m	class:Path
+curvature	svgpathtools/path.py	/^    def curvature(self, t):$/;"	m	class:Arc
+curvature	svgpathtools/path.py	/^    def curvature(self, t):$/;"	m	class:CubicBezier
+curvature	svgpathtools/path.py	/^    def curvature(self, t):$/;"	m	class:Line
+curvature	svgpathtools/path.py	/^    def curvature(self, t):$/;"	m	class:QuadraticBezier
+d	build/lib/svgpathtools/path.py	/^    def d(self, useSandT=False, use_closed_attrib=False, rel=False):$/;"	m	class:Path
+d	svgpathtools/path.py	/^    def d(self, useSandT=False, use_closed_attrib=False, rel=False):$/;"	m	class:Path
+degrees	build/lib/svgpathtools/path.py	/^from math import sqrt, cos, sin, acos, asin, degrees, radians, log, pi, ceil$/;"	i
+degrees	svgpathtools/path.py	/^    degrees, radians, log, pi, ceil$/;"	i
+derivative	build/lib/svgpathtools/path.py	/^    def derivative(self, T, n=1):$/;"	m	class:Path
+derivative	build/lib/svgpathtools/path.py	/^    def derivative(self, t, n=1):$/;"	m	class:Arc
+derivative	build/lib/svgpathtools/path.py	/^    def derivative(self, t, n=1):$/;"	m	class:CubicBezier
+derivative	build/lib/svgpathtools/path.py	/^    def derivative(self, t, n=1):$/;"	m	class:QuadraticBezier
+derivative	build/lib/svgpathtools/path.py	/^    def derivative(self, t=None, n=1):$/;"	m	class:Line
+derivative	svgpathtools/path.py	/^    def derivative(self, T, n=1):$/;"	m	class:Path
+derivative	svgpathtools/path.py	/^    def derivative(self, t, n=1):$/;"	m	class:Arc
+derivative	svgpathtools/path.py	/^    def derivative(self, t, n=1):$/;"	m	class:CubicBezier
+derivative	svgpathtools/path.py	/^    def derivative(self, t, n=1):$/;"	m	class:QuadraticBezier
+derivative	svgpathtools/path.py	/^    def derivative(self, t=None, n=1):$/;"	m	class:Line
+description	setup.py	/^      description=('A collection of tools for manipulating and analyzing SVG '$/;"	v
+desired_group_filter	build/lib/svgpathtools/document.py	/^    def desired_group_filter(x):$/;"	f	function:flattened_paths_from_group
+desired_group_filter	svgpathtools/document.py	/^    def desired_group_filter(x):$/;"	f	function:flattened_paths_from_group
+desired_path_filter	build/lib/svgpathtools/document.py	/^    def desired_path_filter(x):$/;"	f	function:flattened_paths_from_group
+desired_path_filter	svgpathtools/document.py	/^    def desired_path_filter(x):$/;"	f	function:flattened_paths_from_group
+dirname	test/test_groups.py	/^from os.path import join, dirname$/;"	i
+dirname	test/test_sax_groups.py	/^from os.path import join, dirname$/;"	i
+dirname	test/test_svg2paths.py	/^from os.path import join, dirname$/;"	i
+display	build/lib/svgpathtools/document.py	/^    def display(self, filepath=None):$/;"	m	class:Document
+display	build/lib/svgpathtools/svg_io_sax.py	/^    def display(self, filename=None):$/;"	m	class:SaxDocument
+display	svgpathtools/document.py	/^    def display(self, filepath=None):$/;"	m	class:Document
+display	svgpathtools/svg_io_sax.py	/^    def display(self, filename=None):$/;"	m	class:SaxDocument
+dist	examples/distance-between-two-svg-paths-example.py	/^def dist(t):$/;"	f
+distfcn	test/test_path.py	/^        def distfcn(tup1, tup2):$/;"	f	function:TestPathTools.test_closest_point_in_path
+distfcn	test/test_path.py	/^        def distfcn(tup1, tup2):$/;"	f	function:TestPathTools.test_farthest_point_in_path
+distfcn	test/test_path.py	/^        def distfcn(tup1, tup2):$/;"	f	function:TestPathTools.test_polynomial2bezier
+disvg	build/lib/svgpathtools/__init__.py	/^from .paths2svg import disvg, wsvg, paths2Drawing$/;"	i
+disvg	build/lib/svgpathtools/paths2svg.py	/^def disvg(paths=None, colors=None,$/;"	f
+disvg	build/lib/svgpathtools/smoothing.py	/^from .paths2svg import disvg$/;"	i
+disvg	svgpathtools/__init__.py	/^from .paths2svg import disvg, wsvg, paths2Drawing$/;"	i
+disvg	svgpathtools/paths2svg.py	/^def disvg(paths=None, colors=None, filename=None, stroke_widths=None,$/;"	f
+disvg	svgpathtools/smoothing.py	/^from .paths2svg import disvg$/;"	i
+division	build/lib/svgpathtools/bezier.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+division	build/lib/svgpathtools/document.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+division	build/lib/svgpathtools/misctools.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+division	build/lib/svgpathtools/parser.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+division	build/lib/svgpathtools/path.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+division	build/lib/svgpathtools/paths2svg.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+division	build/lib/svgpathtools/polytools.py	/^from __future__ import division, absolute_import$/;"	i
+division	build/lib/svgpathtools/smoothing.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+division	build/lib/svgpathtools/svg_io_sax.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+division	build/lib/svgpathtools/svg_to_paths.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+division	svgpathtools/bezier.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+division	svgpathtools/document.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+division	svgpathtools/misctools.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+division	svgpathtools/parser.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+division	svgpathtools/path.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+division	svgpathtools/paths2svg.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+division	svgpathtools/polytools.py	/^from __future__ import division, absolute_import$/;"	i
+division	svgpathtools/smoothing.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+division	svgpathtools/svg_io_sax.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+division	svgpathtools/svg_to_paths.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+division	test/test_bezier.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+division	test/test_generation.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+division	test/test_groups.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+division	test/test_parsing.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+division	test/test_path.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+division	test/test_polytools.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+division	test/test_sax_groups.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+division	test/test_svg2paths.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+dom2dict	build/lib/svgpathtools/svg_to_paths.py	/^    def dom2dict(element):$/;"	f	function:svg2paths
+dom2dict	svgpathtools/svg_to_paths.py	/^    def dom2dict(element):$/;"	f	function:svg2paths
+element	build/lib/svgpathtools/path.py	/^    element = None$/;"	v	class:Path
+element	svgpathtools/path.py	/^    element = None$/;"	v	class:Path
+ellipse2pathd	build/lib/svgpathtools/document.py	/^from .svg_to_paths import (path2pathd, ellipse2pathd, line2pathd,$/;"	i
+ellipse2pathd	build/lib/svgpathtools/svg_io_sax.py	/^from .svg_to_paths import (path2pathd, ellipse2pathd, line2pathd,$/;"	i
+ellipse2pathd	build/lib/svgpathtools/svg_to_paths.py	/^def ellipse2pathd(ellipse):$/;"	f
+ellipse2pathd	svgpathtools/document.py	/^from .svg_to_paths import (path2pathd, ellipse2pathd, line2pathd,$/;"	i
+ellipse2pathd	svgpathtools/svg_io_sax.py	/^from .svg_to_paths import (path2pathd, ellipse2pathd, line2pathd,$/;"	i
+ellipse2pathd	svgpathtools/svg_to_paths.py	/^def ellipse2pathd(ellipse):$/;"	f
+end	build/lib/svgpathtools/path.py	/^    def end(self):$/;"	m	class:Path
+end	build/lib/svgpathtools/path.py	/^    def end(self, pt):$/;"	m	class:Path
+end	svgpathtools/path.py	/^    def end(self):$/;"	m	class:Path
+end	svgpathtools/path.py	/^    def end(self, pt):$/;"	m	class:Path
+etree	build/lib/svgpathtools/document.py	/^import xml.etree.ElementTree as etree$/;"	i
+etree	svgpathtools/document.py	/^import xml.etree.ElementTree as etree$/;"	i
+exp	build/lib/svgpathtools/path.py	/^from cmath import exp, sqrt as csqrt, phase$/;"	i
+exp	svgpathtools/path.py	/^from numpy import exp, sqrt as csqrt, angle as phase$/;"	i
+fac	build/lib/svgpathtools/bezier.py	/^from math import factorial as fac, ceil, log, sqrt$/;"	i
+fac	svgpathtools/bezier.py	/^from math import factorial as fac, ceil, log, sqrt$/;"	i
+farthest_point_in_path	build/lib/svgpathtools/path.py	/^def farthest_point_in_path(pt, path):$/;"	f
+farthest_point_in_path	svgpathtools/path.py	/^def farthest_point_in_path(pt, path):$/;"	f
+flatten_all_paths	build/lib/svgpathtools/svg_io_sax.py	/^    def flatten_all_paths(self):$/;"	m	class:SaxDocument
+flatten_all_paths	svgpathtools/svg_io_sax.py	/^    def flatten_all_paths(self):$/;"	m	class:SaxDocument
+flattened_paths	build/lib/svgpathtools/document.py	/^def flattened_paths(group, group_filter=lambda x: True,$/;"	f
+flattened_paths	svgpathtools/document.py	/^def flattened_paths(group, group_filter=lambda x: True,$/;"	f
+flattened_paths_from_group	build/lib/svgpathtools/document.py	/^def flattened_paths_from_group(group_to_flatten, root, recursive=True,$/;"	f
+flattened_paths_from_group	svgpathtools/document.py	/^def flattened_paths_from_group(group_to_flatten, root, recursive=True,$/;"	f
+fminbound	examples/distance-between-two-svg-paths-example.py	/^from scipy.optimize import fminbound$/;"	i
+generate_dom	build/lib/svgpathtools/svg_io_sax.py	/^    def generate_dom(self):$/;"	m	class:SaxDocument
+generate_dom	svgpathtools/svg_io_sax.py	/^    def generate_dom(self):$/;"	m	class:SaxDocument
+get_desired_path	test/test_groups.py	/^def get_desired_path(name, paths):$/;"	f
+get_group	build/lib/svgpathtools/document.py	/^    def get_group(self, nested_names, name_attr='id'):$/;"	m	class:Document
+get_group	svgpathtools/document.py	/^    def get_group(self, nested_names, name_attr='id'):$/;"	m	class:Document
+get_or_add_group	build/lib/svgpathtools/document.py	/^    def get_or_add_group(self, nested_names, name_attr='id'):$/;"	m	class:Document
+get_or_add_group	svgpathtools/document.py	/^    def get_or_add_group(self, nested_names, name_attr='id'):$/;"	m	class:Document
+get_pathd_and_matrix	build/lib/svgpathtools/svg_io_sax.py	/^    def get_pathd_and_matrix(self):$/;"	m	class:SaxDocument
+get_pathd_and_matrix	svgpathtools/svg_io_sax.py	/^    def get_pathd_and_matrix(self):$/;"	m	class:SaxDocument
+get_relevant_children	build/lib/svgpathtools/document.py	/^    def get_relevant_children(parent, last_tf):$/;"	f	function:flattened_paths
+get_relevant_children	svgpathtools/document.py	/^    def get_relevant_children(parent, last_tf):$/;"	f	function:flattened_paths
+getcwd	build/lib/svgpathtools/paths2svg.py	/^from os import getcwd, path as os_path, makedirs$/;"	i
+getcwd	build/lib/svgpathtools/svg_to_paths.py	/^from os import path as os_path, getcwd$/;"	i
+getcwd	svgpathtools/svg_to_paths.py	/^from os import path as os_path, getcwd$/;"	i
+gettempdir	build/lib/svgpathtools/document.py	/^from tempfile import gettempdir$/;"	i
+gettempdir	svgpathtools/document.py	/^from tempfile import gettempdir$/;"	i
+gettempdir	svgpathtools/paths2svg.py	/^from tempfile import gettempdir$/;"	i
+halve_bezier	build/lib/svgpathtools/bezier.py	/^def halve_bezier(p):$/;"	f
+halve_bezier	svgpathtools/bezier.py	/^def halve_bezier(p):$/;"	f
+hex2rgb	build/lib/svgpathtools/__init__.py	/^from .misctools import hex2rgb, rgb2hex$/;"	i
+hex2rgb	build/lib/svgpathtools/misctools.py	/^def hex2rgb(value):$/;"	f
+hex2rgb	svgpathtools/__init__.py	/^from .misctools import hex2rgb, rgb2hex$/;"	i
+hex2rgb	svgpathtools/misctools.py	/^def hex2rgb(value):$/;"	f
+icenteriso	build/lib/svgpathtools/path.py	/^    def icenteriso(self, zeta):$/;"	m	class:Arc
+icenteriso	svgpathtools/path.py	/^    def icenteriso(self, zeta):$/;"	m	class:Arc
+ilength	build/lib/svgpathtools/path.py	/^    def ilength(self, s, s_tol=ILENGTH_S_TOL, maxits=ILENGTH_MAXITS,$/;"	m	class:Arc
+ilength	build/lib/svgpathtools/path.py	/^    def ilength(self, s, s_tol=ILENGTH_S_TOL, maxits=ILENGTH_MAXITS,$/;"	m	class:CubicBezier
+ilength	build/lib/svgpathtools/path.py	/^    def ilength(self, s, s_tol=ILENGTH_S_TOL, maxits=ILENGTH_MAXITS,$/;"	m	class:Line
+ilength	build/lib/svgpathtools/path.py	/^    def ilength(self, s, s_tol=ILENGTH_S_TOL, maxits=ILENGTH_MAXITS,$/;"	m	class:Path
+ilength	build/lib/svgpathtools/path.py	/^    def ilength(self, s, s_tol=ILENGTH_S_TOL, maxits=ILENGTH_MAXITS,$/;"	m	class:QuadraticBezier
+ilength	svgpathtools/path.py	/^    def ilength(self, s, s_tol=ILENGTH_S_TOL, maxits=ILENGTH_MAXITS,$/;"	m	class:Arc
+ilength	svgpathtools/path.py	/^    def ilength(self, s, s_tol=ILENGTH_S_TOL, maxits=ILENGTH_MAXITS,$/;"	m	class:CubicBezier
+ilength	svgpathtools/path.py	/^    def ilength(self, s, s_tol=ILENGTH_S_TOL, maxits=ILENGTH_MAXITS,$/;"	m	class:Line
+ilength	svgpathtools/path.py	/^    def ilength(self, s, s_tol=ILENGTH_S_TOL, maxits=ILENGTH_MAXITS,$/;"	m	class:Path
+ilength	svgpathtools/path.py	/^    def ilength(self, s, s_tol=ILENGTH_S_TOL, maxits=ILENGTH_MAXITS,$/;"	m	class:QuadraticBezier
+imag	build/lib/svgpathtools/__init__.py	/^from .polytools import polyroots, polyroots01, rational_limit, real, imag$/;"	i
+imag	build/lib/svgpathtools/bezier.py	/^from .polytools import real, imag, polyroots, polyroots01$/;"	i
+imag	build/lib/svgpathtools/path.py	/^from .polytools import rational_limit, polyroots, polyroots01, imag, real$/;"	i
+imag	build/lib/svgpathtools/polytools.py	/^def imag(z):$/;"	f
+imag	svgpathtools/__init__.py	/^from .polytools import polyroots, polyroots01, rational_limit, real, imag$/;"	i
+imag	svgpathtools/bezier.py	/^from .polytools import real, imag, polyroots, polyroots01$/;"	i
+imag	svgpathtools/path.py	/^from .polytools import rational_limit, polyroots, polyroots01, imag, real$/;"	i
+imag	svgpathtools/polytools.py	/^def imag(z):$/;"	f
+in_range	build/lib/svgpathtools/path.py	/^        def in_range(min, max, val):$/;"	f	function:Arc.point_to_t
+in_range	svgpathtools/path.py	/^        def in_range(min, max, val):$/;"	f	function:Arc.point_to_t
+insert	build/lib/svgpathtools/path.py	/^    def insert(self, index, value):$/;"	m	class:Path
+insert	svgpathtools/path.py	/^    def insert(self, index, value):$/;"	m	class:Path
+install_requires	setup.py	/^      install_requires=['numpy', 'svgwrite'],$/;"	v
+intersect	build/lib/svgpathtools/path.py	/^    def intersect(self, other_curve, justonemode=False, tol=1e-12):$/;"	m	class:Path
+intersect	build/lib/svgpathtools/path.py	/^    def intersect(self, other_seg, tol=1e-12):$/;"	m	class:Arc
+intersect	build/lib/svgpathtools/path.py	/^    def intersect(self, other_seg, tol=1e-12):$/;"	m	class:CubicBezier
+intersect	build/lib/svgpathtools/path.py	/^    def intersect(self, other_seg, tol=1e-12):$/;"	m	class:QuadraticBezier
+intersect	build/lib/svgpathtools/path.py	/^    def intersect(self, other_seg, tol=None):$/;"	m	class:Line
+intersect	svgpathtools/path.py	/^    def intersect(self, other_curve, justonemode=False, tol=1e-12):$/;"	m	class:Path
+intersect	svgpathtools/path.py	/^    def intersect(self, other_seg, tol=1e-12):$/;"	m	class:Arc
+intersect	svgpathtools/path.py	/^    def intersect(self, other_seg, tol=1e-12):$/;"	m	class:CubicBezier
+intersect	svgpathtools/path.py	/^    def intersect(self, other_seg, tol=1e-12):$/;"	m	class:QuadraticBezier
+intersect	svgpathtools/path.py	/^    def intersect(self, other_seg, tol=None):$/;"	m	class:Line
+interval_intersection_width	build/lib/svgpathtools/bezier.py	/^def interval_intersection_width(a, b, c, d):$/;"	f
+interval_intersection_width	svgpathtools/bezier.py	/^def interval_intersection_width(a, b, c, d):$/;"	f
+inv_arclength	build/lib/svgpathtools/path.py	/^def inv_arclength(curve, s, s_tol=ILENGTH_S_TOL, maxits=ILENGTH_MAXITS,$/;"	f
+inv_arclength	svgpathtools/path.py	/^def inv_arclength(curve, s, s_tol=ILENGTH_S_TOL, maxits=ILENGTH_MAXITS,$/;"	f
+is3tuple	build/lib/svgpathtools/paths2svg.py	/^def is3tuple(c):$/;"	f
+is3tuple	svgpathtools/paths2svg.py	/^def is3tuple(c):$/;"	f
+is_bezier_path	build/lib/svgpathtools/path.py	/^def is_bezier_path(path):$/;"	f
+is_bezier_path	svgpathtools/path.py	/^def is_bezier_path(path):$/;"	f
+is_bezier_segment	build/lib/svgpathtools/path.py	/^def is_bezier_segment(seg):$/;"	f
+is_bezier_segment	build/lib/svgpathtools/path.py	/^def is_bezier_segment(x):$/;"	f
+is_bezier_segment	svgpathtools/path.py	/^def is_bezier_segment(seg):$/;"	f
+is_bezier_segment	svgpathtools/path.py	/^def is_bezier_segment(x):$/;"	f
+is_contained_by	build/lib/svgpathtools/path.py	/^    def is_contained_by(self, other):$/;"	m	class:Path
+is_contained_by	svgpathtools/path.py	/^    def is_contained_by(self, other):$/;"	m	class:Path
+is_differentiable	build/lib/svgpathtools/__init__.py	/^from .smoothing import smoothed_path, smoothed_joint, is_differentiable, kinks$/;"	i
+is_differentiable	build/lib/svgpathtools/smoothing.py	/^def is_differentiable(path, tol=1e-8):$/;"	f
+is_differentiable	svgpathtools/__init__.py	/^from .smoothing import smoothed_path, smoothed_joint, is_differentiable, kinks$/;"	i
+is_differentiable	svgpathtools/smoothing.py	/^def is_differentiable(path, tol=1e-8):$/;"	f
+is_path_segment	build/lib/svgpathtools/path.py	/^def is_path_segment(seg):$/;"	f
+is_path_segment	build/lib/svgpathtools/path.py	/^def is_path_segment(x):$/;"	f
+is_path_segment	build/lib/svgpathtools/paths2svg.py	/^from .path import Path, Line, is_path_segment$/;"	i
+is_path_segment	svgpathtools/path.py	/^def is_path_segment(seg):$/;"	f
+is_path_segment	svgpathtools/path.py	/^def is_path_segment(x):$/;"	f
+is_path_segment	svgpathtools/paths2svg.py	/^from .path import Path, Line, is_path_segment$/;"	i
+is_smooth_from	build/lib/svgpathtools/path.py	/^    def is_smooth_from(self, previous, warning_on=True):$/;"	m	class:CubicBezier
+is_smooth_from	build/lib/svgpathtools/path.py	/^    def is_smooth_from(self, previous, warning_on=True):$/;"	m	class:QuadraticBezier
+is_smooth_from	svgpathtools/path.py	/^    def is_smooth_from(self, previous, warning_on=True):$/;"	m	class:CubicBezier
+is_smooth_from	svgpathtools/path.py	/^    def is_smooth_from(self, previous, warning_on=True):$/;"	m	class:QuadraticBezier
+isclose	build/lib/svgpathtools/misctools.py	/^def isclose(a, b, rtol=1e-5, atol=1e-8):$/;"	f
+isclose	build/lib/svgpathtools/polytools.py	/^from .misctools import isclose$/;"	i
+isclose	build/lib/svgpathtools/smoothing.py	/^from .misctools import isclose$/;"	i
+isclose	svgpathtools/misctools.py	/^def isclose(a, b, rtol=1e-5, atol=1e-8):$/;"	f
+isclose	svgpathtools/polytools.py	/^from .misctools import isclose$/;"	i
+isclose	svgpathtools/smoothing.py	/^from .misctools import isclose$/;"	i
+isclosed	build/lib/svgpathtools/path.py	/^    def isclosed(self):$/;"	m	class:Path
+isclosed	svgpathtools/path.py	/^    def isclosed(self):$/;"	m	class:Path
+isclosedac	build/lib/svgpathtools/path.py	/^    def isclosedac(self):$/;"	m	class:Path
+isclosedac	svgpathtools/path.py	/^    def isclosedac(self):$/;"	m	class:Path
+iscontinuous	build/lib/svgpathtools/path.py	/^    def iscontinuous(self):$/;"	m	class:Path
+iscontinuous	svgpathtools/path.py	/^    def iscontinuous(self):$/;"	m	class:Path
+itemgetter	build/lib/svgpathtools/path.py	/^from operator import itemgetter$/;"	i
+itemgetter	svgpathtools/path.py	/^from operator import itemgetter$/;"	i
+itemgetter	test/test_path.py	/^from operator import itemgetter$/;"	i
+iterparse	build/lib/svgpathtools/svg_io_sax.py	/^from xml.etree.ElementTree import iterparse, Element, ElementTree, SubElement$/;"	i
+iterparse	svgpathtools/svg_io_sax.py	/^from xml.etree.ElementTree import iterparse, Element, ElementTree, SubElement$/;"	i
+iu1transform	build/lib/svgpathtools/path.py	/^    def iu1transform(self, zeta):$/;"	m	class:Arc
+iu1transform	svgpathtools/path.py	/^    def iu1transform(self, zeta):$/;"	m	class:Arc
+join	test/test_groups.py	/^from os.path import join, dirname$/;"	i
+join	test/test_sax_groups.py	/^from os.path import join, dirname$/;"	i
+join	test/test_svg2paths.py	/^from os.path import join, dirname$/;"	i
+joins_smoothly_with	build/lib/svgpathtools/path.py	/^    def joins_smoothly_with(self, previous, wrt_parameterization=False):$/;"	m	class:CubicBezier
+joins_smoothly_with	build/lib/svgpathtools/path.py	/^    def joins_smoothly_with(self, previous, wrt_parameterization=False):$/;"	m	class:Line
+joins_smoothly_with	build/lib/svgpathtools/path.py	/^    def joins_smoothly_with(self, previous, wrt_parameterization=False):$/;"	m	class:Path
+joins_smoothly_with	build/lib/svgpathtools/path.py	/^    def joins_smoothly_with(self, previous, wrt_parameterization=False,$/;"	m	class:Arc
+joins_smoothly_with	build/lib/svgpathtools/path.py	/^    def joins_smoothly_with(self, previous, wrt_parameterization=False,$/;"	m	class:QuadraticBezier
+joins_smoothly_with	svgpathtools/path.py	/^    def joins_smoothly_with(self, previous, wrt_parameterization=False):$/;"	m	class:CubicBezier
+joins_smoothly_with	svgpathtools/path.py	/^    def joins_smoothly_with(self, previous, wrt_parameterization=False):$/;"	m	class:Line
+joins_smoothly_with	svgpathtools/path.py	/^    def joins_smoothly_with(self, previous, wrt_parameterization=False):$/;"	m	class:Path
+joins_smoothly_with	svgpathtools/path.py	/^    def joins_smoothly_with(self, previous, wrt_parameterization=False,$/;"	m	class:Arc
+joins_smoothly_with	svgpathtools/path.py	/^    def joins_smoothly_with(self, previous, wrt_parameterization=False,$/;"	m	class:QuadraticBezier
+keyfcn	build/lib/svgpathtools/path.py	/^                def keyfcn(tpair):$/;"	f	function:Arc.intersect
+keyfcn	svgpathtools/path.py	/^                def keyfcn(tpair):$/;"	f	function:Arc.intersect
+keywords	setup.py	/^      keywords=['svg', 'svg path', 'svg.path', 'bezier', 'parse svg path', 'display svg'],$/;"	v
+kinks	build/lib/svgpathtools/__init__.py	/^from .smoothing import smoothed_path, smoothed_joint, is_differentiable, kinks$/;"	i
+kinks	build/lib/svgpathtools/smoothing.py	/^def kinks(path, tol=1e-8):$/;"	f
+kinks	svgpathtools/__init__.py	/^from .smoothing import smoothed_path, smoothed_joint, is_differentiable, kinks$/;"	i
+kinks	svgpathtools/smoothing.py	/^def kinks(path, tol=1e-8):$/;"	f
+length	build/lib/svgpathtools/path.py	/^    def length(self, T0=0, T1=1, error=LENGTH_ERROR, min_depth=LENGTH_MIN_DEPTH):$/;"	m	class:Path
+length	build/lib/svgpathtools/path.py	/^    def length(self, t0=0, t1=1, error=LENGTH_ERROR, min_depth=LENGTH_MIN_DEPTH):$/;"	m	class:Arc
+length	build/lib/svgpathtools/path.py	/^    def length(self, t0=0, t1=1, error=LENGTH_ERROR, min_depth=LENGTH_MIN_DEPTH):$/;"	m	class:CubicBezier
+length	build/lib/svgpathtools/path.py	/^    def length(self, t0=0, t1=1, error=None, min_depth=None):$/;"	m	class:Line
+length	build/lib/svgpathtools/path.py	/^    def length(self, t0=0, t1=1, error=None, min_depth=None):$/;"	m	class:QuadraticBezier
+length	svgpathtools/path.py	/^    def length(self, T0=0, T1=1, error=LENGTH_ERROR, min_depth=LENGTH_MIN_DEPTH):$/;"	m	class:Path
+length	svgpathtools/path.py	/^    def length(self, t0=0, t1=1, error=LENGTH_ERROR, min_depth=LENGTH_MIN_DEPTH):$/;"	m	class:Arc
+length	svgpathtools/path.py	/^    def length(self, t0=0, t1=1, error=LENGTH_ERROR, min_depth=LENGTH_MIN_DEPTH):$/;"	m	class:CubicBezier
+length	svgpathtools/path.py	/^    def length(self, t0=0, t1=1, error=None, min_depth=None):$/;"	m	class:Line
+length	svgpathtools/path.py	/^    def length(self, t0=0, t1=1, error=None, min_depth=None):$/;"	m	class:QuadraticBezier
+license	setup.py	/^      license='MIT',$/;"	v
+line2pathd	build/lib/svgpathtools/document.py	/^from .svg_to_paths import (path2pathd, ellipse2pathd, line2pathd,$/;"	i
+line2pathd	build/lib/svgpathtools/svg_io_sax.py	/^from .svg_to_paths import (path2pathd, ellipse2pathd, line2pathd,$/;"	i
+line2pathd	build/lib/svgpathtools/svg_to_paths.py	/^def line2pathd(l):$/;"	f
+line2pathd	svgpathtools/document.py	/^from .svg_to_paths import (path2pathd, ellipse2pathd, line2pathd,$/;"	i
+line2pathd	svgpathtools/svg_io_sax.py	/^from .svg_to_paths import (path2pathd, ellipse2pathd, line2pathd,$/;"	i
+line2pathd	svgpathtools/svg_to_paths.py	/^def line2pathd(l):$/;"	f
+log	build/lib/svgpathtools/bezier.py	/^from math import factorial as fac, ceil, log, sqrt$/;"	i
+log	build/lib/svgpathtools/path.py	/^from math import sqrt, cos, sin, acos, asin, degrees, radians, log, pi, ceil$/;"	i
+log	svgpathtools/bezier.py	/^from math import factorial as fac, ceil, log, sqrt$/;"	i
+log	svgpathtools/path.py	/^    degrees, radians, log, pi, ceil$/;"	i
+long_description	setup.py	/^      long_description=read("README.md"),$/;"	v
+long_description_content_type	setup.py	/^      long_description_content_type='text\/markdown',$/;"	v
+makedirs	build/lib/svgpathtools/paths2svg.py	/^from os import getcwd, path as os_path, makedirs$/;"	i
+makedirs	svgpathtools/paths2svg.py	/^from os import path as os_path, makedirs$/;"	i
+md_xml_parse	build/lib/svgpathtools/paths2svg.py	/^from xml.dom.minidom import parse as md_xml_parse$/;"	i
+md_xml_parse	svgpathtools/paths2svg.py	/^from xml.dom.minidom import parse as md_xml_parse$/;"	i
+meta	build/lib/svgpathtools/path.py	/^    meta = None  # meant as container for storage of arbitrary meta data$/;"	v	class:Path
+meta	svgpathtools/path.py	/^    meta = None  # meant as container for storage of arbitrary meta data$/;"	v	class:Path
+n_choose_k	build/lib/svgpathtools/bezier.py	/^def n_choose_k(n, k):$/;"	f
+n_choose_k	svgpathtools/bezier.py	/^def n_choose_k(n, k):$/;"	f
+new_stack_element	build/lib/svgpathtools/document.py	/^    def new_stack_element(element, last_tf):$/;"	f	function:flattened_paths
+new_stack_element	svgpathtools/document.py	/^    def new_stack_element(element, last_tf):$/;"	f	function:flattened_paths
+noqa	build/lib/svgpathtools/path.py	/^    from collections import MutableSequence  # noqa$/;"	i
+noqa	build/lib/svgpathtools/path.py	/^    from collections.abc import MutableSequence  # noqa$/;"	i
+noqa	svgpathtools/path.py	/^    from collections import MutableSequence  # noqa$/;"	i
+noqa	svgpathtools/path.py	/^    from collections.abc import MutableSequence  # noqa$/;"	i
+normal	build/lib/svgpathtools/path.py	/^    def normal(self, t):$/;"	m	class:Arc
+normal	build/lib/svgpathtools/path.py	/^    def normal(self, t):$/;"	m	class:CubicBezier
+normal	build/lib/svgpathtools/path.py	/^    def normal(self, t):$/;"	m	class:Path
+normal	build/lib/svgpathtools/path.py	/^    def normal(self, t):$/;"	m	class:QuadraticBezier
+normal	build/lib/svgpathtools/path.py	/^    def normal(self, t=None):$/;"	m	class:Line
+normal	svgpathtools/path.py	/^    def normal(self, t):$/;"	m	class:Arc
+normal	svgpathtools/path.py	/^    def normal(self, t):$/;"	m	class:CubicBezier
+normal	svgpathtools/path.py	/^    def normal(self, t):$/;"	m	class:Path
+normal	svgpathtools/path.py	/^    def normal(self, t):$/;"	m	class:QuadraticBezier
+normal	svgpathtools/path.py	/^    def normal(self, t=None):$/;"	m	class:Line
+np	build/lib/svgpathtools/parser.py	/^import numpy as np$/;"	i
+np	build/lib/svgpathtools/path.py	/^import numpy as np$/;"	i
+np	build/lib/svgpathtools/polytools.py	/^import numpy as np$/;"	i
+np	examples/compute-many-points-quickly-using-numpy-arrays.py	/^import numpy as np$/;"	i
+np	svgpathtools/parser.py	/^import numpy as np$/;"	i
+np	svgpathtools/path.py	/^import numpy as np$/;"	i
+np	svgpathtools/polytools.py	/^import numpy as np$/;"	i
+np	test/test_bezier.py	/^import numpy as np$/;"	i
+np	test/test_groups.py	/^import numpy as np$/;"	i
+np	test/test_parsing.py	/^import numpy as np$/;"	i
+np	test/test_path.py	/^import numpy as np$/;"	i
+np	test/test_polytools.py	/^import numpy as np$/;"	i
+num_segs	examples/compute-many-points-quickly-using-numpy-arrays.py	/^    num_segs = 1000$/;"	v
+open_in_browser	build/lib/svgpathtools/document.py	/^from .misctools import open_in_browser$/;"	i
+open_in_browser	build/lib/svgpathtools/misctools.py	/^def open_in_browser(file_location):$/;"	f
+open_in_browser	build/lib/svgpathtools/paths2svg.py	/^from .misctools import open_in_browser$/;"	i
+open_in_browser	build/lib/svgpathtools/svg_io_sax.py	/^from .misctools import open_in_browser$/;"	i
+open_in_browser	svgpathtools/document.py	/^from .misctools import open_in_browser$/;"	i
+open_in_browser	svgpathtools/misctools.py	/^def open_in_browser(file_location):$/;"	f
+open_in_browser	svgpathtools/paths2svg.py	/^from .misctools import open_in_browser$/;"	i
+open_in_browser	svgpathtools/svg_io_sax.py	/^from .misctools import open_in_browser$/;"	i
+os	build/lib/svgpathtools/document.py	/^import os$/;"	i
+os	build/lib/svgpathtools/misctools.py	/^import os$/;"	i
+os	build/lib/svgpathtools/svg_io_sax.py	/^import os$/;"	i
+os	setup.py	/^import os$/;"	i
+os	svgpathtools/document.py	/^import os$/;"	i
+os	svgpathtools/misctools.py	/^import os$/;"	i
+os	svgpathtools/svg_io_sax.py	/^import os$/;"	i
+os_path	build/lib/svgpathtools/paths2svg.py	/^from os import getcwd, path as os_path, makedirs$/;"	i
+os_path	build/lib/svgpathtools/svg_to_paths.py	/^from os import path as os_path, getcwd$/;"	i
+os_path	svgpathtools/paths2svg.py	/^from os import path as os_path, makedirs$/;"	i
+os_path	svgpathtools/svg_to_paths.py	/^from os import path as os_path, getcwd$/;"	i
+packages	setup.py	/^      packages=['svgpathtools'],$/;"	v
+parse	build/lib/svgpathtools/svg_to_paths.py	/^from xml.dom.minidom import parse$/;"	i
+parse	svgpathtools/svg_to_paths.py	/^from xml.dom.minidom import parse$/;"	i
+parseString	build/lib/svgpathtools/document.py	/^from xml.dom.minidom import parseString$/;"	i
+parseString	svgpathtools/document.py	/^from xml.dom.minidom import parseString$/;"	i
+parse_path	build/lib/svgpathtools/__init__.py	/^from .parser import parse_path$/;"	i
+parse_path	build/lib/svgpathtools/document.py	/^from .parser import parse_path$/;"	i
+parse_path	build/lib/svgpathtools/parser.py	/^def parse_path(pathdef, current_pos=0j, tree_element=None):$/;"	f
+parse_path	build/lib/svgpathtools/svg_io_sax.py	/^from .parser import parse_path$/;"	i
+parse_path	build/lib/svgpathtools/svg_to_paths.py	/^from .parser import parse_path$/;"	i
+parse_path	svgpathtools/__init__.py	/^from .parser import parse_path$/;"	i
+parse_path	svgpathtools/document.py	/^from .parser import parse_path$/;"	i
+parse_path	svgpathtools/parser.py	/^def parse_path(pathdef, current_pos=0j, tree_element=None):$/;"	f
+parse_path	svgpathtools/svg_io_sax.py	/^from .parser import parse_path$/;"	i
+parse_path	svgpathtools/svg_to_paths.py	/^from .parser import parse_path$/;"	i
+parse_transform	build/lib/svgpathtools/document.py	/^from .parser import parse_transform$/;"	i
+parse_transform	build/lib/svgpathtools/parser.py	/^def parse_transform(transform_str):$/;"	f
+parse_transform	build/lib/svgpathtools/svg_io_sax.py	/^from .parser import parse_transform$/;"	i
+parse_transform	svgpathtools/document.py	/^from .parser import parse_transform$/;"	i
+parse_transform	svgpathtools/parser.py	/^def parse_transform(transform_str):$/;"	f
+parse_transform	svgpathtools/svg_io_sax.py	/^from .parser import parse_transform$/;"	i
+path1	examples/distance-between-two-svg-paths-example.py	/^path1 = CubicBezier(1,2+3j,3-5j,4+1j)$/;"	v
+path1_is_contained_in_path2	examples/determine-if-svg-path-is-contained-in-other-path-example.py	/^def path1_is_contained_in_path2(path1, path2):$/;"	f
+path2	examples/distance-between-two-svg-paths-example.py	/^path2 = path1.rotated(60).translated(3)$/;"	v
+path2pathd	build/lib/svgpathtools/document.py	/^from .svg_to_paths import (path2pathd, ellipse2pathd, line2pathd,$/;"	i
+path2pathd	build/lib/svgpathtools/svg_io_sax.py	/^from .svg_to_paths import (path2pathd, ellipse2pathd, line2pathd,$/;"	i
+path2pathd	build/lib/svgpathtools/svg_to_paths.py	/^def path2pathd(path):$/;"	f
+path2pathd	svgpathtools/document.py	/^from .svg_to_paths import (path2pathd, ellipse2pathd, line2pathd,$/;"	i
+path2pathd	svgpathtools/svg_io_sax.py	/^from .svg_to_paths import (path2pathd, ellipse2pathd, line2pathd,$/;"	i
+path2pathd	svgpathtools/svg_to_paths.py	/^def path2pathd(path):$/;"	f
+path_encloses_pt	build/lib/svgpathtools/path.py	/^def path_encloses_pt(pt, opt, path):$/;"	f
+path_encloses_pt	svgpathtools/path.py	/^def path_encloses_pt(pt, opt, path):$/;"	f
+path_that_intersects	examples/determine-if-svg-path-is-contained-in-other-path-example.py	/^path_that_intersects = Path(Line(2+1j, 10+10j))$/;"	v
+path_that_is_contained	examples/determine-if-svg-path-is-contained-in-other-path-example.py	/^path_that_is_contained = Path(Line(1+1j, 2+2j))$/;"	v
+path_thats_not_contained	examples/determine-if-svg-path-is-contained-in-other-path-example.py	/^path_thats_not_contained = Path(Line(10+10j, 20+20j))$/;"	v
+paths	build/lib/svgpathtools/document.py	/^    def paths(self, group_filter=lambda x: True,$/;"	m	class:Document
+paths	svgpathtools/document.py	/^    def paths(self, group_filter=lambda x: True,$/;"	m	class:Document
+paths2Drawing	build/lib/svgpathtools/__init__.py	/^from .paths2svg import disvg, wsvg, paths2Drawing$/;"	i
+paths2Drawing	build/lib/svgpathtools/paths2svg.py	/^def paths2Drawing(paths=None, colors=None,$/;"	f
+paths2Drawing	svgpathtools/__init__.py	/^from .paths2svg import disvg, wsvg, paths2Drawing$/;"	i
+paths2Drawing	svgpathtools/paths2svg.py	/^def paths2Drawing(paths=None, colors=None, filename=None,$/;"	f
+paths_from_group	build/lib/svgpathtools/document.py	/^    def paths_from_group(self, group, recursive=True, group_filter=lambda x: True,$/;"	m	class:Document
+paths_from_group	svgpathtools/document.py	/^    def paths_from_group(self, group, recursive=True, group_filter=lambda x: True,$/;"	m	class:Document
+phase	build/lib/svgpathtools/path.py	/^from cmath import exp, sqrt as csqrt, phase$/;"	i
+phase	svgpathtools/path.py	/^from numpy import exp, sqrt as csqrt, angle as phase$/;"	i
+phase2t	build/lib/svgpathtools/path.py	/^    def phase2t(self, psi):$/;"	m	class:Arc
+phase2t	svgpathtools/path.py	/^    def phase2t(self, psi):$/;"	m	class:Arc
+pi	build/lib/svgpathtools/path.py	/^from math import sqrt, cos, sin, acos, asin, degrees, radians, log, pi, ceil$/;"	i
+pi	svgpathtools/path.py	/^    degrees, radians, log, pi, ceil$/;"	i
+pi	test/test_path.py	/^from math import sqrt, pi$/;"	i
+platforms	setup.py	/^      platforms="OS Independent",$/;"	v
+point	build/lib/svgpathtools/path.py	/^    def point(self, pos):$/;"	m	class:Path
+point	build/lib/svgpathtools/path.py	/^    def point(self, t):$/;"	m	class:Arc
+point	build/lib/svgpathtools/path.py	/^    def point(self, t):$/;"	m	class:CubicBezier
+point	build/lib/svgpathtools/path.py	/^    def point(self, t):$/;"	m	class:Line
+point	build/lib/svgpathtools/path.py	/^    def point(self, t):$/;"	m	class:QuadraticBezier
+point	examples/compute-many-points-quickly-using-numpy-arrays.py	/^    def point(self, t):$/;"	m	class:HigherOrderBezier
+point	svgpathtools/path.py	/^    def point(self, pos):$/;"	m	class:Path
+point	svgpathtools/path.py	/^    def point(self, t):$/;"	m	class:Arc
+point	svgpathtools/path.py	/^    def point(self, t):$/;"	m	class:CubicBezier
+point	svgpathtools/path.py	/^    def point(self, t):$/;"	m	class:Line
+point	svgpathtools/path.py	/^    def point(self, t):$/;"	m	class:QuadraticBezier
+point	test/test_bezier.py	/^    def point(self, t):$/;"	m	class:HigherOrderBezier
+point_in_seg_interior	build/lib/svgpathtools/path.py	/^                    def point_in_seg_interior(point, seg):$/;"	f	function:Arc.intersect
+point_in_seg_interior	svgpathtools/path.py	/^                    def point_in_seg_interior(point, seg):$/;"	f	function:Arc.intersect
+point_to_t	build/lib/svgpathtools/path.py	/^    def point_to_t(self, point):$/;"	m	class:Arc
+point_to_t	build/lib/svgpathtools/path.py	/^    def point_to_t(self, point):$/;"	m	class:Line
+point_to_t	svgpathtools/path.py	/^    def point_to_t(self, point):$/;"	m	class:Arc
+point_to_t	svgpathtools/path.py	/^    def point_to_t(self, point):$/;"	m	class:Line
+points	build/lib/svgpathtools/path.py	/^    def points(self, ts):$/;"	m	class:CubicBezier
+points	build/lib/svgpathtools/path.py	/^    def points(self, ts):$/;"	m	class:Line
+points	build/lib/svgpathtools/path.py	/^    def points(self, ts):$/;"	m	class:QuadraticBezier
+points	svgpathtools/path.py	/^    def points(self, ts):$/;"	m	class:CubicBezier
+points	svgpathtools/path.py	/^    def points(self, ts):$/;"	m	class:Line
+points	svgpathtools/path.py	/^    def points(self, ts):$/;"	m	class:QuadraticBezier
+points_in_each_seg	examples/compute-many-points-quickly-using-numpy-arrays.py	/^def points_in_each_seg(path, tvals):$/;"	f
+points_in_each_seg_slow	examples/compute-many-points-quickly-using-numpy-arrays.py	/^def points_in_each_seg_slow(path, tvals):$/;"	f
+poly	build/lib/svgpathtools/path.py	/^    def poly(self, return_coeffs=False):$/;"	m	class:CubicBezier
+poly	build/lib/svgpathtools/path.py	/^    def poly(self, return_coeffs=False):$/;"	m	class:Line
+poly	build/lib/svgpathtools/path.py	/^    def poly(self, return_coeffs=False):$/;"	m	class:QuadraticBezier
+poly	svgpathtools/path.py	/^    def poly(self, return_coeffs=False):$/;"	m	class:CubicBezier
+poly	svgpathtools/path.py	/^    def poly(self, return_coeffs=False):$/;"	m	class:Line
+poly	svgpathtools/path.py	/^    def poly(self, return_coeffs=False):$/;"	m	class:QuadraticBezier
+poly1d	build/lib/svgpathtools/bezier.py	/^from numpy import poly1d$/;"	i
+poly1d	svgpathtools/bezier.py	/^from numpy import poly1d$/;"	i
+poly2bez	build/lib/svgpathtools/path.py	/^def poly2bez(poly, return_bpoints=False):$/;"	f
+poly2bez	svgpathtools/path.py	/^def poly2bez(poly, return_bpoints=False):$/;"	f
+poly_imag_part	build/lib/svgpathtools/polytools.py	/^def poly_imag_part(poly):$/;"	f
+poly_imag_part	svgpathtools/polytools.py	/^def poly_imag_part(poly):$/;"	f
+poly_real_part	build/lib/svgpathtools/polytools.py	/^def poly_real_part(poly):$/;"	f
+poly_real_part	svgpathtools/polytools.py	/^def poly_real_part(poly):$/;"	f
+polygon	build/lib/svgpathtools/path.py	/^def polygon(*points):$/;"	f
+polygon	svgpathtools/path.py	/^def polygon(*points):$/;"	f
+polygon2pathd	build/lib/svgpathtools/svg_to_paths.py	/^def polygon2pathd(polyline):$/;"	f
+polygon2pathd	svgpathtools/svg_to_paths.py	/^def polygon2pathd(polyline):$/;"	f
+polyline	build/lib/svgpathtools/path.py	/^def polyline(*points):$/;"	f
+polyline	svgpathtools/path.py	/^def polyline(*points):$/;"	f
+polyline2pathd	build/lib/svgpathtools/svg_to_paths.py	/^def polyline2pathd(polyline, is_polygon=False):$/;"	f
+polyline2pathd	svgpathtools/svg_to_paths.py	/^def polyline2pathd(polyline, is_polygon=False):$/;"	f
+polynomial2bezier	build/lib/svgpathtools/bezier.py	/^def polynomial2bezier(poly):$/;"	f
+polynomial2bezier	svgpathtools/bezier.py	/^def polynomial2bezier(poly):$/;"	f
+polyroots	build/lib/svgpathtools/__init__.py	/^from .polytools import polyroots, polyroots01, rational_limit, real, imag$/;"	i
+polyroots	build/lib/svgpathtools/bezier.py	/^from .polytools import real, imag, polyroots, polyroots01$/;"	i
+polyroots	build/lib/svgpathtools/path.py	/^from .polytools import rational_limit, polyroots, polyroots01, imag, real$/;"	i
+polyroots	build/lib/svgpathtools/polytools.py	/^def polyroots(p, realroots=False, condition=lambda r: True):$/;"	f
+polyroots	svgpathtools/__init__.py	/^from .polytools import polyroots, polyroots01, rational_limit, real, imag$/;"	i
+polyroots	svgpathtools/bezier.py	/^from .polytools import real, imag, polyroots, polyroots01$/;"	i
+polyroots	svgpathtools/path.py	/^from .polytools import rational_limit, polyroots, polyroots01, imag, real$/;"	i
+polyroots	svgpathtools/polytools.py	/^def polyroots(p, realroots=False, condition=lambda r: True):$/;"	f
+polyroots01	build/lib/svgpathtools/__init__.py	/^from .polytools import polyroots, polyroots01, rational_limit, real, imag$/;"	i
+polyroots01	build/lib/svgpathtools/bezier.py	/^from .polytools import real, imag, polyroots, polyroots01$/;"	i
+polyroots01	build/lib/svgpathtools/path.py	/^from .polytools import rational_limit, polyroots, polyroots01, imag, real$/;"	i
+polyroots01	build/lib/svgpathtools/polytools.py	/^def polyroots01(p):$/;"	f
+polyroots01	svgpathtools/__init__.py	/^from .polytools import polyroots, polyroots01, rational_limit, real, imag$/;"	i
+polyroots01	svgpathtools/bezier.py	/^from .polytools import real, imag, polyroots, polyroots01$/;"	i
+polyroots01	svgpathtools/path.py	/^from .polytools import rational_limit, polyroots, polyroots01, imag, real$/;"	i
+polyroots01	svgpathtools/polytools.py	/^def polyroots01(p):$/;"	f
+pretty	build/lib/svgpathtools/document.py	/^    def pretty(self, **kwargs):$/;"	m	class:Document
+pretty	svgpathtools/document.py	/^    def pretty(self, **kwargs):$/;"	m	class:Document
+print_function	build/lib/svgpathtools/bezier.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+print_function	build/lib/svgpathtools/document.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+print_function	build/lib/svgpathtools/misctools.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+print_function	build/lib/svgpathtools/parser.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+print_function	build/lib/svgpathtools/path.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+print_function	build/lib/svgpathtools/paths2svg.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+print_function	build/lib/svgpathtools/smoothing.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+print_function	build/lib/svgpathtools/svg_io_sax.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+print_function	build/lib/svgpathtools/svg_to_paths.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+print_function	examples/compute-many-points-quickly-using-numpy-arrays.py	/^from __future__ import print_function$/;"	i
+print_function	svgpathtools/bezier.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+print_function	svgpathtools/document.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+print_function	svgpathtools/misctools.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+print_function	svgpathtools/parser.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+print_function	svgpathtools/path.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+print_function	svgpathtools/paths2svg.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+print_function	svgpathtools/smoothing.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+print_function	svgpathtools/svg_io_sax.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+print_function	svgpathtools/svg_to_paths.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+print_function	test/test_bezier.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+print_function	test/test_generation.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+print_function	test/test_groups.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+print_function	test/test_parsing.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+print_function	test/test_path.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+print_function	test/test_polytools.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+print_function	test/test_sax_groups.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+print_function	test/test_svg2paths.py	/^from __future__ import division, absolute_import, print_function$/;"	i
+pt1	examples/distance-between-two-svg-paths-example.py	/^pt1 = path1.point(T1)$/;"	v
+pt2	examples/distance-between-two-svg-paths-example.py	/^pt2 = path2.point(T2)$/;"	v
+pts	examples/compute-many-points-quickly-using-numpy-arrays.py	/^    pts = points_in_each_seg(testpath, tvals)$/;"	v
+pts_check	examples/compute-many-points-quickly-using-numpy-arrays.py	/^    pts_check = points_in_each_seg_slow(testpath, tvals)$/;"	v
+quad	build/lib/svgpathtools/path.py	/^    from scipy.integrate import quad$/;"	i
+quad	svgpathtools/path.py	/^    from scipy.integrate import quad$/;"	i
+radialrange	build/lib/svgpathtools/path.py	/^    def radialrange(self, origin, **kwargs):$/;"	m	class:Line
+radialrange	build/lib/svgpathtools/path.py	/^    def radialrange(self, origin, return_all_global_extrema=False):$/;"	m	class:Arc
+radialrange	build/lib/svgpathtools/path.py	/^    def radialrange(self, origin, return_all_global_extrema=False):$/;"	m	class:CubicBezier
+radialrange	build/lib/svgpathtools/path.py	/^    def radialrange(self, origin, return_all_global_extrema=False):$/;"	m	class:Path
+radialrange	build/lib/svgpathtools/path.py	/^    def radialrange(self, origin, return_all_global_extrema=False):$/;"	m	class:QuadraticBezier
+radialrange	svgpathtools/path.py	/^    def radialrange(self, origin, **kwargs):$/;"	m	class:Line
+radialrange	svgpathtools/path.py	/^    def radialrange(self, origin, return_all_global_extrema=False):$/;"	m	class:Arc
+radialrange	svgpathtools/path.py	/^    def radialrange(self, origin, return_all_global_extrema=False):$/;"	m	class:CubicBezier
+radialrange	svgpathtools/path.py	/^    def radialrange(self, origin, return_all_global_extrema=False):$/;"	m	class:Path
+radialrange	svgpathtools/path.py	/^    def radialrange(self, origin, return_all_global_extrema=False):$/;"	m	class:QuadraticBezier
+radians	build/lib/svgpathtools/path.py	/^from math import sqrt, cos, sin, acos, asin, degrees, radians, log, pi, ceil$/;"	i
+radians	svgpathtools/path.py	/^    degrees, radians, log, pi, ceil$/;"	i
+random	test/test_path.py	/^import random$/;"	i
+random_arc	test/test_path.py	/^def random_arc():$/;"	f
+random_bezier	examples/compute-many-points-quickly-using-numpy-arrays.py	/^def random_bezier(degree):$/;"	f
+random_bezier	test/test_bezier.py	/^def random_bezier(degree):$/;"	f
+random_line	test/test_path.py	/^def random_line():$/;"	f
+random_polynomial	test/test_bezier.py	/^def random_polynomial(degree):$/;"	f
+rational_limit	build/lib/svgpathtools/__init__.py	/^from .polytools import polyroots, polyroots01, rational_limit, real, imag$/;"	i
+rational_limit	build/lib/svgpathtools/path.py	/^from .polytools import rational_limit, polyroots, polyroots01, imag, real$/;"	i
+rational_limit	build/lib/svgpathtools/polytools.py	/^def rational_limit(f, g, t0):$/;"	f
+rational_limit	svgpathtools/__init__.py	/^from .polytools import polyroots, polyroots01, rational_limit, real, imag$/;"	i
+rational_limit	svgpathtools/path.py	/^from .polytools import rational_limit, polyroots, polyroots01, imag, real$/;"	i
+rational_limit	svgpathtools/polytools.py	/^def rational_limit(f, g, t0):$/;"	f
+re	build/lib/svgpathtools/path.py	/^import re$/;"	i
+re	build/lib/svgpathtools/paths2svg.py	/^import re$/;"	i
+re	build/lib/svgpathtools/svg_to_paths.py	/^import re$/;"	i
+re	svgpathtools/path.py	/^import re$/;"	i
+re	svgpathtools/paths2svg.py	/^import re$/;"	i
+re	svgpathtools/svg_to_paths.py	/^import re$/;"	i
+read	setup.py	/^def read(*parts):$/;"	f
+real	build/lib/svgpathtools/__init__.py	/^from .polytools import polyroots, polyroots01, rational_limit, real, imag$/;"	i
+real	build/lib/svgpathtools/bezier.py	/^from .polytools import real, imag, polyroots, polyroots01$/;"	i
+real	build/lib/svgpathtools/path.py	/^from .polytools import rational_limit, polyroots, polyroots01, imag, real$/;"	i
+real	build/lib/svgpathtools/polytools.py	/^def real(z):$/;"	f
+real	svgpathtools/__init__.py	/^from .polytools import polyroots, polyroots01, rational_limit, real, imag$/;"	i
+real	svgpathtools/bezier.py	/^from .polytools import real, imag, polyroots, polyroots01$/;"	i
+real	svgpathtools/path.py	/^from .polytools import rational_limit, polyroots, polyroots01, imag, real$/;"	i
+real	svgpathtools/polytools.py	/^def real(z):$/;"	f
+rect2pathd	build/lib/svgpathtools/svg_to_paths.py	/^def rect2pathd(rect):$/;"	f
+rect2pathd	svgpathtools/svg_to_paths.py	/^def rect2pathd(rect):$/;"	f
+register_namespace	build/lib/svgpathtools/document.py	/^from xml.etree.ElementTree import Element, SubElement, register_namespace$/;"	i
+register_namespace	svgpathtools/document.py	/^from xml.etree.ElementTree import Element, SubElement, register_namespace$/;"	i
+requires	setup.py	/^      requires=['numpy', 'svgwrite'],$/;"	v
+reversed	build/lib/svgpathtools/path.py	/^    def reversed(self):$/;"	m	class:Arc
+reversed	build/lib/svgpathtools/path.py	/^    def reversed(self):$/;"	m	class:CubicBezier
+reversed	build/lib/svgpathtools/path.py	/^    def reversed(self):$/;"	m	class:Line
+reversed	build/lib/svgpathtools/path.py	/^    def reversed(self):$/;"	m	class:Path
+reversed	build/lib/svgpathtools/path.py	/^    def reversed(self):$/;"	m	class:QuadraticBezier
+reversed	svgpathtools/path.py	/^    def reversed(self):$/;"	m	class:Arc
+reversed	svgpathtools/path.py	/^    def reversed(self):$/;"	m	class:CubicBezier
+reversed	svgpathtools/path.py	/^    def reversed(self):$/;"	m	class:Line
+reversed	svgpathtools/path.py	/^    def reversed(self):$/;"	m	class:Path
+reversed	svgpathtools/path.py	/^    def reversed(self):$/;"	m	class:QuadraticBezier
+rgb2hex	build/lib/svgpathtools/__init__.py	/^from .misctools import hex2rgb, rgb2hex$/;"	i
+rgb2hex	build/lib/svgpathtools/misctools.py	/^def rgb2hex(rgb):$/;"	f
+rgb2hex	svgpathtools/__init__.py	/^from .misctools import hex2rgb, rgb2hex$/;"	i
+rgb2hex	svgpathtools/misctools.py	/^def rgb2hex(rgb):$/;"	f
+rotate	build/lib/svgpathtools/path.py	/^def rotate(curve, degs, origin=None):$/;"	f
+rotate	svgpathtools/path.py	/^def rotate(curve, degs, origin=None):$/;"	f
+rotated	build/lib/svgpathtools/path.py	/^    def rotated(self, degs, origin=None):$/;"	m	class:Arc
+rotated	build/lib/svgpathtools/path.py	/^    def rotated(self, degs, origin=None):$/;"	m	class:CubicBezier
+rotated	build/lib/svgpathtools/path.py	/^    def rotated(self, degs, origin=None):$/;"	m	class:Line
+rotated	build/lib/svgpathtools/path.py	/^    def rotated(self, degs, origin=None):$/;"	m	class:Path
+rotated	build/lib/svgpathtools/path.py	/^    def rotated(self, degs, origin=None):$/;"	m	class:QuadraticBezier
+rotated	svgpathtools/path.py	/^    def rotated(self, degs, origin=None):$/;"	m	class:Arc
+rotated	svgpathtools/path.py	/^    def rotated(self, degs, origin=None):$/;"	m	class:CubicBezier
+rotated	svgpathtools/path.py	/^    def rotated(self, degs, origin=None):$/;"	m	class:Line
+rotated	svgpathtools/path.py	/^    def rotated(self, degs, origin=None):$/;"	m	class:Path
+rotated	svgpathtools/path.py	/^    def rotated(self, degs, origin=None):$/;"	m	class:QuadraticBezier
+save	build/lib/svgpathtools/document.py	/^    def save(self, filepath, prettify=False, **kwargs):$/;"	m	class:Document
+save	build/lib/svgpathtools/svg_io_sax.py	/^    def save(self, filename):$/;"	m	class:SaxDocument
+save	svgpathtools/document.py	/^    def save(self, filepath, prettify=False, **kwargs):$/;"	m	class:Document
+save	svgpathtools/svg_io_sax.py	/^    def save(self, filename):$/;"	m	class:SaxDocument
+sax_parse	build/lib/svgpathtools/svg_io_sax.py	/^    def sax_parse(self, filename):$/;"	m	class:SaxDocument
+sax_parse	svgpathtools/svg_io_sax.py	/^    def sax_parse(self, filename):$/;"	m	class:SaxDocument
+scale	build/lib/svgpathtools/path.py	/^def scale(curve, sx, sy=None, origin=0j):$/;"	f
+scale	svgpathtools/path.py	/^def scale(curve, sx, sy=None, origin=0j):$/;"	f
+scale_a_point	test/test_path.py	/^        def scale_a_point(pt, sx, sy=None, origin=0j):$/;"	f	function:TestPath.test_transform_scale
+scale_bezier	build/lib/svgpathtools/path.py	/^    def scale_bezier(bez):$/;"	f	function:scale
+scale_bezier	svgpathtools/path.py	/^    def scale_bezier(bez):$/;"	f	function:scale
+scaled	build/lib/svgpathtools/path.py	/^    def scaled(self, sx, sy=None, origin=0j):$/;"	m	class:Arc
+scaled	build/lib/svgpathtools/path.py	/^    def scaled(self, sx, sy=None, origin=0j):$/;"	m	class:CubicBezier
+scaled	build/lib/svgpathtools/path.py	/^    def scaled(self, sx, sy=None, origin=0j):$/;"	m	class:Line
+scaled	build/lib/svgpathtools/path.py	/^    def scaled(self, sx, sy=None, origin=0j):$/;"	m	class:Path
+scaled	build/lib/svgpathtools/path.py	/^    def scaled(self, sx, sy=None, origin=0j):$/;"	m	class:QuadraticBezier
+scaled	svgpathtools/path.py	/^    def scaled(self, sx, sy=None, origin=0j):$/;"	m	class:Arc
+scaled	svgpathtools/path.py	/^    def scaled(self, sx, sy=None, origin=0j):$/;"	m	class:CubicBezier
+scaled	svgpathtools/path.py	/^    def scaled(self, sx, sy=None, origin=0j):$/;"	m	class:Line
+scaled	svgpathtools/path.py	/^    def scaled(self, sx, sy=None, origin=0j):$/;"	m	class:Path
+scaled	svgpathtools/path.py	/^    def scaled(self, sx, sy=None, origin=0j):$/;"	m	class:QuadraticBezier
+seg2lines	build/lib/svgpathtools/path.py	/^        def seg2lines(seg):$/;"	f	function:Path.area
+seg2lines	svgpathtools/path.py	/^        def seg2lines(seg):$/;"	f	function:Path.area
+segment_curvature	build/lib/svgpathtools/path.py	/^def segment_curvature(self, t, use_inf=False):$/;"	f
+segment_curvature	svgpathtools/path.py	/^def segment_curvature(self, t, use_inf=False):$/;"	f
+segment_length	build/lib/svgpathtools/path.py	/^def segment_length(curve, start, end, start_point, end_point,$/;"	f
+segment_length	svgpathtools/path.py	/^def segment_length(curve, start, end, start_point, end_point,$/;"	f
+setUp	test/test_path.py	/^    def setUp(self):$/;"	m	class:TestPathTools
+setup	setup.py	/^from setuptools import setup$/;"	i
+sin	build/lib/svgpathtools/path.py	/^from math import sqrt, cos, sin, acos, asin, degrees, radians, log, pi, ceil$/;"	i
+sin	svgpathtools/path.py	/^    degrees, radians, log, pi, ceil$/;"	i
+smoothed_joint	build/lib/svgpathtools/__init__.py	/^from .smoothing import smoothed_path, smoothed_joint, is_differentiable, kinks$/;"	i
+smoothed_joint	build/lib/svgpathtools/smoothing.py	/^def smoothed_joint(seg0, seg1, maxjointsize=3, tightness=1.99):$/;"	f
+smoothed_joint	svgpathtools/__init__.py	/^from .smoothing import smoothed_path, smoothed_joint, is_differentiable, kinks$/;"	i
+smoothed_joint	svgpathtools/smoothing.py	/^def smoothed_joint(seg0, seg1, maxjointsize=3, tightness=1.99):$/;"	f
+smoothed_path	build/lib/svgpathtools/__init__.py	/^from .smoothing import smoothed_path, smoothed_joint, is_differentiable, kinks$/;"	i
+smoothed_path	build/lib/svgpathtools/smoothing.py	/^def smoothed_path(path, maxjointsize=3, tightness=1.99, ignore_unfixable_kinks=False):$/;"	f
+smoothed_path	svgpathtools/__init__.py	/^from .smoothing import smoothed_path, smoothed_joint, is_differentiable, kinks$/;"	i
+smoothed_path	svgpathtools/smoothing.py	/^def smoothed_path(path, maxjointsize=3, tightness=1.99, ignore_unfixable_kinks=False):$/;"	f
+split	build/lib/svgpathtools/path.py	/^    def split(self, t):$/;"	m	class:Arc
+split	build/lib/svgpathtools/path.py	/^    def split(self, t):$/;"	m	class:CubicBezier
+split	build/lib/svgpathtools/path.py	/^    def split(self, t):$/;"	m	class:Line
+split	build/lib/svgpathtools/path.py	/^    def split(self, t):$/;"	m	class:QuadraticBezier
+split	svgpathtools/path.py	/^    def split(self, t):$/;"	m	class:Arc
+split	svgpathtools/path.py	/^    def split(self, t):$/;"	m	class:CubicBezier
+split	svgpathtools/path.py	/^    def split(self, t):$/;"	m	class:Line
+split	svgpathtools/path.py	/^    def split(self, t):$/;"	m	class:QuadraticBezier
+split_bezier	build/lib/svgpathtools/bezier.py	/^def split_bezier(bpoints, t):$/;"	f
+split_bezier	build/lib/svgpathtools/path.py	/^from .bezier import (bezier_intersections, bezier_bounding_box, split_bezier,$/;"	i
+split_bezier	svgpathtools/bezier.py	/^def split_bezier(bpoints, t):$/;"	f
+split_bezier	svgpathtools/path.py	/^from .bezier import (bezier_intersections, bezier_bounding_box, split_bezier,$/;"	i
+split_bezier_recursion	build/lib/svgpathtools/bezier.py	/^    def split_bezier_recursion(bpoints_left_, bpoints_right_, bpoints_, t_):$/;"	f	function:split_bezier
+split_bezier_recursion	svgpathtools/bezier.py	/^    def split_bezier_recursion(bpoints_left_, bpoints_right_, bpoints_, t_):$/;"	f	function:split_bezier
+sqrt	build/lib/svgpathtools/bezier.py	/^from math import factorial as fac, ceil, log, sqrt$/;"	i
+sqrt	build/lib/svgpathtools/path.py	/^from math import sqrt, cos, sin, acos, asin, degrees, radians, log, pi, ceil$/;"	i
+sqrt	svgpathtools/bezier.py	/^from math import factorial as fac, ceil, log, sqrt$/;"	i
+sqrt	svgpathtools/path.py	/^    degrees, radians, log, pi, ceil$/;"	i
+sqrt	test/test_path.py	/^from math import sqrt, pi$/;"	i
+start	build/lib/svgpathtools/path.py	/^    def start(self):$/;"	m	class:Path
+start	build/lib/svgpathtools/path.py	/^    def start(self, pt):$/;"	m	class:Path
+start	svgpathtools/path.py	/^    def start(self):$/;"	m	class:Path
+start	svgpathtools/path.py	/^    def start(self, pt):$/;"	m	class:Path
+str	build/lib/svgpathtools/document.py	/^    str = basestring$/;"	v
+str	build/lib/svgpathtools/path.py	/^    str = basestring$/;"	v
+str	build/lib/svgpathtools/svg_io_sax.py	/^    str = basestring$/;"	v
+str	svgpathtools/document.py	/^    str = basestring$/;"	v
+str	svgpathtools/path.py	/^    str = basestring$/;"	v
+str	svgpathtools/svg_io_sax.py	/^    str = basestring$/;"	v
+str2colorlist	build/lib/svgpathtools/paths2svg.py	/^def str2colorlist(s, default_color=None):$/;"	f
+str2colorlist	svgpathtools/paths2svg.py	/^def str2colorlist(s, default_color=None):$/;"	f
+strip_units	build/lib/svgpathtools/paths2svg.py	/^        def strip_units(s):$/;"	f	function:disvg
+strip_units	svgpathtools/paths2svg.py	/^        def strip_units(s):$/;"	f	function:disvg
+svg2paths	build/lib/svgpathtools/__init__.py	/^    from .svg_to_paths import svg2paths, svg2paths2$/;"	i
+svg2paths	build/lib/svgpathtools/svg_to_paths.py	/^def svg2paths(svg_file_location,$/;"	f
+svg2paths	svgpathtools/__init__.py	/^    from .svg_to_paths import svg2paths, svg2paths2$/;"	i
+svg2paths	svgpathtools/svg_to_paths.py	/^def svg2paths(svg_file_location,$/;"	f
+svg2paths2	build/lib/svgpathtools/__init__.py	/^    from .svg_to_paths import svg2paths, svg2paths2$/;"	i
+svg2paths2	build/lib/svgpathtools/svg_to_paths.py	/^def svg2paths2(svg_file_location,$/;"	f
+svg2paths2	svgpathtools/__init__.py	/^    from .svg_to_paths import svg2paths, svg2paths2$/;"	i
+svg2paths2	svgpathtools/svg_to_paths.py	/^def svg2paths2(svg_file_location,$/;"	f
+svgpathtools	test/test_parsing.py	/^import svgpathtools$/;"	i
+sys	build/lib/svgpathtools/misctools.py	/^import sys$/;"	i
+sys	build/lib/svgpathtools/path.py	/^            import sys$/;"	i
+sys	svgpathtools/misctools.py	/^import sys$/;"	i
+sys	svgpathtools/path.py	/^            import sys$/;"	i
+t2T	build/lib/svgpathtools/path.py	/^    def t2T(self, seg, t):$/;"	m	class:Path
+t2T	svgpathtools/path.py	/^    def t2T(self, seg, t):$/;"	m	class:Path
+tan	build/lib/svgpathtools/path.py	/^        from math import atan, tan$/;"	i
+tan	svgpathtools/path.py	/^        from math import atan, tan$/;"	i
+tan	svgpathtools/path.py	/^    degrees, radians, log, pi, ceil$/;"	i
+test_add_group	test/test_groups.py	/^    def test_add_group(self):$/;"	m	class:TestGroups
+test_approx_circle	test/test_path.py	/^    def test_approx_circle(self):$/;"	m	class:CubicBezierTest
+test_approx_cubic	test/test_path.py	/^    def test_approx_cubic(self):$/;"	m	class:ArcTest
+test_approx_quad	test/test_path.py	/^    def test_approx_quad(self):$/;"	m	class:ArcTest
+test_arc_arc_0	test/test_path.py	/^    def test_arc_arc_0(self):$/;"	m	class:Test_intersect
+test_arc_arc_1	test/test_path.py	/^    def test_arc_arc_1(self):$/;"	m	class:Test_intersect
+test_arc_arc_2	test/test_path.py	/^    def test_arc_arc_2(self):$/;"	m	class:Test_intersect
+test_arc_arc_same_circle	test/test_path.py	/^    def test_arc_arc_same_circle(self):$/;"	m	class:Test_intersect
+test_arc_arc_tangent_circles_inside	test/test_path.py	/^    def test_arc_arc_tangent_circles_inside(self):$/;"	m	class:Test_intersect
+test_arc_arc_tangent_circles_outside	test/test_path.py	/^    def test_arc_arc_tangent_circles_outside(self):$/;"	m	class:Test_intersect
+test_arc_line	test/test_path.py	/^    def test_arc_line(self):$/;"	m	class:Test_intersect
+test_bezier2polynomial	test/test_bezier.py	/^    def test_bezier2polynomial(self):$/;"	m	class:TestBezier2Polynomial
+test_bpoints2bezier	test/test_path.py	/^    def test_bpoints2bezier(self):$/;"	m	class:TestPathTools
+test_circle	test/test_path.py	/^    def test_circle(self):$/;"	m	class:TestPath
+test_closest_point_in_path	test/test_path.py	/^    def test_closest_point_in_path(self):$/;"	m	class:TestPathTools
+test_continuous_subpaths	test/test_path.py	/^    def test_continuous_subpaths(self):$/;"	m	class:TestPath
+test_cropped	test/test_path.py	/^    def test_cropped(self):$/;"	m	class:TestPath
+test_d	test/test_path.py	/^    def test_d(self):$/;"	m	class:TestPath
+test_equality	test/test_path.py	/^    def test_equality(self):$/;"	m	class:ArcTest
+test_equality	test/test_path.py	/^    def test_equality(self):$/;"	m	class:CubicBezierTest
+test_equality	test/test_path.py	/^    def test_equality(self):$/;"	m	class:LineTest
+test_equality	test/test_path.py	/^    def test_equality(self):$/;"	m	class:QuadraticBezierTest
+test_equality	test/test_path.py	/^    def test_equality(self):$/;"	m	class:TestPath
+test_errors	test/test_parsing.py	/^    def test_errors(self):$/;"	m	class:TestParser
+test_farthest_point_in_path	test/test_path.py	/^    def test_farthest_point_in_path(self):$/;"	m	class:TestPathTools
+test_group_flatten	test/test_groups.py	/^    def test_group_flatten(self):$/;"	m	class:TestGroups
+test_ilength_arcs	test/test_path.py	/^    def test_ilength_arcs(self):$/;"	m	class:Test_ilength
+test_ilength_cubics	test/test_path.py	/^    def test_ilength_cubics(self):$/;"	m	class:Test_ilength
+test_ilength_exceptions	test/test_path.py	/^    def test_ilength_exceptions(self):$/;"	m	class:Test_ilength
+test_ilength_lines	test/test_path.py	/^    def test_ilength_lines(self):$/;"	m	class:Test_ilength
+test_ilength_paths	test/test_path.py	/^    def test_ilength_paths(self):$/;"	m	class:Test_ilength
+test_ilength_quadratics	test/test_path.py	/^    def test_ilength_quadratics(self):$/;"	m	class:Test_ilength
+test_intersect	test/test_path.py	/^    def test_intersect(self):$/;"	m	class:Test_intersect
+test_intersect_arc_line_1	test/test_path.py	/^    def test_intersect_arc_line_1(self):$/;"	m	class:Test_intersect
+test_intersect_arc_line_2	test/test_path.py	/^    def test_intersect_arc_line_2(self):$/;"	m	class:Test_intersect
+test_intersect_arc_line_3	test/test_path.py	/^    def test_intersect_arc_line_3(self):$/;"	m	class:Test_intersect
+test_intersect_arc_line_disjoint_bboxes	test/test_path.py	/^    def test_intersect_arc_line_disjoint_bboxes(self):$/;"	m	class:Test_intersect
+test_is_bezier_path	test/test_path.py	/^    def test_is_bezier_path(self):$/;"	m	class:TestPathTools
+test_is_bezier_segment	test/test_path.py	/^    def test_is_bezier_segment(self):$/;"	m	class:TestPathTools
+test_is_contained_by	test/test_path.py	/^    def test_is_contained_by(self):$/;"	m	class:TestPathTools
+test_issue_99	test/test_parsing.py	/^    def test_issue_99(self):$/;"	m	class:TestParser
+test_length	test/test_path.py	/^    def test_length(self):$/;"	m	class:ArcTest
+test_length	test/test_path.py	/^    def test_length(self):$/;"	m	class:CubicBezierTest
+test_length	test/test_path.py	/^    def test_length(self):$/;"	m	class:QuadraticBezierTest
+test_line_line_0	test/test_path.py	/^    def test_line_line_0(self):$/;"	m	class:Test_intersect
+test_line_line_1	test/test_path.py	/^    def test_line_line_1(self):$/;"	m	class:Test_intersect
+test_lines	test/test_path.py	/^    def test_lines(self):$/;"	m	class:LineTest
+test_negative	test/test_parsing.py	/^    def test_negative(self):$/;"	m	class:TestParser
+test_nested_group	test/test_groups.py	/^    def test_nested_group(self):$/;"	m	class:TestGroups
+test_normalizing	test/test_generation.py	/^    def test_normalizing(self):$/;"	m	class:TestGeneration
+test_numbers	test/test_parsing.py	/^    def test_numbers(self):$/;"	m	class:TestParser
+test_others	test/test_parsing.py	/^    def test_others(self):$/;"	m	class:TestParser
+test_parse_display	test/test_sax_groups.py	/^    def test_parse_display(self):$/;"	m	class:TestSaxGroups
+test_path_area	test/test_path.py	/^    def test_path_area(self):$/;"	m	class:TestPathTools
+test_path_encloses_pt	test/test_path.py	/^    def test_path_encloses_pt(self):$/;"	m	class:TestPathTools
+test_path_parsing	test/test_generation.py	/^    def test_path_parsing(self):$/;"	m	class:TestGeneration
+test_pathd_init	test/test_parsing.py	/^    def test_pathd_init(self):$/;"	m	class:TestParser
+test_point_to_t	test/test_path.py	/^    def test_point_to_t(self):$/;"	m	class:ArcTest
+test_point_to_t	test/test_path.py	/^    def test_point_to_t(self):$/;"	m	class:LineTest
+test_points	test/test_path.py	/^    def test_points(self):$/;"	m	class:ArcTest
+test_polynomial2bezier	test/test_bezier.py	/^    def test_polynomial2bezier(self):$/;"	m	class:TestPolynomial2Bezier
+test_polynomial2bezier	test/test_path.py	/^    def test_polynomial2bezier(self):$/;"	m	class:TestPathTools
+test_radialrange	test/test_path.py	/^    def test_radialrange(self):$/;"	m	class:LineTest
+test_rational_limit	test/test_polytools.py	/^    def test_rational_limit(self):$/;"	m	class:Test_polytools
+test_repr	test/test_path.py	/^    def test_repr(self):$/;"	m	class:TestPath
+test_svg2paths_ellipses	test/test_svg2paths.py	/^    def test_svg2paths_ellipses(self):$/;"	m	class:TestSVG2Paths
+test_svg2paths_polygons	test/test_svg2paths.py	/^    def test_svg2paths_polygons(self):$/;"	m	class:TestSVG2Paths
+test_svg_examples	test/test_parsing.py	/^    def test_svg_examples(self):$/;"	m	class:TestParser
+test_svg_examples	test/test_path.py	/^    def test_svg_examples(self):$/;"	m	class:CubicBezierTest
+test_svg_examples	test/test_path.py	/^    def test_svg_examples(self):$/;"	m	class:QuadraticBezierTest
+test_svg_specs	test/test_path.py	/^    def test_svg_specs(self):$/;"	m	class:TestPath
+test_transform	test/test_parsing.py	/^    def test_transform(self):$/;"	m	class:TestParser
+test_transform_scale	test/test_path.py	/^    def test_transform_scale(self):$/;"	m	class:TestPath
+test_trusting_acos	test/test_path.py	/^    def test_trusting_acos(self):$/;"	m	class:ArcTest
+testpath	examples/compute-many-points-quickly-using-numpy-arrays.py	/^    testpath = Path(*[random_bezier(3) for dummy in range(num_segs)])$/;"	v
+time	build/lib/svgpathtools/document.py	/^from time import time$/;"	i
+time	build/lib/svgpathtools/paths2svg.py	/^from time import time$/;"	i
+time	svgpathtools/document.py	/^from time import time$/;"	i
+time	svgpathtools/paths2svg.py	/^from time import time$/;"	i
+to_complex	build/lib/svgpathtools/path.py	/^    def to_complex(v):$/;"	f	function:transform
+to_complex	svgpathtools/path.py	/^    def to_complex(v):$/;"	f	function:transform
+to_point	build/lib/svgpathtools/path.py	/^    def to_point(p):$/;"	f	function:transform
+to_point	svgpathtools/path.py	/^    def to_point(p):$/;"	f	function:transform
+to_vector	build/lib/svgpathtools/path.py	/^    def to_vector(z):$/;"	f	function:transform
+to_vector	svgpathtools/path.py	/^    def to_vector(z):$/;"	f	function:transform
+transform	build/lib/svgpathtools/path.py	/^    def transform(z):$/;"	f	function:rotate
+transform	build/lib/svgpathtools/path.py	/^    transform = None$/;"	v	class:Path
+transform	build/lib/svgpathtools/path.py	/^def transform(curve, tf):$/;"	f
+transform	svgpathtools/path.py	/^    def transform(z):$/;"	f	function:rotate
+transform	svgpathtools/path.py	/^    transform = None$/;"	v	class:Path
+transform	svgpathtools/path.py	/^def transform(curve, tf):$/;"	f
+translate	build/lib/svgpathtools/path.py	/^def translate(curve, z0):$/;"	f
+translate	svgpathtools/path.py	/^def translate(curve, z0):$/;"	f
+translated	build/lib/svgpathtools/path.py	/^    def translated(self, z0):$/;"	m	class:Arc
+translated	build/lib/svgpathtools/path.py	/^    def translated(self, z0):$/;"	m	class:CubicBezier
+translated	build/lib/svgpathtools/path.py	/^    def translated(self, z0):$/;"	m	class:Line
+translated	build/lib/svgpathtools/path.py	/^    def translated(self, z0):$/;"	m	class:Path
+translated	build/lib/svgpathtools/path.py	/^    def translated(self, z0):$/;"	m	class:QuadraticBezier
+translated	svgpathtools/path.py	/^    def translated(self, z0):$/;"	m	class:Arc
+translated	svgpathtools/path.py	/^    def translated(self, z0):$/;"	m	class:CubicBezier
+translated	svgpathtools/path.py	/^    def translated(self, z0):$/;"	m	class:Line
+translated	svgpathtools/path.py	/^    def translated(self, z0):$/;"	m	class:Path
+translated	svgpathtools/path.py	/^    def translated(self, z0):$/;"	m	class:QuadraticBezier
+tvals	examples/compute-many-points-quickly-using-numpy-arrays.py	/^    tvals = np.linspace(0, 1, 10)$/;"	v
+txt	build/lib/svgpathtools/paths2svg.py	/^from svgwrite import Drawing, text as txt$/;"	i
+txt	svgpathtools/paths2svg.py	/^from svgwrite import Drawing, text as txt$/;"	i
+u1transform	build/lib/svgpathtools/path.py	/^    def u1transform(self, z):$/;"	m	class:Arc
+u1transform	svgpathtools/path.py	/^    def u1transform(self, z):$/;"	m	class:Arc
+unit_tangent	build/lib/svgpathtools/path.py	/^    def unit_tangent(self, T):$/;"	m	class:Path
+unit_tangent	build/lib/svgpathtools/path.py	/^    def unit_tangent(self, t):$/;"	m	class:Arc
+unit_tangent	build/lib/svgpathtools/path.py	/^    def unit_tangent(self, t):$/;"	m	class:CubicBezier
+unit_tangent	build/lib/svgpathtools/path.py	/^    def unit_tangent(self, t):$/;"	m	class:QuadraticBezier
+unit_tangent	build/lib/svgpathtools/path.py	/^    def unit_tangent(self, t=None):$/;"	m	class:Line
+unit_tangent	svgpathtools/path.py	/^    def unit_tangent(self, T):$/;"	m	class:Path
+unit_tangent	svgpathtools/path.py	/^    def unit_tangent(self, t):$/;"	m	class:Arc
+unit_tangent	svgpathtools/path.py	/^    def unit_tangent(self, t):$/;"	m	class:CubicBezier
+unit_tangent	svgpathtools/path.py	/^    def unit_tangent(self, t):$/;"	m	class:QuadraticBezier
+unit_tangent	svgpathtools/path.py	/^    def unit_tangent(self, t=None):$/;"	m	class:Line
+unittest	test/test_bezier.py	/^import unittest$/;"	i
+unittest	test/test_generation.py	/^import unittest$/;"	i
+unittest	test/test_groups.py	/^import unittest$/;"	i
+unittest	test/test_parsing.py	/^import unittest$/;"	i
+unittest	test/test_path.py	/^import unittest$/;"	i
+unittest	test/test_polytools.py	/^import unittest$/;"	i
+unittest	test/test_sax_groups.py	/^import unittest$/;"	i
+unittest	test/test_svg2paths.py	/^import unittest$/;"	i
+url	setup.py	/^      url='https:\/\/github.com\/mathandy\/svgpathtools',$/;"	v
+version	setup.py	/^      version=VERSION,$/;"	v
+warn	build/lib/svgpathtools/path.py	/^from warnings import warn$/;"	i
+warn	build/lib/svgpathtools/paths2svg.py	/^from warnings import warn$/;"	i
+warn	svgpathtools/path.py	/^from warnings import warn$/;"	i
+warn	svgpathtools/paths2svg.py	/^from warnings import warn$/;"	i
+warnings	build/lib/svgpathtools/document.py	/^import warnings$/;"	i
+warnings	build/lib/svgpathtools/parser.py	/^import warnings$/;"	i
+warnings	svgpathtools/document.py	/^import warnings$/;"	i
+warnings	svgpathtools/parser.py	/^import warnings$/;"	i
+webbrowser	build/lib/svgpathtools/misctools.py	/^import webbrowser$/;"	i
+webbrowser	svgpathtools/misctools.py	/^import webbrowser$/;"	i
+wsvg	build/lib/svgpathtools/__init__.py	/^from .paths2svg import disvg, wsvg, paths2Drawing$/;"	i
+wsvg	build/lib/svgpathtools/paths2svg.py	/^def wsvg(paths=None, colors=None,$/;"	f
+wsvg	svgpathtools/__init__.py	/^from .paths2svg import disvg, wsvg, paths2Drawing$/;"	i
+wsvg	svgpathtools/paths2svg.py	/^def wsvg(paths=None, colors=None, filename=None, stroke_widths=None,$/;"	f
+xml	build/lib/svgpathtools/document.py	/^import xml.etree.ElementTree as etree$/;"	i
+xml	svgpathtools/document.py	/^import xml.etree.ElementTree as etree$/;"	i

@@ -1,3 +1,8 @@
+"""Tests related to SVG groups.
+
+To run these tests, you can use (from root svgpathtools directory):
+$ python -m unittest test.test_groups.TestGroups.test_group_flatten
+"""
 from __future__ import division, absolute_import, print_function
 import unittest
 from svgpathtools import *
@@ -26,7 +31,7 @@ class TestGroups(unittest.TestCase):
         #    end point relative to the start point
         # * name is the path name (value of the test:name attribute in
         #    the SVG document)
-        # * paths is the output of doc.flatten_all_paths()
+        # * paths is the output of doc.paths()
         v_s_vals.append(1.0)
         v_e_relative_vals.append(0.0)
         v_s = np.array(v_s_vals)
@@ -34,11 +39,11 @@ class TestGroups(unittest.TestCase):
 
         actual = get_desired_path(name, paths)
 
-        self.check_values(tf.dot(v_s), actual.path.start)
-        self.check_values(tf.dot(v_e), actual.path.end)
+        self.check_values(tf.dot(v_s), actual.start)
+        self.check_values(tf.dot(v_e), actual.end)
 
     def test_group_flatten(self):
-        # Test the Document.flatten_all_paths() function against the
+        # Test the Document.paths() function against the
         # groups.svg test file.
         # There are 12 paths in that file, with various levels of being
         # nested inside of group transforms.
@@ -48,7 +53,7 @@ class TestGroups(unittest.TestCase):
         # that are specified by the SVG standard.
         doc = Document(join(dirname(__file__), 'groups.svg'))
 
-        result = doc.flatten_all_paths()
+        result = doc.paths()
         self.assertEqual(12, len(result))
 
         tf_matrix_group = np.array([[1.5, 0.0, -40.0],
@@ -164,6 +169,14 @@ class TestGroups(unittest.TestCase):
             count += 1
 
         self.assertEqual(expected_count, count)
+
+    def test_nested_group(self):
+        # A bug in the flattened_paths_from_group() implementation made it so that only top-level
+        # groups could have their paths flattened. This is a regression test to make
+        # sure that when a nested group is requested, its paths can also be flattened.
+        doc = Document(join(dirname(__file__), 'groups.svg'))
+        result = doc.paths_from_group(['matrix group', 'scale group'])
+        self.assertEqual(len(result), 5)
 
     def test_add_group(self):
         # Test `Document.add_group()` function and related Document functions.

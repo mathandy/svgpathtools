@@ -8,14 +8,13 @@ import random
 
 # Internal dependencies
 from svgpathtools import *
-from svgpathtools.path import _NotImplemented4ArcException
+from svgpathtools.path import _NotImplemented4ArcException, bezier_radialrange
 
 # An important note for those doing any debugging:
 # ------------------------------------------------
 # Most of these test points are not calculated separately, as that would
 # take too long and be too error prone. Instead the curves have been verified
 # to be correct visually with the disvg() function.
-
 
 def random_line():
     x = (random.random() - 0.5) * 2000
@@ -162,7 +161,19 @@ class LineTest(unittest.TestCase):
                 computed_t = l.point_to_t(p)
                 self.assertAlmostEqual(orig_t, computed_t)
 
+    def test_radialrange(self):
+        def crand():
+            return 100*(np.random.rand() + np.random.rand()*1j)
 
+        for _ in range(100):
+            z = crand()
+            l = Line(crand(), crand())
+            (min_da, min_ta), (max_da, max_ta) = l.radialrange(z)
+            (min_db, min_tb), (max_db, max_tb) = bezier_radialrange(l, z)
+            self.assertAlmostEqual(min_da, min_db)
+            self.assertAlmostEqual(min_ta, min_tb)
+            self.assertAlmostEqual(max_da, max_db)
+            self.assertAlmostEqual(max_ta, max_tb)
 
 
 class CubicBezierTest(unittest.TestCase):
@@ -645,7 +656,35 @@ class ArcTest(unittest.TestCase):
                 orig_t = random.random()
                 p = a.point(orig_t)
                 computed_t = a.point_to_t(p)
-                self.assertAlmostEqual(orig_t, computed_t)
+                self.assertAlmostEqual(orig_t, computed_t, 
+                    msg="arc %s at t=%f is point %s, but got %f back"
+                        "" % (a, orig_t, p, computed_t))
+
+    def test_approx_quad(self):
+        n = 100
+        for i in range(n):
+            arc = random_arc()
+            if arc.radius.real > 2000 or arc.radius.imag > 2000:
+                continue  # Random Arc too large, by autoscale.
+            path1 = Path(arc)
+            path2 = Path(*path1)
+            path2.approximate_arcs_with_quads(error=0.05)
+            d = abs(path1.length() - path2.length())
+            # Error less than 1% typically less than 0.5%
+            self.assertAlmostEqual(d, 0.0, delta=20)
+
+    def test_approx_cubic(self):
+        n = 100
+        for i in range(n):
+            arc = random_arc()
+            if arc.radius.real > 2000 or arc.radius.imag > 2000:
+                continue  # Random Arc too large, by autoscale.
+            path1 = Path(arc)
+            path2 = Path(*path1)
+            path2.approximate_arcs_with_cubics(error=0.1)
+            d = abs(path1.length() - path2.length())
+            # Error less than 0.1% typically less than 0.001%
+            self.assertAlmostEqual(d,0.0, delta=2)
 
 
 class TestPath(unittest.TestCase):
@@ -1052,7 +1091,16 @@ class TestPath(unittest.TestCase):
                 pt_xpct = (pt_orig - complex(0, -100)) * 0.3 + complex(0, -100)
                 self.assertAlmostEqual(pt_xpct, pt_trns, delta=0.000001)
 
-
+    def test_d(self):
+        # the following two path represent the same path but in absolute and relative forms
+        abs_s = 'M 38.0,130.0 C 37.0,132.0 38.0,136.0 40.0,137.0 L 85.0,161.0 C 87.0,162.0 91.0,162.0 93.0,160.0 L 127.0,133.0 C 129.0,131.0 129.0,128.0 127.0,126.0 L 80.0,70.0 C 78.0,67.0 75.0,68.0 74.0,70.0 Z'
+        rel_s = 'm 38.0,130.0 c -1.0,2.0 0.0,6.0 2.0,7.0 l 45.0,24.0 c 2.0,1.0 6.0,1.0 8.0,-1.0 l 34.0,-27.0 c 2.0,-2.0 2.0,-5.0 0.0,-7.0 l -47.0,-56.0 c -2.0,-3.0 -5.0,-2.0 -6.0,0.0 z'
+        path1 = parse_path(abs_s)
+        path2 = parse_path(rel_s)
+        self.assertEqual(path1.d(use_closed_attrib=True), abs_s)
+        self.assertEqual(path2.d(use_closed_attrib=True), abs_s)
+        self.assertEqual(path1.d(use_closed_attrib=True, rel=True), rel_s)
+        self.assertEqual(path2.d(use_closed_attrib=True, rel=True), rel_s)
                 
 
 class Test_ilength(unittest.TestCase):
@@ -1332,9 +1380,7 @@ class Test_intersect(unittest.TestCase):
                 self.assertAlmostEqual(xy[0], yx[1])
                 self.assertAlmostEqual(xy[1], yx[0])
                 self.assertAlmostEqual(x.point(xy[0]), y.point(yx[0]))
-            self.assertTrue(len(xiy), len(yix))
-            self.assertTrue(len(xiy), 2)
-            self.assertTrue(len(yix), 2)
+            self.assertTrue(len(xiy) == len(yix))
 
         # test each segment against another segment of same type
         for x in segdict:
@@ -1351,9 +1397,9 @@ class Test_intersect(unittest.TestCase):
                 self.assertAlmostEqual(xy[0], yx[1])
                 self.assertAlmostEqual(xy[1], yx[0])
                 self.assertAlmostEqual(x.point(xy[0]), y.point(yx[0]))
-            self.assertTrue(len(xiy), len(yix))
-            self.assertTrue(len(xiy), 1)
-            self.assertTrue(len(yix), 1)
+            self.assertTrue(len(xiy) == len(yix))
+            self.assertTrue(len(xiy) == 1)
+            self.assertTrue(len(yix) == 1)
         ###################################################################
 
     def test_line_line_0(self):
@@ -1511,6 +1557,106 @@ class Test_intersect(unittest.TestCase):
                 end=(128.26640606+146.90846449j))
         i = l.intersect(a)
         self.assertEqual(i, [])
+
+
+    def test_arc_arc_0(self):
+        # These arcs cross at a single point.
+        a0 = Arc(start=(114.648+27.4280898219j), radius=(22+22j), rotation=0, large_arc=False, sweep=True, end=(118.542+39.925j))
+        a1 = Arc(start=(118.542+15.795j), radius=(22+22j), rotation=0, large_arc=False, sweep=True, end=(96.542+37.795j))
+        intersections = a0.intersect(a1)
+        assert_intersections(a0, a1, intersections, 1)
+
+    def test_arc_arc_1(self):
+        # These touch at an endpoint, and are *nearly* segments of a larger arc.
+        a0 = Arc(start=(-12.8272110776+72.6464538932j), radius=(44.029+44.029j), rotation=0.0, large_arc=False, sweep=False, end=(-60.6807543328+75.3104334473j))
+        a1 = Arc(start=(-60.6807101078+75.3104011248j), radius=(44.029+44.029j), rotation=0.0, large_arc=False, sweep=False, end=(-77.7490636234+120.096609353j))
+        intersections = a0.intersect(a1)
+        assert_intersections(a0, a1, intersections, 1)
+
+    def test_arc_arc_2(self):
+        # These arcs cross at a single point.
+        a0 = Arc(start=(112.648+5j), radius=(24+24j), rotation=0, large_arc=False, sweep=True, end=(136.648+29j))
+        a1 = Arc(start=(112.648+6.33538520071j), radius=(24+24j), rotation=0, large_arc=False, sweep=True, end=(120.542+5j))
+        intersections = a0.intersect(a1)
+        assert_intersections(a0, a1, intersections, 1)
+
+    # The Arcs in this test are part of the same circle.
+    def test_arc_arc_same_circle(self):
+        # These touch at one endpoint, and go in the same direction.
+        a0 = Arc(start=(0+0j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=False, end=(-10+10j))
+        a1 = Arc(start=(-10+10j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=False, end=(0+20j))
+        intersections = a0.intersect(a1)
+        assert_intersections(a0, a1, intersections, 1)
+
+        # These touch at both endpoints, and go in the same direction.
+        a0 = Arc(start=(0+0j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=False, end=(-10+10j))
+        a1 = Arc(start=(-10+10j), radius=(10+10j), rotation=0.0, large_arc=True, sweep=False, end=(0+0j))
+        intersections = a0.intersect(a1)
+        assert_intersections(a0, a1, intersections, 2)
+
+        # These touch at one endpoint, and go in opposite directions.
+        a0 = Arc(start=(0+0j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=False, end=(0+20j))
+        a1 = Arc(start=(0+20j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=True, end=(-10+10j))
+        intersections = a0.intersect(a1)
+        assert_intersections(a0, a1, intersections, 0)
+
+        # These touch at both endpoints, and go in opposite directions.
+        a0 = Arc(start=(0+0j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=False, end=(-10+10j))
+        a1 = Arc(start=(-10+10j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=True, end=(0+0j))
+        intersections = a0.intersect(a1)
+        assert_intersections(a0, a1, intersections, 0)
+
+        # These are totally disjoint.
+        a0 = Arc(start=(0+0j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=False, end=(-10+10j))
+        a1 = Arc(start=(0+20j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=False, end=(10+10j))
+        intersections = a0.intersect(a1)
+        assert_intersections(a0, a1, intersections, 0)
+
+        # These overlap at one end and don't touch at the other.
+        a0 = Arc(start=(0+0j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=False, end=(0+20j))
+        a1 = Arc(start=(-10+10j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=False, end=(10+10j))
+        intersections = a0.intersect(a1)
+        assert_intersections(a0, a1, intersections, 0)
+
+        # These overlap at one end and touch at the other.
+        a0 = Arc(start=(0+0j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=False, end=(0+20j))
+        a1 = Arc(start=(-10+10j), radius=(10+10j), rotation=0.0, large_arc=True, sweep=False, end=(0+0j))
+        intersections = a0.intersect(a1)
+        assert_intersections(a0, a1, intersections, 0)
+
+    # The Arcs in this test are part of tangent circles, outside each other.
+    def test_arc_arc_tangent_circles_outside(self):
+        a0 = Arc(start=(0+0j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=False, end=(0+20j))
+        a1 = Arc(start=(-20+0j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=True, end=(-20+20j))
+        intersections = a0.intersect(a1)
+        assert_intersections(a0, a1, intersections, 1)
+
+        a0 = Arc(start=(0+0j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=False, end=(0+20j))
+        a1 = Arc(start=(-20+0j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=False, end=(-20+20j))
+        intersections = a0.intersect(a1)
+        assert_intersections(a0, a1, intersections, 0)
+
+        a0 = Arc(start=(10-10j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=False, end=(10+10j))
+        a1 = Arc(start=(-10-0j), radius=(5+5j), rotation=0.0, large_arc=True, sweep=True, end=(-5+5j))
+        intersections = a0.intersect(a1)
+        assert_intersections(a0, a1, intersections, 1)
+
+    # The Arcs in this test are part of tangent circles, one inside the other.
+    def test_arc_arc_tangent_circles_inside(self):
+        a0 = Arc(start=(10-10j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=False, end=(10+10j))
+        a1 = Arc(start=(10-0j), radius=(5+5j), rotation=0.0, large_arc=True, sweep=True, end=(5+5j))
+        intersections = a0.intersect(a1)
+        assert_intersections(a0, a1, intersections, 1)
+
+        a0 = Arc(start=(10-10j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=False, end=(10+10j))
+        a1 = Arc(start=(10-0j), radius=(5+5j), rotation=0.0, large_arc=True, sweep=False, end=(5+5j))
+        intersections = a0.intersect(a1)
+        assert_intersections(a0, a1, intersections, 1)
+
+        a0 = Arc(start=(10-10j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=False, end=(10+10j))
+        a1 = Arc(start=(10-0j), radius=(5+5j), rotation=0.0, large_arc=False, sweep=False, end=(5+5j))
+        intersections = a0.intersect(a1)
+        assert_intersections(a0, a1, intersections, 0)
 
 
 class TestPathTools(unittest.TestCase):
@@ -1773,6 +1919,78 @@ class TestPathTools(unittest.TestCase):
         ccw_half_circle.append(Arc(start=(0+0j), radius=(50+50j), rotation=0, large_arc=False, sweep=True, end=(0+100j)))
         self.assertAlmostEqual(ccw_half_circle.area(), 3926.9908169872415, places=3)
         self.assertAlmostEqual(ccw_half_circle.area(chord_length=1e-3), 3926.9908169872415, places=6)
+
+    def test_is_contained_by(self):
+        enclosing_shape = Path()
+        enclosing_shape.append(Line((0+0j), (0+100j)))
+        enclosing_shape.append(Line((0+100j), (100+100j)))
+        enclosing_shape.append(Line((100+100j), (100+0j)))
+        enclosing_shape.append(Line((100+0j), (0+0j)))
+
+        enclosed_path = Path()
+        enclosed_path.append(Line((10+10j), (90+90j)))
+        self.assertTrue(enclosed_path.is_contained_by(enclosing_shape))
+
+        not_enclosed_path = Path()
+        not_enclosed_path.append(Line((200+200j), (200+0j)))
+        self.assertFalse(not_enclosed_path.is_contained_by(enclosing_shape))
+
+        intersecting_path = Path()
+        intersecting_path.append(Line((50+50j), (200+50j)))
+        self.assertFalse(intersecting_path.is_contained_by(enclosing_shape))
+
+        larger_shape = Path()
+        larger_shape.append(Line((-10-10j), (-10+110j)))
+        larger_shape.append(Line((-10+110j), (110+110j)))
+        larger_shape.append(Line((110+110j), (110+-10j)))
+        larger_shape.append(Line((110-10j), (-10-10j)))
+        self.assertFalse(larger_shape.is_contained_by(enclosing_shape))
+        self.assertTrue(enclosing_shape.is_contained_by(larger_shape))
+
+
+class TestPathBugs(unittest.TestCase):
+
+    def test_issue_113(self):
+        """
+        Tests against issue regebro/svg.path#61 mathandy/svgpathtools#113
+        """
+        p = Path('M 206.5,525 Q 162.5,583 162.5,583')
+        self.assertAlmostEqual(p.length(), 72.80109889280519)
+        p = Path('M 425.781 446.289 Q 410.40000000000003 373.047 410.4 373.047')
+        self.assertAlmostEqual(p.length(), 74.83959997888816)
+        p = Path('M 639.648 568.115 Q 606.6890000000001 507.568 606.689 507.568')
+        self.assertAlmostEqual(p.length(), 68.93645544992873)
+        p = Path('M 288.818 616.699 Q 301.025 547.3629999999999 301.025 547.363')
+        self.assertAlmostEqual(p.length(), 70.40235610403947)
+        p = Path('M 339.927 706.25 Q 243.92700000000002 806.25 243.927 806.25')
+        self.assertAlmostEqual(p.length(), 138.6217876093077)
+        p = Path('M 539.795 702.637 Q 548.0959999999999 803.4669999999999 548.096 803.467')
+        self.assertAlmostEqual(p.length(), 101.17111989594662)
+        p = Path('M 537.815 555.042 Q 570.1680000000001 499.1600000000001 570.168 499.16')
+        self.assertAlmostEqual(p.length(), 64.57177814649368)
+        p = Path('M 615.297 470.503 Q 538.797 694.5029999999999 538.797 694.503')
+        self.assertAlmostEqual(p.length(), 236.70287281737836)
+
+    def test_issue_71(self):
+        p = Path("M327 468z")
+        m = p.closed
+        q = p.d()  # Failing to Crash is good.
+
+    def test_issue_95(self):
+        """
+        Corrects:
+        https://github.com/mathandy/svgpathtools/issues/95
+        """
+        p = Path('M261 166 L261 166')
+        self.assertEqual(p.length(), 0)
+
+    def test_issue_94(self):
+        # clipping rectangle
+        p1 = Path('M0.0 0.0 L27.84765625 0.0 L27.84765625 242.6669922 L0.0 242.6669922 z')
+        # clipping rectangle
+        p2 = Path('M166.8359375,235.5478516c0,3.7773438-3.0859375,6.8691406-6.8701172,6.8691406H7.1108398c-3.7749023,0-6.8608398-3.0917969-6.8608398-6.8691406V7.1201172C0.25,3.3427734,3.3359375,0.25,7.1108398,0.25h152.8549805c3.7841797,0,6.8701172,3.0927734,6.8701172,6.8701172v228.4277344z')
+        self.assertEqual(len(p1.intersect(p2)), len(p2.intersect(p1)))
+
 
 
 if __name__ == '__main__':

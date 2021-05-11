@@ -1,10 +1,13 @@
-"""This submodule contains tools for creating svg files from paths and path
-segments."""
+"""This submodule: basic tools for creating svg files from path data.
+
+See also the document.py submodule.
+"""
 
 # External dependencies:
 from __future__ import division, absolute_import, print_function
 from math import ceil
-from os import getcwd, path as os_path, makedirs
+from os import path as os_path, makedirs
+from tempfile import gettempdir
 from xml.dom.minidom import parse as md_xml_parse
 from svgwrite import Drawing, text as txt
 from time import time
@@ -15,7 +18,7 @@ import re
 from .path import Path, Line, is_path_segment
 from .misctools import open_in_browser
 
-# Used to convert a string colors (identified by single chars) to a list.
+# color shorthand for inputting color list as string of chars.
 color_dict = {'a': 'aqua',
               'b': 'blue',
               'c': 'cyan',
@@ -58,8 +61,16 @@ def is3tuple(c):
 
 
 def big_bounding_box(paths_n_stuff):
-    """Finds a BB containing a collection of paths, Bezier path segments, and
-    points (given as complex numbers)."""
+    """returns minimal upright bounding box.
+
+    Args:
+        paths_n_stuff: iterable of Paths, Bezier path segments, and
+            points (given as complex numbers).
+
+    Returns:
+        extrema of bounding box, (xmin, xmax, ymin, ymax)
+
+    """
     bbs = []
     for thing in paths_n_stuff:
         if is_path_segment(thing) or isinstance(thing, Path):
@@ -72,9 +83,9 @@ def big_bounding_box(paths_n_stuff):
                 bbs.append((complexthing.real, complexthing.real,
                             complexthing.imag, complexthing.imag))
             except ValueError:
-                raise TypeError(
-                    "paths_n_stuff can only contains Path, CubicBezier, "
-                    "QuadraticBezier, Line, and complex objects.")
+                raise TypeError("paths_n_stuff can only contains Path, "
+                                "CubicBezier, QuadraticBezier, Line, "
+                                "and complex objects.")
     xmins, xmaxs, ymins, ymaxs = list(zip(*bbs))
     xmin = min(xmins)
     xmax = max(xmaxs)
@@ -83,14 +94,15 @@ def big_bounding_box(paths_n_stuff):
     return xmin, xmax, ymin, ymax
 
 
-def disvg(paths=None, colors=None,
-          filename=os_path.join(getcwd(), 'disvg_output.svg'),
-          stroke_widths=None, nodes=None, node_colors=None, node_radii=None,
-          openinbrowser=True, timestamp=False,
-          margin_size=0.1, mindim=600, dimensions=None,
-          viewbox=None, text=None, text_path=None, font_size=None,
-          attributes=None, svg_attributes=None, svgwrite_debug=False, paths2Drawing=False):
-    """Takes in a list of paths and creates an SVG file containing said paths.
+def disvg(paths=None, colors=None, filename=None, stroke_widths=None,
+          nodes=None, node_colors=None, node_radii=None,
+          openinbrowser=True, timestamp=None, margin_size=0.1,
+          mindim=600, dimensions=None, viewbox=None, text=None,
+          text_path=None, font_size=None, attributes=None,
+          svg_attributes=None, svgwrite_debug=False,
+          paths2Drawing=False, baseunit='px'):
+    """Creates (and optionally displays) an SVG file.
+
     REQUIRED INPUTS:
         :param paths - a list of paths
 
@@ -105,8 +117,10 @@ def disvg(paths=None, colors=None,
         3) a list of rgb 3-tuples -- e.g. colors = [(255, 0, 0), ...].
 
         :param filename - the desired location/filename of the SVG file
-        created (by default the SVG will be stored in the current working
-        directory and named 'disvg_output.svg').
+        created (by default the SVG will be named 'disvg_output.svg' or
+        'disvg_output_<timestamp>.svg' and stored in the temporary
+        directory returned by `tempfile.gettempdir()`.  See `timestamp`
+        for information on the timestamp.
 
         :param stroke_widths - a list of stroke_widths to use for paths
         (default is 0.5% of the SVG's width or length)
@@ -131,9 +145,11 @@ def disvg(paths=None, colors=None,
         :param openinbrowser -  Set to True to automatically open the created
         SVG in the user's default web browser.
 
-        :param timestamp - if True, then the a timestamp will be appended to
-        the output SVG's filename.  This will fix issues with rapidly opening
-        multiple SVGs in your browser.
+        :param timestamp - if true, then the a timestamp will be
+        appended to the output SVG's filename.  This is meant as a
+        workaround for issues related to rapidly opening multiple
+        SVGs in your browser using `disvg`. This defaults to true if
+        `filename is None` and false otherwise.
 
         :param margin_size - The min margin (empty area framing the collection
         of paths) size used for creating the canvas and background of the SVG.
@@ -183,8 +199,10 @@ def disvg(paths=None, colors=None,
         svgviewer/browser will likely fail to load some of the SVGs in time.
         To fix this, use the timestamp attribute, or give the files unique
         names, or use a pause command (e.g. time.sleep(1)) between uses.
-    """
 
+    SEE ALSO:
+        * document.py
+    """
 
     _default_relative_node_radius = 5e-3
     _default_relative_stroke_width = 1e-3
@@ -192,10 +210,9 @@ def disvg(paths=None, colors=None,
     _default_node_color = '#ff0000'  # red
     _default_font_size = 12
 
-
-    # append directory to filename (if not included)
-    if os_path.dirname(filename) == '':
-        filename = os_path.join(getcwd(), filename)
+    if filename is None:
+        timestamp = True if timestamp is None else timestamp
+        filename = os_path.join(gettempdir(), 'disvg_output.svg')
 
     # append time stamp to filename
     if timestamp:
@@ -296,12 +313,16 @@ def disvg(paths=None, colors=None,
         dy += 2*margin_size*dy + extra_space_for_style
         viewbox = "%s %s %s %s" % (xmin, ymin, dx, dy)
 
-        if dx > dy:
-            szx = str(mindim) + 'px'
-            szy = str(int(ceil(mindim * dy / dx))) + 'px'
+        if mindim is None:
+            szx = "{}{}".format(dx, baseunit)
+            szy = "{}{}".format(dy, baseunit)
         else:
-            szx = str(int(ceil(mindim * dx / dy))) + 'px'
-            szy = str(mindim) + 'px'
+            if dx > dy:
+                szx = str(mindim) + baseunit
+                szy = str(int(ceil(mindim * dy / dx))) + baseunit
+            else:
+                szx = str(int(ceil(mindim * dx / dy))) + baseunit
+                szy = str(mindim) + baseunit 
         dimensions = szx, szy
 
     # Create an SVG file
@@ -405,39 +426,56 @@ def disvg(paths=None, colors=None,
             print(filename)
 
 
-def wsvg(paths=None, colors=None,
-          filename=os_path.join(getcwd(), 'disvg_output.svg'),
-          stroke_widths=None, nodes=None, node_colors=None, node_radii=None,
-          openinbrowser=False, timestamp=False,
-          margin_size=0.1, mindim=600, dimensions=None,
-          viewbox=None, text=None, text_path=None, font_size=None,
-          attributes=None, svg_attributes=None, svgwrite_debug=False, paths2Drawing=False):
-    """Convenience function; identical to disvg() except that
-    openinbrowser=False by default.  See disvg() docstring for more info."""
-    disvg(paths, colors=colors, filename=filename,
-          stroke_widths=stroke_widths, nodes=nodes,
-          node_colors=node_colors, node_radii=node_radii,
-          openinbrowser=openinbrowser, timestamp=timestamp,
-          margin_size=margin_size, mindim=mindim, dimensions=dimensions,
-          viewbox=viewbox, text=text, text_path=text_path, font_size=font_size,
-          attributes=attributes, svg_attributes=svg_attributes,
-          svgwrite_debug=svgwrite_debug, paths2Drawing=paths2Drawing)
+def wsvg(paths=None, colors=None, filename=None, stroke_widths=None,
+         nodes=None, node_colors=None, node_radii=None,
+         openinbrowser=False, timestamp=False, margin_size=0.1,
+         mindim=600, dimensions=None, viewbox=None, text=None,
+         text_path=None, font_size=None, attributes=None,
+         svg_attributes=None, svgwrite_debug=False,
+         paths2Drawing=False, baseunit='px'):
+    """Create SVG and write to disk.
+
+    Note: This is identical to `disvg()` except that `openinbrowser`
+    is false by default and an assertion error is raised if `filename
+    is None`.
+
+    See `disvg()` docstring for more info.
+    """
+    assert filename is not None
+    return disvg(paths, colors=colors, filename=filename,
+                 stroke_widths=stroke_widths, nodes=nodes,
+                 node_colors=node_colors, node_radii=node_radii,
+                 openinbrowser=openinbrowser, timestamp=timestamp,
+                 margin_size=margin_size, mindim=mindim,
+                 dimensions=dimensions, viewbox=viewbox, text=text,
+                 text_path=text_path, font_size=font_size,
+                 attributes=attributes, svg_attributes=svg_attributes,
+                 svgwrite_debug=svgwrite_debug,
+                 paths2Drawing=paths2Drawing, baseunit=baseunit)
     
     
-def paths2Drawing(paths=None, colors=None,
-          filename=os_path.join(getcwd(), 'disvg_output.svg'),
-          stroke_widths=None, nodes=None, node_colors=None, node_radii=None,
-          openinbrowser=False, timestamp=False,
-          margin_size=0.1, mindim=600, dimensions=None,
-          viewbox=None, text=None, text_path=None, font_size=None,
-          attributes=None, svg_attributes=None, svgwrite_debug=False, paths2Drawing=True):
-    """Convenience function; identical to disvg() except that
-    paths2Drawing=True by default.  See disvg() docstring for more info."""
-    disvg(paths, colors=colors, filename=filename,
-          stroke_widths=stroke_widths, nodes=nodes,
-          node_colors=node_colors, node_radii=node_radii,
-          openinbrowser=openinbrowser, timestamp=timestamp,
-          margin_size=margin_size, mindim=mindim, dimensions=dimensions,
-          viewbox=viewbox, text=text, text_path=text_path, font_size=font_size,
-          attributes=attributes, svg_attributes=svg_attributes,
-          svgwrite_debug=svgwrite_debug, paths2Drawing=paths2Drawing)
+def paths2Drawing(paths=None, colors=None, filename=None,
+                  stroke_widths=None, nodes=None, node_colors=None,
+                  node_radii=None, openinbrowser=False, timestamp=False,
+                  margin_size=0.1, mindim=600, dimensions=None,
+                  viewbox=None, text=None, text_path=None,
+                  font_size=None, attributes=None, svg_attributes=None,
+                  svgwrite_debug=False, paths2Drawing=True, baseunit='px'):
+    """Create and return `svg.Drawing` object.
+
+    Note: This is identical to `disvg()` except that `paths2Drawing`
+    is true by default and an assertion error is raised if `filename
+    is None`.
+
+    See `disvg()` docstring for more info.
+    """
+    return disvg(paths, colors=colors, filename=filename, 
+                 stroke_widths=stroke_widths, nodes=nodes,
+                 node_colors=node_colors, node_radii=node_radii,
+                 openinbrowser=openinbrowser, timestamp=timestamp,
+                 margin_size=margin_size, mindim=mindim,
+                 dimensions=dimensions, viewbox=viewbox, text=text,
+                 text_path=text_path, font_size=font_size,
+                 attributes=attributes, svg_attributes=svg_attributes,
+                 svgwrite_debug=svgwrite_debug,
+                 paths2Drawing=paths2Drawing, baseunit=baseunit)

@@ -105,9 +105,9 @@ class SaxDocument:
                 elif 'line' == name:
                     values["d"] = line2pathd(values)
                 elif 'polyline' == name:
-                    values["d"] = polyline2pathd(values['points'])
+                    values["d"] = polyline2pathd(values)
                 elif 'polygon' == name:
-                    values["d"] = polygon2pathd(values['points'])
+                    values["d"] = polygon2pathd(values)
                 elif 'rect' == name:
                     values["d"] = rect2pathd(values)
                 else:
