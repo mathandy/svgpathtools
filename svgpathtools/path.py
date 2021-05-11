@@ -293,7 +293,8 @@ def transform(curve, tf):
             return Line(new_start, new_end)
         else : 
             return Arc(new_start, radius=new_radius, rotation=curve.rotation,
-                       large_arc=curve.large_arc, sweep=curve.sweep, end=new_end)
+                       large_arc=curve.large_arc, sweep=curve.sweep, end=new_end,
+                       autoscale_radius=False)
 
     else:
         raise TypeError("Input `curve` should be a Path, Line, "
