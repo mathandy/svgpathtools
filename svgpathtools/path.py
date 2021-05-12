@@ -318,17 +318,20 @@ def transform(curve, tf):
         invT = np.linalg.inv(tf[:2,:2])
         D = invT.T @ Q @ invT
 
-        eigvals = np.linalg.eigvals(D)
+        eigvals, eigvecs = np.linalg.eig(D)
 
         rx = 1 / np.sqrt(eigvals[0])
         ry = 1 / np.sqrt(eigvals[1])
 
         new_radius = complex(rx, ry)
 
+        xeigvec = eigvecs[:, 0]
+        rot = np.degrees(np.arccos(xeigvec[0]))
+
         if new_radius.real == 0 or new_radius.imag == 0 :
             return Line(new_start, new_end)
         else : 
-            return Arc(new_start, radius=new_radius, rotation=curve.rotation,
+            return Arc(new_start, radius=new_radius, rotation=curve.rotation + rot,
                        large_arc=curve.large_arc, sweep=curve.sweep, end=new_end,
                        autoscale_radius=False)
 
