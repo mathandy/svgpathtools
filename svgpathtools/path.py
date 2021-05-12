@@ -13,6 +13,7 @@ from warnings import warn
 from operator import itemgetter
 import numpy as np
 from itertools import tee
+from functools import reduce
 
 # these imports were originally from math and cmath, now are from numpy
 # in order to encourage code that generalizes to vector inputs
@@ -316,7 +317,7 @@ def transform(curve, tf):
 
         Q = np.array([[1/rx2, 0], [0, 1/ry2]])
         invT = np.linalg.inv(tf[:2,:2])
-        D = invT.T @ Q @ invT
+        D = reduce(np.matmul, [invT.T, Q, invT])
 
         eigvals, eigvecs = np.linalg.eig(D)
 
