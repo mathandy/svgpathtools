@@ -5,3 +5,4 @@ build
 svgpathtools.egg-info
 !.travis.yml
 !/.gitignore
+!/.github
