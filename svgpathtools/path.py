@@ -80,11 +80,14 @@ _is_smooth_from_warning = \
 
 def bezier_segment(*bpoints):
     if len(bpoints) == 2:
-        return Line(*bpoints)
+        start, end = bpoints
+        return Line(start, end)
     elif len(bpoints) == 4:
-        return CubicBezier(*bpoints)
+        start, control1, control2, end = bpoints
+        return CubicBezier(start, control1, control2, end)
     elif len(bpoints) == 3:
-        return QuadraticBezier(*bpoints)
+        start, control, end = bpoints
+        return QuadraticBezier(start, control, end)
     else:
         assert len(bpoints) in (2, 3, 4)
 
