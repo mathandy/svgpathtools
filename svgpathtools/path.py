@@ -2351,16 +2351,6 @@ class Arc(object):
             current_t = next_t
 
 
-def is_bezier_segment(x):
-    return (isinstance(x, Line) or
-            isinstance(x, QuadraticBezier) or
-            isinstance(x, CubicBezier))
-
-
-def is_path_segment(x):
-    return is_bezier_segment(x) or isinstance(x, Arc)
-
-
 class Path(MutableSequence):
     """A Path is a sequence of path segments"""
 
