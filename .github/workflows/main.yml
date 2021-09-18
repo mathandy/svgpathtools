@@ -36,4 +36,4 @@ jobs:
 
       # find and run all unit tests
       - name: Run unit tests
-        run: python -m unittest discover tests
+        run: python -m unittest discover test
