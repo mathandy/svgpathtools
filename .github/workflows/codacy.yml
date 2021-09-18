@@ -1,4 +1,4 @@
-name: codacy-coverage-reporter
+name: Codacy
 
 on: ["push"]
 
@@ -12,14 +12,3 @@ jobs:
 
       - name: Run Codacy Analysis CLI
         uses: codacy/codacy-analysis-cli-action@master
-
-#  codacy-coverage-reporter:
-#    runs-on: ubuntu-latest
-#    name: Codacy Coverage Reporter
-#    steps:
-#      - uses: actions/checkout@v2
-#      - name: Run codacy-coverage-reporter
-#        uses: codacy/codacy-coverage-reporter-action@v1
-#        with:
-#          api-token: ${{ secrets.CODACY_API_TOKEN }}
-#          coverage-reports: cobertura.xml
