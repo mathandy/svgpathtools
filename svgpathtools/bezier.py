@@ -141,14 +141,11 @@ def split_bezier(bpoints, t):
 
 
 def halve_bezier(p):
+    """split path segment into two halves at t=0.5"""
 
-    # begin arc support block ########################
-    try:
-        p.large_arc
+    # for Arc support
+    if hasattr(p, 'radius'):
         return p.split(0.5)
-    except:
-        pass
-    # end arc support block ##########################
 
     if len(p) == 4:
         return ([p[0], (p[0] + p[1])/2, (p[0] + 2*p[1] + p[2])/4,
@@ -195,13 +192,9 @@ def bezier_bounding_box(bez):
     (xmin, xmax, ymin, ymax).
     Warning: For the non-cubic case this is not particularly efficient."""
 
-    # begin arc support block ########################
-    try:
-        bla = bez.large_arc
-        return bez.bbox()  # added to support Arc objects
-    except:
-        pass
-    # end arc support block ##########################
+    # for Arc support
+    if hasattr(bez, 'radius'):
+        return bez.bbox()
 
     if len(bez) == 4:
         xmin, xmax = bezier_real_minmax([p.real for p in bez])
