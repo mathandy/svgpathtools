@@ -1,17 +1,23 @@
-"""The goal of this gist is to show how to compute many points on a path 
+""" An example of how to speed up point() calculations with vectorization.
+
+The goal of this gist is to show how to compute many points on a path
 quickly using NumPy arrays.  I.e. there's a much faster way than using, say
 [some_path.point(t) for t in many_tvals].  The example below assumes the 
 `Path` object is composed entirely of `CubicBezier` objects, but this can
 easily be generalized to paths containing `Line` and `QuadraticBezier` objects
-also.  
+also.
+
 Note: The relevant matrix transformation for quadratics can be found in the
-svgpathtools.bezier module."""
+svgpathtools.bezier module.
+"""
+
 from __future__ import print_function
 import numpy as np
-from svgpathtools import *
+from svgpathtools import bezier_point, bpoints2bezier, polynomial2bezier, Path
 
 
 class HigherOrderBezier:
+    """Bezier curve of arbitrary degree"""
     def __init__(self, bpoints):
         self.bpts = bpoints
 
@@ -38,7 +44,7 @@ def points_in_each_seg_slow(path, tvals):
 
 def points_in_each_seg(path, tvals):
     """Compute seg.point(t) for each seg in path and each t in tvals."""
-    A = np.array([[-1,  3, -3,  1], # transforms cubic bez to standard poly
+    A = np.array([[-1,  3, -3,  1],  # transforms cubic bez to standard poly
                   [ 3, -6,  3,  0],
                   [-3,  3,  0,  0],
                   [ 1,  0,  0,  0]])
