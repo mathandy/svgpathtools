@@ -1937,7 +1937,7 @@ class TestPathTools(TestCase):
 
     def test_path_area(self):
         if not RUN_SLOW_TESTS:
-            warnings.warn("Skipping `test_path_area` as RUN_SLOW_TESTS is false.")
+            # warnings.warn("Skipping `test_path_area` as RUN_SLOW_TESTS is false.")
             return
         cw_square = Path()
         cw_square.append(Line((0+0j), (0+100j)))
