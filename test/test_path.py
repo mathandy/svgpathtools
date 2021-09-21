@@ -8,7 +8,10 @@ import random
 import warnings
 
 # Internal dependencies
-from svgpathtools import *
+from svgpathtools import (
+    Line, QuadraticBezier, CubicBezier, Arc, Path, parse_path,
+    is_bezier_segment, is_bezier_path, poly2bez, bpoints2bezier,
+    closest_point_in_path, farthest_point_in_path, path_encloses_pt)
 from svgpathtools.path import bezier_radialrange
 
 # An important note for those doing any debugging:
@@ -64,6 +67,7 @@ def assert_intersections(test_case, a_seg, b_seg, intersections, count, msg=None
         test_case.assertAlmostEqual(a_seg.point(i[0]), b_seg.point(i[1]), msg=msg, delta=tol)
 
 
+# noinspection PyTypeChecker
 class LineTest(unittest.TestCase):
 
     def test_lines(self):
@@ -158,9 +162,9 @@ class LineTest(unittest.TestCase):
         self.assertIsNone(l.point_to_t(-0.001-0j))
 
         random.seed()
-        for line_index in range(100):
+        for _ in range(100):
             l = random_line()
-            for t_index in range(100):
+            for __ in range(100):
                 orig_t = random.random()
                 p = l.point(orig_t)
                 computed_t = l.point_to_t(p)
@@ -181,6 +185,7 @@ class LineTest(unittest.TestCase):
             self.assertAlmostEqual(max_ta, max_tb, delta=TOL)
 
 
+# noinspection PyTypeChecker
 class CubicBezierTest(unittest.TestCase):
     def test_approx_circle(self):
         """This is a approximate circle drawn in Inkscape"""
@@ -417,13 +422,12 @@ class CubicBezierTest(unittest.TestCase):
         segment = CubicBezier(complex(600, 500), complex(600, 350),
                               complex(900, 650), complex(900, 500))
 
-        self.assertTrue(segment ==
-                CubicBezier(600 + 500j, 600 + 350j, 900 + 650j, 900 + 500j))
-        self.assertTrue(segment !=
-                CubicBezier(600 + 501j, 600 + 350j, 900 + 650j, 900 + 500j))
+        self.assertTrue(segment == CubicBezier(600 + 500j, 600 + 350j, 900 + 650j, 900 + 500j))
+        self.assertTrue(segment != CubicBezier(600 + 501j, 600 + 350j, 900 + 650j, 900 + 500j))
         self.assertTrue(segment != Line(0, 400))
 
 
+# noinspection PyTypeChecker
 class QuadraticBezierTest(unittest.TestCase):
 
     def test_svg_examples(self):
@@ -493,25 +497,24 @@ class QuadraticBezierTest(unittest.TestCase):
         # This is to test the __eq__ and __ne__ methods, so we can't use
         # assertEqual and assertNotEqual
         segment = QuadraticBezier(200 + 300j, 400 + 50j, 600 + 300j)
-        self.assertTrue(segment ==
-            QuadraticBezier(200 + 300j, 400 + 50j, 600 + 300j))
-        self.assertTrue(segment !=
-            QuadraticBezier(200 + 301j, 400 + 50j, 600 + 300j))
+        self.assertTrue(segment == QuadraticBezier(200 + 300j, 400 + 50j, 600 + 300j))
+        self.assertTrue(segment != QuadraticBezier(200 + 301j, 400 + 50j, 600 + 300j))
         self.assertFalse(segment == Arc(0j, 100 + 50j, 0, 0, 0, 100 + 50j))
         self.assertTrue(Arc(0j, 100 + 50j, 0, 0, 0, 100 + 50j) != segment)
 
 
+# noinspection PyTypeChecker
 class ArcTest(unittest.TestCase):
 
     def test_trusting_acos(self):
         """`u1.real` is > 1 in this arc due to numerical error."""
         try:
-            a1 = Arc(start=(160.197+102.925j),
-                     radius=(0.025+0.025j),
-                     rotation=0.0,
-                     large_arc=False,
-                     sweep=True,
-                     end=(160.172+102.95j))
+            _ = Arc(start=(160.197+102.925j),
+                    radius=(0.025+0.025j),
+                    rotation=0.0,
+                    large_arc=False,
+                    sweep=True,
+                    end=(160.172+102.95j))
         except ValueError:
             self.fail("Arc() raised ValueError unexpectedly!")
 
@@ -678,9 +681,9 @@ class ArcTest(unittest.TestCase):
         self.assertIsNone(a.point_to_t(730.5212132777968+171j))
 
         random.seed()
-        for arc_index in range(100):
+        for _ in range(100):
             a = random_arc()
-            for t_index in np.linspace(0, 1, 100):
+            for __ in np.linspace(0, 1, 100):
                 orig_t = random.random()
                 p = a.point(orig_t)
                 computed_t = a.point_to_t(p)
@@ -690,7 +693,7 @@ class ArcTest(unittest.TestCase):
 
     def test_approx_quad(self):
         n = 100
-        for i in range(n):
+        for _ in range(n):
             arc = random_arc()
             if arc.radius.real > 2000 or arc.radius.imag > 2000:
                 continue  # Random Arc too large, by autoscale.
@@ -703,7 +706,7 @@ class ArcTest(unittest.TestCase):
 
     def test_approx_cubic(self):
         n = 100
-        for i in range(n):
+        for _ in range(n):
             arc = random_arc()
             if arc.radius.real > 2000 or arc.radius.imag > 2000:
                 continue  # Random Arc too large, by autoscale.
@@ -715,6 +718,7 @@ class ArcTest(unittest.TestCase):
             self.assertAlmostEqual(d, 0.0, delta=2)
 
 
+# noinspection PyTypeChecker
 class TestPath(unittest.TestCase):
 
     def test_circle(self):
@@ -796,7 +800,7 @@ class TestPath(unittest.TestCase):
             Arc(start=650 + 325j, radius=25 + 25j, rotation=-30,
                 large_arc=0, sweep=1, end=700 + 300j),
             CubicBezier(start=700 + 300j, control1=800 + 400j,
-                control2=750 + 200j, end=600 + 100j),
+                        control2=750 + 200j, end=600 + 100j),
             QuadraticBezier(start=600 + 100j, control=600, end=600 + 300j))
         self.assertEqual(eval(repr(path)), path)
 
@@ -808,14 +812,14 @@ class TestPath(unittest.TestCase):
             Arc(start=650 + 325j, radius=25 + 25j, rotation=-30,
                 large_arc=0, sweep=1, end=700 + 300j),
             CubicBezier(start=700 + 300j, control1=800 + 400j,
-                control2=750 + 200j, end=600 + 100j),
+                        control2=750 + 200j, end=600 + 100j),
             QuadraticBezier(start=600 + 100j, control=600, end=600 + 300j))
         path2 = Path(
             Line(start=600 + 350j, end=650 + 325j),
             Arc(start=650 + 325j, radius=25 + 25j, rotation=-30,
                 large_arc=0, sweep=1, end=700 + 300j),
             CubicBezier(start=700 + 300j, control1=800 + 400j,
-                control2=750 + 200j, end=600 + 100j),
+                        control2=750 + 200j, end=600 + 100j),
             QuadraticBezier(start=600 + 100j, control=600, end=600 + 300j))
 
         self.assertTrue(path1 == path2)
@@ -985,17 +989,17 @@ class TestPath(unittest.TestCase):
         test_curves = [bezpath, bezpathz, path, pathz, lpath, qpath, cpath,
                        apath, line1, arc1, arc2, cub1, cub2, quad3, linez]
 
-        def scale_a_point(pt, sx, sy=None, origin=0j):
+        def scale_a_point(pt_, sx_, sy_=None, origin_=0j):
 
-            if sy is None:
-                sy = sx
+            if sy_ is None:
+                sy_ = sx_
 
-            zeta = pt - origin
+            zeta = pt_ - origin_
             pt_vec = [[zeta.real],
                       [zeta.imag],
                       [1]]
-            transform = [[sx, 0, origin.real],
-                         [0, sy, origin.imag]]
+            transform = [[sx_, 0, origin_.real],
+                         [0, sy_, origin_.imag]]
 
             return complex(*np.dot(transform, pt_vec).ravel())
 
@@ -1019,6 +1023,8 @@ class TestPath(unittest.TestCase):
 
             # find seg which t lands on for failure reporting
             seg = curve
+            seg_idx = None
+            seg_t = None
             if isinstance(curve, Path):
                 seg_idx, seg_t = curve.T2t(t)
                 seg = curve[seg_idx]
@@ -1057,7 +1063,7 @@ class TestPath(unittest.TestCase):
                     curve.scaled(sx, sy).point(t)
             else:
                 curve_scaled = curve.scaled(sx, sy)
-                seg_scaled = seg.scaled(sx, sy)
+                _ = seg.scaled(sx, sy)
                 if isinstance(curve, Path):
                     res = curve_scaled[seg_idx].point(seg_t)
                 else:
@@ -1131,6 +1137,7 @@ class TestPath(unittest.TestCase):
         self.assertEqual(path2.d(use_closed_attrib=True, rel=True), rel_s)
 
 
+# noinspection PyTypeChecker
 class Test_ilength(unittest.TestCase):
     # See svgpathtools.notes.inv_arclength.py for information on how these
     # test values were generated (using the .length() method).
@@ -1138,13 +1145,13 @@ class Test_ilength(unittest.TestCase):
 
     def test_ilength_lines(self):
         l = Line(1, 3-1j)
-        nodall = Line(1+1j, 1+1j)
+        # nodall = Line(1+1j, 1+1j)
 
         tests = [(l, 0.01, 0.022360679774997897),
-         (l, 0.1, 0.223606797749979),
-         (l, 0.5, 1.118033988749895),
-         (l, 0.9, 2.012461179749811),
-         (l, 0.99, 2.213707297724792)]
+                 (l, 0.1, 0.223606797749979),
+                 (l, 0.5, 1.118033988749895),
+                 (l, 0.9, 2.012461179749811),
+                 (l, 0.99, 2.213707297724792)]
 
         for (l, t, s) in tests:
             self.assertAlmostEqual(l.ilength(s), t, delta=TOL)
@@ -1154,37 +1161,31 @@ class Test_ilength(unittest.TestCase):
         q2 = QuadraticBezier(200 + 300j, 400 + 50j, 500 + 200j)
         closedq = QuadraticBezier(6 + 2j, 5 - 1j, 6 + 2j)
         linq = QuadraticBezier(1+3j, 2+5j, -9 - 17j)
-        nodalq = QuadraticBezier(1, 1, 1)
+        # nodalq = QuadraticBezier(1, 1, 1)
 
         tests = [(q1, 0.01, 6.364183310105577),
-         (q1, 0.1, 60.23857499635088),
-         (q1, 0.5, 243.8855469477619),
-         (q1, 0.9, 427.53251889917294),
-         (q1, 0.99, 481.40691058541813),
-         (q2, 0.01, 6.365673533661836),
-         (q2, 0.1, 60.31675895732397),
-         (q2, 0.5, 233.24592830045907),
-         (q2, 0.9, 346.42891253298706),
-         (q2, 0.99, 376.32659156736844),
-         (closedq, 0.01, 0.06261309767133393),
-         (closedq, 0.1, 0.5692099788303084),
-         (closedq, 0.5, 1.5811388300841898),
-         (closedq, 0.9, 2.5930676813380713),
-         (closedq, 0.99, 3.0996645624970456),
-         (linq, 0.01, 0.04203807797699605),
-         (linq, 0.1, 0.19379255804998186),
-         (linq, 0.5, 4.844813951249544),
-         (linq, 0.9, 18.0823363780483),
-         (linq, 0.99, 22.24410609777091)]
+                 (q1, 0.1, 60.23857499635088),
+                 (q1, 0.5, 243.8855469477619),
+                 (q1, 0.9, 427.53251889917294),
+                 (q1, 0.99, 481.40691058541813),
+                 (q2, 0.01, 6.365673533661836),
+                 (q2, 0.1, 60.31675895732397),
+                 (q2, 0.5, 233.24592830045907),
+                 (q2, 0.9, 346.42891253298706),
+                 (q2, 0.99, 376.32659156736844),
+                 (closedq, 0.01, 0.06261309767133393),
+                 (closedq, 0.1, 0.5692099788303084),
+                 (closedq, 0.5, 1.5811388300841898),
+                 (closedq, 0.9, 2.5930676813380713),
+                 (closedq, 0.99, 3.0996645624970456),
+                 (linq, 0.01, 0.04203807797699605),
+                 (linq, 0.1, 0.19379255804998186),
+                 (linq, 0.5, 4.844813951249544),
+                 (linq, 0.9, 18.0823363780483),
+                 (linq, 0.99, 22.24410609777091)]
 
         for q, t, s in tests:
-            try:
-                self.assertAlmostEqual(q.ilength(s), t, delta=TOL)
-            except:
-                print(q)
-                print(s)
-                print(t)
-                raise
+            self.assertAlmostEqual(q.ilength(s), t, delta=TOL)
 
     def test_ilength_cubics(self):
         c1 = CubicBezier(200 + 300j, 400 + 50j, 600+100j, -200)
@@ -1359,7 +1360,7 @@ class Test_ilength(unittest.TestCase):
         for (c, t, s) in tests:
             try:
                 self.assertAlmostEqual(c.ilength(s), t, msg=str((c, t, s)), delta=TOL)
-            except:
+            except ValueError:
                 # These test case values were generated using a system
                 # with scipy installed -- if scipy is not installed,
                 # then in cases where `t == 1`, `s` may be slightly
@@ -1382,6 +1383,7 @@ class Test_ilength(unittest.TestCase):
             lin.ilength(1)
 
 
+# noinspection PyTypeChecker
 class Test_intersect(unittest.TestCase):
     def test_intersect(self):
 
@@ -1523,9 +1525,9 @@ class Test_intersect(unittest.TestCase):
         assert_intersections(self, a, l, intersections, 0)
 
         random.seed()
-        for arc_index in range(50):
+        for _ in range(50):
             a = random_arc()
-            for line_index in range(100):
+            for __ in range(100):
                 l = random_line()
                 intersections = a.intersect(l)
                 msg = 'Generated: arc = {}, line = {}'.format(a, l)
@@ -1682,6 +1684,7 @@ class Test_intersect(unittest.TestCase):
         assert_intersections(self, a0, a1, intersections, 0)
 
 
+# noinspection PyTypeChecker
 class TestPathTools(unittest.TestCase):
     # moved from test_pathtools.py
 
@@ -1973,6 +1976,7 @@ class TestPathTools(unittest.TestCase):
         self.assertTrue(enclosing_shape.is_contained_by(larger_shape))
 
 
+# noinspection PyTypeChecker
 class TestPathBugs(unittest.TestCase):
 
     def test_issue_113(self):
@@ -1997,9 +2001,19 @@ class TestPathBugs(unittest.TestCase):
         self.assertAlmostEqual(p.length(), 236.70287281737836, delta=TOL)
 
     def test_issue_71(self):
-        p = Path("M327 468z")
-        m = p.closed
-        q = p.d()  # Failing to Crash is good.
+        """Test that degenerate (point-like) paths behave properly."""
+        # degenerate (point-like) closed path
+        d_string = "M327 468z"
+        path = Path(d_string)
+        with self.assertWarns(UserWarning):
+            self.assertTrue(path.closed)
+
+        # test the Path.d() method reproduces an empty d-string
+        # note that ideally this would reproduce the original, but
+        # as a Path is a sequence of Bezier segments and arcs, and this
+        # d-string contains no Bezier segments or arcs, this output seems
+        # like an acceptable compromise
+        self.assertEqual(path.d(), '')
 
     def test_issue_95(self):
         """
