@@ -1,6 +1,6 @@
 # External dependencies
 from __future__ import division, absolute_import, print_function
-import unittest
+from unittest import TestCase
 from math import sqrt, pi
 from operator import itemgetter
 import numpy as np
@@ -67,8 +67,25 @@ def assert_intersections(test_case, a_seg, b_seg, intersections, count, msg=None
         test_case.assertAlmostEqual(a_seg.point(i[0]), b_seg.point(i[1]), msg=msg, delta=tol)
 
 
+class AssertWarns(warnings.catch_warnings):
+    """A python 2 compatible version of assertWarns."""
+    def __init__(self, test_case, warning):
+        self.test_case = test_case
+        self.warning_type = warning
+        self.log = None
+        super(AssertWarns, self).__init__(record=True, module=None)
+
+    def __enter__(self):
+        self.log = super(AssertWarns, self).__enter__()
+        return self.log
+
+    def __exit__(self, *exc_info):
+        super(AssertWarns, self).__exit__(*exc_info)
+        self.test_case.assertEqual(type(self.log[0]), self.warning_type)
+
+
 # noinspection PyTypeChecker
-class LineTest(unittest.TestCase):
+class LineTest(TestCase):
 
     def test_lines(self):
         # These points are calculated, and not just regression tests.
@@ -186,7 +203,7 @@ class LineTest(unittest.TestCase):
 
 
 # noinspection PyTypeChecker
-class CubicBezierTest(unittest.TestCase):
+class CubicBezierTest(TestCase):
     def test_approx_circle(self):
         """This is a approximate circle drawn in Inkscape"""
 
@@ -428,7 +445,7 @@ class CubicBezierTest(unittest.TestCase):
 
 
 # noinspection PyTypeChecker
-class QuadraticBezierTest(unittest.TestCase):
+class QuadraticBezierTest(TestCase):
 
     def test_svg_examples(self):
         """These is the path in the SVG specs"""
@@ -504,7 +521,7 @@ class QuadraticBezierTest(unittest.TestCase):
 
 
 # noinspection PyTypeChecker
-class ArcTest(unittest.TestCase):
+class ArcTest(TestCase):
 
     def test_trusting_acos(self):
         """`u1.real` is > 1 in this arc due to numerical error."""
@@ -719,7 +736,7 @@ class ArcTest(unittest.TestCase):
 
 
 # noinspection PyTypeChecker
-class TestPath(unittest.TestCase):
+class TestPath(TestCase):
 
     def test_circle(self):
         arc1 = Arc(0j, 100 + 100j, 0, 0, 0, 200 + 0j)
@@ -1138,7 +1155,7 @@ class TestPath(unittest.TestCase):
 
 
 # noinspection PyTypeChecker
-class Test_ilength(unittest.TestCase):
+class Test_ilength(TestCase):
     # See svgpathtools.notes.inv_arclength.py for information on how these
     # test values were generated (using the .length() method).
     ##############################################################
@@ -1384,7 +1401,7 @@ class Test_ilength(unittest.TestCase):
 
 
 # noinspection PyTypeChecker
-class Test_intersect(unittest.TestCase):
+class Test_intersect(TestCase):
     def test_intersect(self):
 
         ###################################################################
@@ -1685,7 +1702,7 @@ class Test_intersect(unittest.TestCase):
 
 
 # noinspection PyTypeChecker
-class TestPathTools(unittest.TestCase):
+class TestPathTools(TestCase):
     # moved from test_pathtools.py
 
     def setUp(self):
@@ -1977,7 +1994,7 @@ class TestPathTools(unittest.TestCase):
 
 
 # noinspection PyTypeChecker
-class TestPathBugs(unittest.TestCase):
+class TestPathBugs(TestCase):
 
     def test_issue_113(self):
         """
@@ -2005,7 +2022,9 @@ class TestPathBugs(unittest.TestCase):
         # degenerate (point-like) closed path
         d_string = "M327 468z"
         path = Path(d_string)
-        with self.assertWarns(UserWarning):
+
+        warning_type = warnings.WarningMessage
+        with AssertWarns(self, warning_type):
             self.assertTrue(path.closed)
 
         # test the Path.d() method reproduces an empty d-string
@@ -2032,4 +2051,5 @@ class TestPathBugs(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    from unittest import main
+    main()
