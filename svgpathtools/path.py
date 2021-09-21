@@ -595,6 +595,9 @@ class Line(object):
         self.start = start
         self.end = end
 
+    def __hash__(self):
+        return hash((self.start, self.end))
+
     def __repr__(self):
         return 'Line(start=%s, end=%s)' % (self.start, self.end)
 
@@ -851,6 +854,9 @@ class QuadraticBezier(object):
         # used to know if self._length needs to be updated
         self._length_info = {'length': None, 'bpoints': None}
 
+    def __hash__(self):
+        return hash((self.start, self.control, self.end))
+
     def __repr__(self):
         return 'QuadraticBezier(start=%s, control=%s, end=%s)' % (
             self.start, self.control, self.end)
@@ -1105,6 +1111,9 @@ class CubicBezier(object):
         # used to know if self._length needs to be updated
         self._length_info = {'length': None, 'bpoints': None, 'error': None,
                              'min_depth': None}
+
+    def __hash__(self):
+        return hash((self.start, self.control1, self.control2, self.end))
 
     def __repr__(self):
         return 'CubicBezier(start=%s, control1=%s, control2=%s, end=%s)' % (
@@ -2393,6 +2402,9 @@ class Path(MutableSequence):
 
         if 'tree_element' in kw:
             self._tree_element = kw['tree_element']
+
+    def __hash__(self):
+        return hash((tuple(self._segments), self._closed))
 
     def __getitem__(self, index):
         return self._segments[index]
