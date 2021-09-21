@@ -31,13 +31,9 @@ def bezier_point(p, t):
     Warning:  Be concerned about numerical stability when using this function
     with high order curves."""
 
-    # begin arc support block ########################
-    try:
-        p.large_arc
+    # for Arc support
+    if hasattr(p, 'radius'):
         return p.point(t)
-    except:
-        pass
-    # end arc support block ##########################
 
     deg = len(p) - 1
     if deg == 3:
