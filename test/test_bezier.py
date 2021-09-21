@@ -6,6 +6,7 @@ from svgpathtools.path import bpoints2bezier
 
 
 class HigherOrderBezier:
+    """To help test Bezier curves of arbitrary degree"""
     def __init__(self, bpoints):
         self.bpts = bpoints
 
