@@ -8,7 +8,7 @@ from __future__ import division, absolute_import, print_function
 from math import ceil
 from os import path as os_path, makedirs
 from tempfile import gettempdir
-from xml.dom.minidom import parse as md_xml_parse
+from defusedxml.minidom import parse as md_xml_parse
 from svgwrite import Drawing, text as txt
 from time import time
 from warnings import warn

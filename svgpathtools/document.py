@@ -39,7 +39,7 @@ import os
 import collections
 import xml.etree.ElementTree as etree
 from xml.etree.ElementTree import Element, SubElement, register_namespace
-from xml.dom.minidom import parseString
+from defusedxml.minidom import parseString
 import warnings
 from tempfile import gettempdir
 from time import time

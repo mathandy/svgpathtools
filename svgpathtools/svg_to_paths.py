@@ -3,7 +3,7 @@ The main tool being the svg2paths() function."""
 
 # External dependencies
 from __future__ import division, absolute_import, print_function
-from xml.dom.minidom import parse
+from defusedxml.minidom import parse
 from os import path as os_path, getcwd
 import re
 
@@ -17,8 +17,10 @@ COORD_PAIR_TMPLT = re.compile(
     r'([\+-]?\d*[\.\d]\d*[eE][\+-]?\d+|[\+-]?\d*[\.\d]\d*)'
 )
 
+
 def path2pathd(path):
     return path.get('d', '')
+
 
 def ellipse2pathd(ellipse):
     """converts the parameters from an ellipse or a circle to a string for a 
