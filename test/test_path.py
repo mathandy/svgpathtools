@@ -9,7 +9,7 @@ import warnings
 
 # Internal dependencies
 from svgpathtools import *
-from svgpathtools.path import _NotImplemented4ArcException, bezier_radialrange
+from svgpathtools.path import bezier_radialrange
 
 # An important note for those doing any debugging:
 # ------------------------------------------------
