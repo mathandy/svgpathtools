@@ -5,7 +5,7 @@ $ python -m unittest test.test_groups.TestGroups.test_group_flatten
 """
 from __future__ import division, absolute_import, print_function
 import unittest
-from svgpathtools import *
+from svgpathtools import Document, SVG_NAMESPACE, parse_path
 from os.path import join, dirname
 import numpy as np
 

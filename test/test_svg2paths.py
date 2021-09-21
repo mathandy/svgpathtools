@@ -1,7 +1,8 @@
 from __future__ import division, absolute_import, print_function
 import unittest
-from svgpathtools import *
+from svgpathtools import svg2paths, Path, Line, Arc
 from os.path import join, dirname
+
 
 class TestSVG2Paths(unittest.TestCase):
     def test_svg2paths_polygons(self):
@@ -15,8 +16,8 @@ class TestSVG2Paths(unittest.TestCase):
                             Line(105.5+50j, 55.5+0j)
                             )
         self.assertTrue(path.isclosed())
-        self.assertTrue(len(path)==3)
-        self.assertTrue(path==path_correct)
+        self.assertEqual(len(path), 3)
+        self.assertEqual(path, path_correct)
 
         # triangular quadrilateral (with a redundant 4th "closure" point)
         path = paths[1]
@@ -26,8 +27,8 @@ class TestSVG2Paths(unittest.TestCase):
                             Line(0+0j, 0+0j)  # result of redundant point
                             )
         self.assertTrue(path.isclosed())
-        self.assertTrue(len(path)==4)
-        self.assertTrue(path==path_correct)
+        self.assertEqual(len(path), 4)
+        self.assertEqual(path, path_correct)
 
     def test_svg2paths_ellipses(self):
 
@@ -37,8 +38,8 @@ class TestSVG2Paths(unittest.TestCase):
         path_ellipse = paths[0]
         path_ellipse_correct = Path(Arc(50+100j, 50+50j, 0.0, True, False, 150+100j),
                                     Arc(150+100j, 50+50j, 0.0, True, False, 50+100j))
-        self.assertTrue(len(path_ellipse)==2)
-        self.assertTrue(path_ellipse==path_ellipse_correct)
+        self.assertEqual(len(path_ellipse), 2)
+        self.assertEqual(path_ellipse, path_ellipse_correct)
         self.assertTrue(path_ellipse.isclosed())
 
         # circle tests
@@ -46,7 +47,7 @@ class TestSVG2Paths(unittest.TestCase):
 
         path_circle = paths[0]
         path_circle_correct = Path(Arc(50+100j, 50+50j, 0.0, True, False, 150+100j),
-                                    Arc(150+100j, 50+50j, 0.0, True, False, 50+100j))
-        self.assertTrue(len(path_circle)==2)
-        self.assertTrue(path_circle==path_circle_correct)
+                                   Arc(150+100j, 50+50j, 0.0, True, False, 50+100j))
+        self.assertEqual(len(path_circle), 2)
+        self.assertEqual(path_circle, path_circle_correct)
         self.assertTrue(path_circle.isclosed())
