@@ -10,19 +10,26 @@ from .misctools import isclose
 
 
 def polyroots(p, realroots=False, condition=lambda r: True):
+    """Returns the roots of a polynomial with coefficients given in p.
+
+        p[0] * x**n + p[1] * x**(n-1) + ... + p[n-1]*x + p[n]
+
+    Args:
+        p: 1D array-like object of polynomial coefficients.
+        realroots: a boolean.  If true, only real roots will be returned
+            and the condition function can be written assuming all roots
+            are real.
+        condition: a boolean-valued function.  Only roots satisfying
+            this will be returned.  If realroots==True, these conditions
+            should assume the roots are real.
+
+    Returns:
+        (list) A list containing the roots of the polynomial.
+
+    Notes:
+        * This uses np.isclose and np.roots
     """
-    Returns the roots of a polynomial with coefficients given in p.
-      p[0] * x**n + p[1] * x**(n-1) + ... + p[n-1]*x + p[n]
-    INPUT:
-    p - Rank-1 array-like object of polynomial coefficients.
-    realroots - a boolean.  If true, only real roots will be returned  and the
-        condition function can be written assuming all roots are real.
-    condition - a boolean-valued function.  Only roots satisfying this will be
-        returned.  If realroots==True, these conditions should assume the roots
-        are real.
-    OUTPUT:
-    A list containing the roots of the polynomial.
-    NOTE:  This uses np.isclose and np.roots"""
+
     roots = np.roots(p)
     if realroots:
         roots = [r.real for r in roots if isclose(r.imag, 0)]
@@ -36,16 +43,18 @@ def polyroots(p, realroots=False, condition=lambda r: True):
 
 
 def polyroots01(p):
-    """Returns the real roots between 0 and 1 of the polynomial with
-    coefficients given in p,
-      p[0] * x**n + p[1] * x**(n-1) + ... + p[n-1]*x + p[n]
-    p can also be a np.poly1d object.  See polyroots for more information."""
+    """Returns the real roots 0 < x < 1 of the polynomial given by `p`.
+
+        p[0] * x**n + p[1] * x**(n-1) + ... + p[n-1]*x + p[n]
+
+    Notes:
+        p can also be a np.poly1d object.  See polyroots for more information.
+    """
     return polyroots(p, realroots=True, condition=lambda tval: 0 <= tval <= 1)
 
 
 def rational_limit(f, g, t0):
-    """Computes the limit of the rational function (f/g)(t)
-    as t approaches t0."""
+    """Computes the limit of the rational function (f/g)(t) as t approaches t0."""
     assert isinstance(f, np.poly1d) and isinstance(g, np.poly1d)
     assert g != np.poly1d([0])
     if g(t0) != 0:
