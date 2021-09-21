@@ -914,6 +914,7 @@ class QuadraticBezier(object):
         if t0 == 1 and t1 == 0:
             if self._length_info['bpoints'] == self.bpoints():
                 return self._length_info['length']
+
         a = self.start - 2*self.control + self.end
         b = 2*(self.control - self.start)
         a_dot_b = a.real*b.real + a.imag*b.imag
@@ -921,20 +922,23 @@ class QuadraticBezier(object):
         if abs(a) < 1e-12:
             s = abs(b)*(t1 - t0)
         else:
-            c2 = 4 * (a.real ** 2 + a.imag ** 2)
-            c1 = 4 * a_dot_b
-            c0 = b.real ** 2 + b.imag ** 2
+            with np.testing.suppress_warnings() as sup:
+                sup.filter(RuntimeWarning)
+                c2 = 4 * (a.real ** 2 + a.imag ** 2)
+                c1 = 4 * a_dot_b
+                c0 = b.real ** 2 + b.imag ** 2
 
-            beta = c1 / (2 * c2)
-            gamma = c0 / c2 - beta ** 2
+                beta = c1 / (2 * c2)
+                gamma = c0 / c2 - beta ** 2
 
-            dq1_mag = sqrt(c2 * t1 ** 2 + c1 * t1 + c0)
-            dq0_mag = sqrt(c2 * t0 ** 2 + c1 * t0 + c0)
-            logarand = (sqrt(c2) * (t1 + beta) + dq1_mag) / \
-                       (sqrt(c2) * (t0 + beta) + dq0_mag)
-            s = (t1 + beta) * dq1_mag - (t0 + beta) * dq0_mag + \
-                gamma * sqrt(c2) * log(logarand)
-            s /= 2
+                dq1_mag = sqrt(c2 * t1 ** 2 + c1 * t1 + c0)
+                dq0_mag = sqrt(c2 * t0 ** 2 + c1 * t0 + c0)
+                logarand = (sqrt(c2) * (t1 + beta) + dq1_mag) / \
+                           (sqrt(c2) * (t0 + beta) + dq0_mag)
+                s = (t1 + beta) * dq1_mag - (t0 + beta) * dq0_mag + \
+                    gamma * sqrt(c2) * log(logarand)
+                s /= 2
+
             if isnan(s):
                 tstar = abs(b) / (2 * abs(a))
                 if t1 < tstar:
