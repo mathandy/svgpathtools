@@ -741,7 +741,7 @@ class TestPath(unittest.TestCase):
                        apath, line1, arc1, arc2, cub1, cub2, quad3, linez]
 
         # this is necessary due to changes to the builtin `hash` function
-        if sys.version_info.major == 2:
+        if sys.version_info.major + sys.version_info.minor < 3.8:
             expected_hashes = [
                 -5762846476463470127, -138736730317965290, -2005041722222729058,
                 8448700906794235291, -5178990533869800243, -4003140762934044601,
