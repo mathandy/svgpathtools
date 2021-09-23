@@ -36,9 +36,15 @@ A Big Problem:
 # External dependencies
 from __future__ import division, absolute_import, print_function
 import os
+import pdb
+import sys
 import collections
 from defusedxml.cElementTree import parse, tostring
-from xml.etree.cElementTree import Element, SubElement, register_namespace, ElementTree
+from xml.etree.cElementTree import register_namespace
+if sys.version_info.major == 2:
+    from xml.etree.ElementTree import Element, SubElement, ElementTree
+else:
+    from xml.etree.cElementTree import Element, SubElement, ElementTree
 from defusedxml.minidom import parseString
 import warnings
 from tempfile import gettempdir
@@ -98,6 +104,7 @@ def flattened_paths(group, group_filter=lambda x: True,
             `path_conversions=CONVERT_ONLY_PATHS`.
     """
     if not isinstance(group, Element):
+        pdb.set_trace()
         raise TypeError('Must provide an xml.etree.Element object. '
                         'Instead you provided {0}'.format(type(group)))
 
