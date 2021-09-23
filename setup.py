@@ -6,6 +6,7 @@ import os
 VERSION = '1.4.1'
 AUTHOR_NAME = 'Andy Port'
 AUTHOR_EMAIL = 'AndyAPort@gmail.com'
+GITHUB = 'https://github.com/mathandy/svgpathtools'
 
 
 def read(*parts):
@@ -27,8 +28,8 @@ setup(name='svgpathtools',
       long_description_content_type='text/markdown',
       author=AUTHOR_NAME,
       author_email=AUTHOR_EMAIL,
-      url='https://github.com/mathandy/svgpathtools',
-      # download_url = 'http://github.com/mathandy/svgpathtools/tarball/'+VERSION,
+      url=GITHUB,
+      download_url='{}/raw/1.4.1/dist/svgpathtools-{}.tar.gz'.format(GITHUB, VERSION),
       license='MIT',
       install_requires=['numpy', 'svgwrite'],
       platforms="OS Independent",
