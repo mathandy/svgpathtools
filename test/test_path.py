@@ -717,6 +717,48 @@ class ArcTest(unittest.TestCase):
 
 class TestPath(unittest.TestCase):
 
+    def test_hash(self):
+        line1 = Line(600.5 + 350.5j, 650.5 + 325.5j)
+        arc1 = Arc(650 + 325j, 25 + 25j, -30, 0, 1, 700 + 300j)
+        arc2 = Arc(650 + 325j, 30 + 25j, -30, 0, 0, 700 + 300j)
+        cub1 = CubicBezier(650 + 325j, 25 + 25j, -30, 700 + 300j)
+        cub2 = CubicBezier(700 + 300j, 800 + 400j, 750 + 200j, 600 + 100j)
+        quad3 = QuadraticBezier(600 + 100j, 600, 600 + 300j)
+        linez = Line(600 + 300j, 600 + 350j)
+
+        bezpath = Path(line1, cub1, cub2, quad3)
+        bezpathz = Path(line1, cub1, cub2, quad3, linez)
+        path = Path(line1, arc1, cub2, quad3)
+        pathz = Path(line1, arc1, cub2, quad3, linez)
+        lpath = Path(linez)
+        qpath = Path(quad3)
+        cpath = Path(cub1)
+        apath = Path(arc1, arc2)
+
+        test_curves = [bezpath, bezpathz, path, pathz, lpath, qpath, cpath,
+                       apath, line1, arc1, arc2, cub1, cub2, quad3, linez]
+
+        expected_hashes = [
+            -6073024107272494569,
+            -2519772625496438197,
+            8726412907710383506,
+            2132930052750006195,
+            3112548573593977871,
+            991446120749438306,
+            -5589397644574569777,
+            -4438808571483114580,
+            -3125333407400456536,
+            -4418099728831808951,
+            702646573139378041,
+            -6331016786776229094,
+            5053050772929443013,
+            6102272282813527681,
+            -5385294438006156225,
+        ]
+
+        for c, h in zip(test_curves, expected_hashes):
+            self.assertTrue(hash(c) == h, msg=f"hash {h} was expected for curve = {c}")
+
     def test_circle(self):
         arc1 = Arc(0j, 100 + 100j, 0, 0, 0, 200 + 0j)
         arc2 = Arc(200 + 0j, 100 + 100j, 0, 0, 0, 0j)
