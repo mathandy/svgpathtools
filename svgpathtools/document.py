@@ -38,7 +38,7 @@ from __future__ import division, absolute_import, print_function
 import os
 import collections
 from defusedxml.cElementTree import parse, tostring
-from xml.etree.cElementTree import Element, SubElement, register_namespace
+from xml.etree.cElementTree import Element, SubElement, register_namespace, ElementTree
 from defusedxml.minidom import parseString
 import warnings
 from tempfile import gettempdir
