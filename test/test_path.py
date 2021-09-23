@@ -775,8 +775,7 @@ class TestPath(TestCase):
         # regression tests.
         self.assertAlmostEqual(path.point(0.0), (275 + 175j), delta=TOL)
         self.assertAlmostEqual(path.point(0.2800495767557787), (275 + 25j), delta=TOL)
-        self.assertAlmostEqual(path.point(0.5),
-                               (168.93398282201787 + 68.93398282201787j))
+        self.assertAlmostEqual(path.point(0.5), (168.93398282201787 + 68.93398282201787j))
         self.assertAlmostEqual(path.point(1 - 0.2800495767557787), (125 + 175j), delta=TOL)
         self.assertAlmostEqual(path.point(1.0), (275 + 175j), delta=TOL)
         # The errors seem to accumulate. Still 6 decimal places is more
