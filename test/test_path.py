@@ -758,8 +758,6 @@ class TestPath(unittest.TestCase):
             ]
 
         for c, h in zip(test_curves, expected_hashes):
-            if hash(c) != h:
-                from pdb import set_trace; set_trace()
             self.assertTrue(hash(c) == h, msg="hash {} was expected for curve = {}".format(h, c))
 
     def test_circle(self):
