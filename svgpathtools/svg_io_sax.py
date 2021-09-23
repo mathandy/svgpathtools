@@ -5,7 +5,7 @@
 # External dependencies
 from __future__ import division, absolute_import, print_function
 import os
-from xml.etree.ElementTree import Element, ElementTree, SubElement
+from xml.etree.cElementTree import Element, ElementTree, SubElement
 from defusedxml.cElementTree import iterparse
 
 # Internal dependencies

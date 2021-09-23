@@ -37,8 +37,8 @@ A Big Problem:
 from __future__ import division, absolute_import, print_function
 import os
 import collections
-import xml.etree.ElementTree as etree
-from xml.etree.ElementTree import Element, SubElement, register_namespace
+from defusedxml.cElementTree import parse, tostring
+from xml.etree.cElementTree import Element, SubElement, register_namespace
 from defusedxml.minidom import parseString
 import warnings
 from tempfile import gettempdir
@@ -244,10 +244,10 @@ class Document:
             self.original_filepath = os.path.join(os.getcwd(), filepath)
 
         if filepath is None:
-            self.tree = etree.ElementTree(Element('svg'))
+            self.tree = ElementTree(Element('svg'))
         else:
             # parse svg to ElementTree object
-            self.tree = etree.parse(filepath)
+            self.tree = parse(filepath)
 
         self.root = self.tree.getroot()
 
@@ -416,7 +416,7 @@ class Document:
             SVG_NAMESPACE['svg']), group_attribs)
 
     def __repr__(self):
-        return etree.tostring(self.tree.getroot()).decode()
+        return tostring(self.tree.getroot()).decode()
 
     def pretty(self, **kwargs):
         return parseString(repr(self)).toprettyxml(**kwargs)
