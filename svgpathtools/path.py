@@ -191,7 +191,7 @@ def transform_segments_together(path, transformation):
     transformed_segs = [transformation(seg) for seg in path]
     joint_was_continuous = [sa.end == sb.start for sa, sb in path.joints()]
 
-    for i, (sa, sb)in enumerate(path.joints()):
+    for i, (sa, sb) in enumerate(path.joints()):
         if sa.end == sb.start:
             transformed_segs[i].end = transformed_segs[(i + 1) % len(path)].start
     return Path(*transformed_segs)
@@ -291,6 +291,7 @@ def scale(curve, sx, sy=None, origin=0j):
     else:
         raise TypeError("Input `curve` should be a Path, Line, "
                         "QuadraticBezier, CubicBezier, or Arc object.")
+
 
 def transform(curve, tf):
     """Transforms the curve by the homogeneous transformation matrix tf"""
@@ -567,8 +568,7 @@ def inv_arclength(curve, s, s_tol=ILENGTH_S_TOL, maxits=ILENGTH_MAXITS,
 
 
 def crop_bezier(seg, t0, t1):
-    """returns a cropped copy of this segment which starts at self.point(t0)
-    and ends at self.point(t1)."""
+    """Crop a copy of this `self` from `self.point(t0)` to `self.point(t1)`."""
     assert t0 < t1
     if t0 == 0:
         cropped_seg = seg.split(t1)[0]
@@ -594,6 +594,9 @@ class Line(object):
     def __init__(self, start, end):
         self.start = start
         self.end = end
+
+    def __hash__(self):
+        return hash((self.start, self.end))
 
     def __repr__(self):
         return 'Line(start=%s, end=%s)' % (self.start, self.end)
@@ -850,6 +853,9 @@ class QuadraticBezier(object):
 
         # used to know if self._length needs to be updated
         self._length_info = {'length': None, 'bpoints': None}
+
+    def __hash__(self):
+        return hash((self.start, self.control, self.end))
 
     def __repr__(self):
         return 'QuadraticBezier(start=%s, control=%s, end=%s)' % (
@@ -1110,6 +1116,9 @@ class CubicBezier(object):
         self._length_info = {'length': None, 'bpoints': None, 'error': None,
                              'min_depth': None}
 
+    def __hash__(self):
+        return hash((self.start, self.control1, self.control2, self.end))
+
     def __repr__(self):
         return 'CubicBezier(start=%s, control1=%s, control2=%s, end=%s)' % (
             self.start, self.control1, self.control2, self.end)
@@ -1281,37 +1290,38 @@ class CubicBezier(object):
 
     def intersect(self, other_seg, tol=1e-12):
         """Finds the intersections of two segments.
-        returns a list of tuples (t1, t2) such that
-        self.point(t1) == other_seg.point(t2).
-        Note: This will fail if the two segments coincide for more than a
-        finite collection of points."""
+
+        Returns:
+            (list[tuple[float]]) a list of tuples (t1, t2) such that
+            self.point(t1) == other_seg.point(t2).
+
+        Scope:
+            This will fail if the two segments coincide for more than a
+            finite collection of points.
+        """
         if isinstance(other_seg, Line):
             return bezier_by_line_intersections(self, other_seg)
         elif (isinstance(other_seg, QuadraticBezier) or
               isinstance(other_seg, CubicBezier)):
             assert self != other_seg
             longer_length = max(self.length(), other_seg.length())
-            return bezier_intersections(self, other_seg,
-                                        longer_length=longer_length,
-                                        tol=tol, tol_deC=tol)
+            return bezier_intersections(
+                self, other_seg, longer_length=longer_length, tol=tol, tol_deC=tol
+            )
         elif isinstance(other_seg, Arc):
-            t2t1s = other_seg.intersect(self)
-            return [(t1, t2) for t2, t1 in t2t1s]
+            return [(t1, t2) for t2, t1 in other_seg.intersect(self)]
         elif isinstance(other_seg, Path):
-            raise TypeError(
-                "other_seg must be a path segment, not a Path object, use "
-                "Path.intersect().")
+            raise TypeError("`other_seg` must be a path segment, not a "
+                            "`Path` object, use `Path.intersect()`.")
         else:
-            raise TypeError("other_seg must be a path segment.")
+            raise TypeError("`other_seg` must be a path segment.")
 
     def bbox(self):
-        """returns the bounding box for the segment in the form
-        (xmin, xmax, ymin, ymax)."""
+        """returns bounding box in format (xmin, xmax, ymin, ymax)."""
         return bezier_bounding_box(self)
 
     def split(self, t):
-        """returns two segments, whose union is this segment and which join at
-        self.point(t)."""
+        """Splits a copy of `self` at t and returns the two subsegments."""
         bpoints1, bpoints2 = split_bezier(self.bpoints(), t)
         return CubicBezier(*bpoints1), CubicBezier(*bpoints2)
 
@@ -1323,8 +1333,8 @@ class CubicBezier(object):
     def radialrange(self, origin, return_all_global_extrema=False):
         """returns the tuples (d_min, t_min) and (d_max, t_max) which minimize
         and maximize, respectively, the distance d = |self.point(t)-origin|."""
-        return bezier_radialrange(self, origin,
-                return_all_global_extrema=return_all_global_extrema)
+        return bezier_radialrange(
+            self, origin, return_all_global_extrema=return_all_global_extrema)
 
     def rotated(self, degs, origin=None):
         """Returns a copy of self rotated by `degs` degrees (CCW) around the
@@ -1684,7 +1694,7 @@ class Arc(object):
         if np.isclose(t_x_0, t_y_0):
             t = (t_x_0 + t_y_0) / 2.0
         elif np.isclose(t_x_0, t_y_1):
-            t= (t_x_0 + t_y_1) / 2.0
+            t = (t_x_0 + t_y_1) / 2.0
         elif np.isclose(t_x_1, t_y_0):
             t = (t_x_1 + t_y_0) / 2.0
         elif np.isclose(t_x_1, t_y_1):
@@ -1702,33 +1712,48 @@ class Arc(object):
         return None
 
     def centeriso(self, z):
-        """This is an isometry that translates and rotates self so that it
-        is centered on the origin and has its axes aligned with the xy axes."""
+        """Isometry to a centered aligned ellipse.
+
+        This is an isometry that shifts and rotates `self`'s underlying
+        ellipse so that it's centered on the origin and has its axes
+        aligned with the xy-axes.
+
+        Args:
+            z (:obj:`complex` or :obj:`numpy.ndarray[complex]`): a point
+                to send through the above-described isometry.
+
+        Returns:
+            (:obj:`complex` or :obj:`numpy.ndarray[complex]`) The point(s) f(z),
+                where f is the above described isometry of the xy-plane (i.e.
+                the one-dimensional complex plane).
+        """
         return (1/self.rot_matrix)*(z - self.center)
 
     def icenteriso(self, zeta):
-        """This is an isometry, the inverse of standardiso()."""
+        """The inverse of the `centeriso()` method."""
         return self.rot_matrix*zeta + self.center
 
     def u1transform(self, z):
-        """This is an affine transformation (same as used in
-        self._parameterize()) that sends self to the unit circle."""
-        zeta = (1/self.rot_matrix)*(z - self.center)  # same as centeriso(z)
+        """Similar to the `centeriso()` method, but maps to the unit circle."""
+        zeta = self.centeriso(z)
         x, y = real(zeta), imag(zeta)
         return x/self.radius.real + 1j*y/self.radius.imag
 
     def iu1transform(self, zeta):
-        """This is an affine transformation, the inverse of
-        self.u1transform()."""
+        """The inverse of the `u1transform()` method."""
         x = real(zeta)
         y = imag(zeta)
         z = x*self.radius.real + y*self.radius.imag
         return self.rot_matrix*z + self.center
 
     def length(self, t0=0, t1=1, error=LENGTH_ERROR, min_depth=LENGTH_MIN_DEPTH):
-        """The length of an elliptical large_arc segment requires numerical
+        """Computes the length of the Arc segment, `self`, from t0 to t1.
+
+        Notes:
+        * The length of an elliptical large_arc segment requires numerical
         integration, and in that case it's simpler to just do a geometric
-        approximation, as for cubic bezier curves."""
+        approximation, as for cubic bezier curves.
+        """
         assert 0 <= t0 <= 1 and 0 <= t1 <= 1
 
         if t0 == 0 and t1 == 1:
@@ -1752,8 +1777,17 @@ class Arc(object):
 
     def ilength(self, s, s_tol=ILENGTH_S_TOL, maxits=ILENGTH_MAXITS,
                 error=ILENGTH_ERROR, min_depth=ILENGTH_MIN_DEPTH):
-        """Returns a float, t, such that self.length(0, t) is approximately s.
-        See the inv_arclength() docstring for more details."""
+        """Approximates the unique `t` such that self.length(0, t) = s.
+
+        Args:
+            s (float): A length between 0 and `self.length()`.
+
+        Returns:
+             (float) The t, such that self.length(0, t) is approximately s.
+
+        For more info:
+            See the inv_arclength() docstring.
+        """
         return inv_arclength(self, s, s_tol=s_tol, maxits=maxits, error=error,
                              min_depth=min_depth)
 
@@ -1851,9 +1885,18 @@ class Arc(object):
                    not self.sweep, self.start)
 
     def phase2t(self, psi):
-        """Given phase -pi < psi <= pi,
-        returns the t value such that
-        exp(1j*psi) = self.u1transform(self.point(t)).
+        """Converts phase to t-value.
+
+        I.e. given phase, psi, such that -np.pi < psi <= np.pi, approximates
+        the unique t-value such that `self.u1transform(self.point(t))` equals
+        `np.exp(1j*psi)`.
+
+        Args:
+            psi (float): The phase in radians.
+
+        Returns:
+            (float): the corresponding t-value.
+
         """
         def _deg(rads, domain_lower_limit):
             # Convert rads to degrees in [0, 360) domain
@@ -1871,7 +1914,6 @@ class Arc(object):
         else:
             degs = _deg(psi, domain_lower_limit=self.theta)
         return (degs - self.theta)/self.delta
-
 
     def intersect(self, other_seg, tol=1e-12):
         """NOT FULLY IMPLEMENTED.  Finds the intersections of two segments.
@@ -2002,11 +2044,19 @@ class Arc(object):
             return intersections
 
         elif is_bezier_segment(other_seg):
-            u1poly = self.u1transform(other_seg.poly())
+            # if self and other_seg intersect, they will itersect at the
+            # same points after being passed through the `u1transform`
+            # isometry. Since this isometry maps self to the unit circle,
+            # the intersections will be easy to find (just look for any
+            # points where other_seg is a distance of one from the origin.
+            # Moreoever, the t-values that the intersection happen at will
+            # be unchanged by the isometry.
+            u1poly = np.poly1d(self.u1transform(other_seg.poly()))
             u1poly_mag2 = real(u1poly)**2 + imag(u1poly)**2
-            t2s = polyroots01(u1poly_mag2 - 1)
+            t2s = [t for t in polyroots01(u1poly_mag2 - 1) if 0 <= t <= 1]
             t1s = [self.phase2t(phase(u1poly(t2))) for t2 in t2s]
-            return list(zip(t1s, t2s))
+
+            return [(t1, t2) for t1, t2 in zip(t1s, t2s) if 0 <= t1 <= 1]
 
         elif isinstance(other_seg, Arc):
             assert other_seg != self
@@ -2043,19 +2093,23 @@ class Arc(object):
 
                     def point_in_seg_interior(point, seg):
                         t = seg.point_to_t(point)
-                        if t is None: return False
-                        if np.isclose(t, 0.0, rtol=0.0, atol=1e-6): return False
-                        if np.isclose(t, 1.0, rtol=0.0, atol=1e-6): return False
+                        if (not t or
+                                np.isclose(t, 0.0, rtol=0.0, atol=1e-6) or
+                                np.isclose(t, 1.0, rtol=0.0, atol=1e-6)):
+                            return False
                         return True
 
                     # If either end of either segment is in the interior
                     # of the other segment, then the Arcs overlap
                     # in an infinite number of points, and we return
                     # "no intersections".
-                    if point_in_seg_interior(self.start, other_seg): return []
-                    if point_in_seg_interior(self.end, other_seg): return []
-                    if point_in_seg_interior(other_seg.start, self): return []
-                    if point_in_seg_interior(other_seg.end, self): return []
+                    if (
+                            point_in_seg_interior(self.start, other_seg) or
+                            point_in_seg_interior(self.end, other_seg) or
+                            point_in_seg_interior(other_seg.start, self) or
+                            point_in_seg_interior(other_seg.end, self)
+                    ):
+                        return []
 
                     # If they touch at their endpoint(s) and don't go
                     # in "overlapping directions", then we accept that
@@ -2397,6 +2451,9 @@ class Path(MutableSequence):
 
         if 'tree_element' in kw:
             self._tree_element = kw['tree_element']
+
+    def __hash__(self):
+        return hash((tuple(self._segments), self._closed))
 
     def __getitem__(self, index):
         return self._segments[index]
@@ -2848,10 +2905,10 @@ class Path(MutableSequence):
                 area_enclosed += integral(1) - integral(0)
             return area_enclosed
 
-        def seg2lines(seg):
+        def seg2lines(seg_):
             """Find piecewise-linear approximation of `seg`."""
-            num_lines = int(ceil(seg.length() / chord_length))
-            pts = [seg.point(t) for t in np.linspace(0, 1, num_lines+1)]
+            num_lines = int(ceil(seg_.length() / chord_length))
+            pts = [seg_.point(t) for t in np.linspace(0, 1, num_lines+1)]
             return [Line(pts[i], pts[i+1]) for i in range(num_lines)]
 
         assert self.isclosed()
@@ -2865,20 +2922,29 @@ class Path(MutableSequence):
         return area_without_arcs(Path(*bezier_path_approximation))
 
     def intersect(self, other_curve, justonemode=False, tol=1e-12):
-        """returns list of pairs of pairs ((T1, seg1, t1), (T2, seg2, t2))
-        giving the intersection points.
-        If justonemode==True, then returns just the first
-        intersection found.
-        tol is used to check for redundant intersections (see comment above
-        the code block where tol is used).
-        Note:  If the two path objects coincide for more than a finite set of
-        points, this code will fail."""
+        """Finds intersections of `self` with `other_curve`
+
+        Args:
+            other_curve: the path or path segment to check for intersections
+                with `self`
+            justonemode (bool): if true, returns only the first
+                intersection found.
+            tol (float): A tolerance used to check for redundant intersections
+                (see comment above the code block where tol is used).
+
+        Returns:
+            (list[tuple[float, Curve, float]]): list of intersections, each
+                in the format ((T1, seg1, t1), (T2, seg2, t2)), where
+                self.point(T1) == seg1.point(t1) == seg2.point(t2) == other_curve.point(T2)
+
+        Scope:
+            If the two path objects coincide for more than a finite set of
+            points, this code will iterate to max depth and/or raise an error.
+        """
         path1 = self
-        if isinstance(other_curve, Path):
-            path2 = other_curve
-        else:
-            path2 = Path(other_curve)
+        path2 = other_curve if isinstance(other_curve, Path) else Path(other_curve)
         assert path1 != path2
+
         intersection_list = []
         for seg1 in path1:
             for seg2 in path2:
@@ -2888,6 +2954,7 @@ class Path(MutableSequence):
                     T1 = path1.t2T(seg1, t1)
                     T2 = path2.t2T(seg2, t2)
                     intersection_list.append(((T1, seg1, t1), (T2, seg2, t2)))
+
         if justonemode and intersection_list:
             return intersection_list[0]
 
@@ -2909,8 +2976,7 @@ class Path(MutableSequence):
         return intersection_list
 
     def bbox(self):
-        """returns a bounding box for the input Path object in the form
-        (xmin, xmax, ymin, ymax)."""
+        """returns bounding box in the form (xmin, xmax, ymin, ymax)."""
         bbs = [seg.bbox() for seg in self._segments]
         xmins, xmaxs, ymins, ymaxs = list(zip(*bbs))
         xmin = min(xmins)
