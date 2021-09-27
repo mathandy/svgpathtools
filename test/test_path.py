@@ -517,7 +517,7 @@ class ArcTest(unittest.TestCase):
         except ValueError:
             self.fail("Arc() raised ValueError unexpectedly!")
 
-    def test_points(self):
+    def test_point(self):
         arc1 = Arc(0j, 100 + 50j, 0, 0, 0, 100 + 50j)
         self.assertAlmostEqual(arc1.center, 100 + 0j, delta=TOL)
         self.assertAlmostEqual(arc1.theta, 180.0, delta=TOL)
