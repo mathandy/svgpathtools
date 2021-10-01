@@ -102,7 +102,8 @@ def line2pathd(l):
     )
 
 
-def svg2paths(svg_file_location,
+def svg2paths(svg_string = '',
+              svg_file_location = '',
               return_svg_attributes=False,
               convert_circles_to_paths=True,
               convert_ellipses_to_paths=True,
@@ -144,7 +145,11 @@ def svg2paths(svg_file_location,
     if os_path.dirname(svg_file_location) == '':
         svg_file_location = os_path.join(getcwd(), svg_file_location)
 
-    doc = parse(svg_file_location)
+    doc = None 
+    if svg_string !='':
+        doc = parseString(svg_string)
+    else:
+        doc = parse(svg_file_location)
 
     def dom2dict(element):
         """Converts DOM elements to dictionaries of attributes."""
@@ -203,7 +208,8 @@ def svg2paths(svg_file_location,
         return path_list, attribute_dictionary_list
 
 
-def svg2paths2(svg_file_location,
+def svg2paths2(svg_string = '',
+               svg_file_location = '',
                return_svg_attributes=True,
                convert_circles_to_paths=True,
                convert_ellipses_to_paths=True,
