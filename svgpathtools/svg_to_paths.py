@@ -220,7 +220,8 @@ def svg2paths2(svg_string = '',
     """Convenience function; identical to svg2paths() except that
     return_svg_attributes=True by default.  See svg2paths() docstring for more
     info."""
-    return svg2paths(svg_file_location=svg_file_location,
+    return svg2paths(svg_string=svg_string,
+                     svg_file_location=svg_file_location,
                      return_svg_attributes=return_svg_attributes,
                      convert_circles_to_paths=convert_circles_to_paths,
                      convert_ellipses_to_paths=convert_ellipses_to_paths,
