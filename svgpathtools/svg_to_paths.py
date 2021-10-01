@@ -3,7 +3,7 @@ The main tool being the svg2paths() function."""
 
 # External dependencies
 from __future__ import division, absolute_import, print_function
-from xml.dom.minidom import parse
+from xml.dom.minidom import parse, parseString
 from os import path as os_path, getcwd
 import re
 
