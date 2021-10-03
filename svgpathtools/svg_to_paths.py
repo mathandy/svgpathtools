@@ -102,8 +102,8 @@ def line2pathd(l):
     )
 
 
-def svg2paths(svg_string = '',
-              svg_file_location = '',
+def svg2paths(svg_file_location = '',
+              svg_string = '',
               return_svg_attributes=False,
               convert_circles_to_paths=True,
               convert_ellipses_to_paths=True,
@@ -119,6 +119,7 @@ def svg2paths(svg_string = '',
 
     Args:
         svg_file_location (string): the location of the svg file
+        svg_string (string): the string representation of the svg
         return_svg_attributes (bool): Set to True and a dictionary of
             svg-attributes will be extracted and returned.  See also the 
             `svg2paths2()` function.
@@ -208,8 +209,8 @@ def svg2paths(svg_string = '',
         return path_list, attribute_dictionary_list
 
 
-def svg2paths2(svg_string = '',
-               svg_file_location = '',
+def svg2paths2(svg_file_location = '',
+               svg_string = '',
                return_svg_attributes=True,
                convert_circles_to_paths=True,
                convert_ellipses_to_paths=True,
@@ -220,8 +221,8 @@ def svg2paths2(svg_string = '',
     """Convenience function; identical to svg2paths() except that
     return_svg_attributes=True by default.  See svg2paths() docstring for more
     info."""
-    return svg2paths(svg_string=svg_string,
-                     svg_file_location=svg_file_location,
+    return svg2paths(svg_file_location=svg_file_location,
+                     svg_string=svg_string,
                      return_svg_attributes=return_svg_attributes,
                      convert_circles_to_paths=convert_circles_to_paths,
                      convert_ellipses_to_paths=convert_ellipses_to_paths,
