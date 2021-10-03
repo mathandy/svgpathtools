@@ -224,7 +224,7 @@ def flattened_paths_from_group(group_to_flatten, root, recursive=True,
 
 
 class Document:
-    def __init__(self, filepath=None):
+    def __init__(self, filepath=None,svg_string=None):
         """A container for a DOM-style SVG document.
 
         The `Document` class provides a simple interface to modify and analyze 
@@ -236,6 +236,7 @@ class Document:
         
         Args:
             filepath (str): The filepath of the DOM-style object.
+            svg_string (str): The string representation of the DOM-style object. 
         """
 
         # remember location of original svg file
@@ -243,8 +244,8 @@ class Document:
         if filepath is not None and os.path.dirname(filepath) == '':
             self.original_filepath = os.path.join(os.getcwd(), filepath)
 
-        if filepath is None:
-            self.tree = etree.ElementTree(Element('svg'))
+        if svg_string is not None:
+            self.tree = etree.fromstring(svg_string)
         else:
             # parse svg to ElementTree object
             self.tree = etree.parse(filepath)
