@@ -245,7 +245,7 @@ class Document:
             self.original_filepath = os.path.join(os.getcwd(), filepath)
 
         if svg_string is not None:
-            self.tree = etree.fromstring(svg_string)
+            self.tree = etree.ElementTree(etree.fromstring(svg_string))
         else:
             # parse svg to ElementTree object
             self.tree = etree.parse(filepath)
