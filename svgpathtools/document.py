@@ -38,7 +38,7 @@ from __future__ import division, absolute_import, print_function
 import os
 import collections
 import xml.etree.ElementTree as etree
-from xml.etree.ElementTree import Element, SubElement, register_namespace
+from xml.etree.ElementTree import SubElement, register_namespace
 from xml.dom.minidom import parseString
 import warnings
 from tempfile import gettempdir
@@ -97,7 +97,7 @@ def flattened_paths(group, group_filter=lambda x: True,
             only convert explicit path elements, pass in
             `path_conversions=CONVERT_ONLY_PATHS`.
     """
-    if not isinstance(group, Element):
+    if not isinstance(group, etree.Element):
         raise TypeError('Must provide an xml.etree.Element object. '
                         'Instead you provided {0}'.format(type(group)))
 
@@ -268,7 +268,7 @@ class Document:
             # If we're given a list of strings, assume it represents a
             # nested sequence
             group = self.get_group(group)
-        elif not isinstance(group, Element):
+        elif not isinstance(group, etree.Element):
             raise TypeError(
                 'Must provide a list of strings that represent a nested '
                 'group name, or provide an xml.etree.Element object. '
@@ -293,7 +293,7 @@ class Document:
         elif all(isinstance(elem, str) for elem in group):
             group = self.get_or_add_group(group)
 
-        elif not isinstance(group, Element):
+        elif not isinstance(group, etree.Element):
             raise TypeError(
                 'Must provide a list of strings or an xml.etree.Element '
                 'object. Instead you provided {0}'.format(group))
