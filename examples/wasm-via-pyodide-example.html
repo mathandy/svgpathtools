@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<script src="https://cdn.jsdelivr.net/pyodide/v0.18.1/full/pyodide.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<meta charset="utf-8" />
+	<title>svgpathtools in JS!</title>
+</head>
+
+<body>
+<button id="go_button" onclick="tick()" hidden>Click Me!</button>
+<br />
+<br />
+<div>Output:</div>
+<label for="output"></label>
+<textarea id="output" style="width: 100%;" rows="6" disabled></textarea>
+
+<svg height="100" width="100">
+    <circle cx="50" cy="50" r="40" stroke-width="2" stroke="black" fill="blue"/>
+	<path id="ticker" d="M 50 50 L 50 15" stroke-width="2" stroke="black"/>
+	<circle cx="50" cy="50" r="3" stroke-width="2" stroke="black" fill="green"/>
+	Sorry, your browser does not support inline SVG.
+</svg>
+
+<script>
+	// init Pyodide environment and install svgpathtools
+	async function main() {
+		let pyodide = await loadPyodide({
+			indexURL: "https://cdn.jsdelivr.net/pyodide/v0.18.1/full/",
+		});
+		await pyodide.loadPackage("micropip");
+		pyodide.runPythonAsync(`
+          import micropip
+          await micropip.install('svgpathtools')
+        `);
+		output.value += "svgpathtools is ready!\n";
+		return pyodide;
+	}
+
+	async function tick() {
+		let clock_hand = document.getElementById("ticker");
+		let pyodide = await pyodideReadyPromise;
+		try {
+			let result = pyodide.runPython(`
+			  from svgpathtools import parse_path
+			  parse_path('${clock_hand.getAttribute('d')}').rotated(45, origin=50+50j).d()
+			`);
+			clock_hand.setAttribute('d', result);
+		} catch (err) {
+			output.value += err;
+		}
+	}
+
+	let pyodideReadyPromise = main();
+	$(document).ready(function(){
+		const output = document.getElementById("output");
+		output.value = "Initializing...\n";
+		document.getElementById("go_button").removeAttribute('hidden');
+	});
+</script>
+</body>
+</html>
