@@ -5,44 +5,42 @@ on:
   pull_request:
 
 jobs:
-  analyze:
-    name: Compute Coverage
+  build:
     runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest]
-        python-version: [3]
-
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: 3
 
       # install deps
-      - name: Install dependencies for ${{ matrix.os }} Python ${{ matrix.python-version }}
+      - name: Setup python environment
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install scipy coverage
+          pip install coverage
 
       # find and run all unit tests
-      - name: Run unit tests
+      - name: Compute test coverage
         run: |
           coverage run --source=svgpathtools -m unittest discover test
+          pip install scipy
+          coverage run --source=svgpathtools -m unittest discover test  # run tests again w/ scipy
           coverage html  # generate static website detailing coverage
           echo "coverage: $(coverage report | grep TOTAL | awk '{ print $4 }')" > htmlcov/percentage.yml  # get overall percentage
+          echo "web: http-server" > htmlcov/Procfile
 
-      - name: Deploy to Heroku
+#      - name: Deploy2
+#        run: |
+#          curl https://cli-assets.heroku.com/install-ubuntu.sh | sh
+
+      - name: Deploy to coverage report to Heroku
         uses: akhileshns/heroku-deploy@v3.12.12
         with:
           heroku_api_key: ${{secrets.HEROKU_API_KEY}}
           heroku_app_name: svgpathtools-coverage
           heroku_email: ${{secrets.HEROKU_EMAIL}}
           appdir: htmlcov
-          useforce: true
 #
 #      # send report to Codacy
 #      - name: Report to Codacy
