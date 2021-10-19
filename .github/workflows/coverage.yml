@@ -32,7 +32,7 @@ jobs:
         run: |
           echo `web: vendor/bin/heroku-php-apache2 htmlcov/` > Procfile
           mv htmlcov/index.html htmlcov/home.html
-          echo "<?php include_once("home.html"); ?>" > htmlcov/index.php
+          echo "<?php include_once("./home.html"); ?>" > htmlcov/index.php
           echo "{}" > htmlcov/composer.json
 
 #      - name: Deploy2
