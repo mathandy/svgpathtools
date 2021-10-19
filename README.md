@@ -1,3 +1,4 @@
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/fd614b0581064e58999360f35b2bb869)](https://app.codacy.com/gh/mathandy/svgpathtools?utm_source=github.com&utm_medium=referral&utm_content=mathandy/svgpathtools&utm_campaign=Badge_Grade_Settings)
 # svgpathtools [![donate-button.svg](donate-button.svg)](https://www.paypal.com/donate?business=4SKJ27AM4EYYA&amp;no_recurring=0&amp;item_name=Support+the+creator+of+svgpathtools?++He%27s+a+student+and+would+appreciate+it.&amp;currency_code=USD)
 
 
