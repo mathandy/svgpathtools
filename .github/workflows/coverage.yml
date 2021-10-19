@@ -28,7 +28,8 @@ jobs:
           coverage run --source=svgpathtools -m unittest discover test  # run tests again w/ scipy
           coverage html  # generate static website detailing coverage
           echo "coverage: $(coverage report | grep TOTAL | awk '{ print $4 }')" > htmlcov/percentage.yml  # get overall percentage
-          echo "web: http-server" > htmlcov/Procfile
+          echo "web: http-server" > Procfile
+          mv htmlcov public
 
 #      - name: Deploy2
 #        run: |
@@ -40,7 +41,6 @@ jobs:
           heroku_api_key: ${{secrets.HEROKU_API_KEY}}
           heroku_app_name: svgpathtools-coverage
           heroku_email: ${{secrets.HEROKU_EMAIL}}
-          appdir: htmlcov
 #
 #      # send report to Codacy
 #      - name: Report to Codacy
