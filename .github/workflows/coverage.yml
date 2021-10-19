@@ -27,8 +27,13 @@ jobs:
           coverage run --source=svgpathtools -m unittest discover test  # run tests again w/ scipy
           coverage html  # generate static website detailing coverage
           echo "coverage: $(coverage report | grep TOTAL | awk '{ print $4 }')" > htmlcov/percentage.yml  # get overall percentage
-          echo "web: http-server" > Procfile
-          mv htmlcov public
+
+      - name: Prepare coverage report for Heroku as fake php site
+        run: |
+          echo `web: vendor/bin/heroku-php-apache2 htmlcov/` > Procfile
+          mv htmlcov/index.html htmlcov/home.html
+          echo "<?php include_once("home.html"); ?>" > htmlcov/index.php
+          echo "{}" > htmlcov/composer.json
 
 #      - name: Deploy2
 #        run: |
