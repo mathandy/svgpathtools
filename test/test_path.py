@@ -1,11 +1,6 @@
 # External dependencies
 from __future__ import division, absolute_import, print_function
-<<<<<<< HEAD
 from unittest import TestCase
-=======
-import os
->>>>>>> master
-import sys
 from math import sqrt, pi
 from operator import itemgetter
 import numpy as np

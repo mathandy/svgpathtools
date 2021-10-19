@@ -36,7 +36,6 @@ A Big Problem:
 # External dependencies
 from __future__ import division, absolute_import, print_function
 import os
-import pdb
 import sys
 import collections
 from defusedxml.cElementTree import parse, tostring
@@ -103,10 +102,6 @@ def flattened_paths(group, group_filter=lambda x: True,
             only convert explicit path elements, pass in
             `path_conversions=CONVERT_ONLY_PATHS`.
     """
-    if not isinstance(group, Element):
-        pdb.set_trace()
-        raise TypeError('Must provide an xml.etree.Element object. '
-                        'Instead you provided {0}'.format(type(group)))
 
     # Stop right away if the group_selector rejects this group
     if not group_filter(group):
