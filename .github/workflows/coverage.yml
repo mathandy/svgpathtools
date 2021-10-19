@@ -42,6 +42,7 @@ jobs:
           heroku_app_name: svgpathtools-coverage
           heroku_email: ${{secrets.HEROKU_EMAIL}}
           appdir: htmlcov
+          useforce: true
 #
 #      # send report to Codacy
 #      - name: Report to Codacy
