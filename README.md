@@ -1,4 +1,9 @@
-# svgpathtools [![donate-button.svg](donate-button.svg)](https://www.paypal.com/donate?business=4SKJ27AM4EYYA&amp;no_recurring=0&amp;item_name=Support+the+creator+of+svgpathtools?++He%27s+a+student+and+would+appreciate+it.&amp;currency_code=USD)
+[![Donate](https://img.shields.io/badge/donate-paypal-brightgreen)](https://www.paypal.com/donate?business=4SKJ27AM4EYYA&amp;no_recurring=0&amp;item_name=Support+the+creator+of+svgpathtools?++He%27s+a+student+and+would+appreciate+it.&amp;currency_code=USD)
+![Python](https://img.shields.io/pypi/pyversions/svgpathtools.svg)
+[![PyPI](https://img.shields.io/pypi/v/svgpathtools)](https://pypi.org/project/svgpathtools/)
+![Build](https://img.shields.io/github/workflow/status/mathandy/svgpathtools/Github%20CI%20Unit%20Testing)
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/svgpathtools?color=yellow)](https://pypistats.org/packages/svgpathtools)
+# svgpathtools
 
 
 svgpathtools is a collection of tools for manipulating and analyzing SVG Path objects and Bézier curves.
