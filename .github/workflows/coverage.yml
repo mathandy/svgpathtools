@@ -30,4 +30,23 @@ jobs:
 
       # find and run all unit tests
       - name: Run unit tests
-        run: coverage run -m unittest discover test
+        run: |
+          coverage run --source=svgpathtools -m unittest discover test
+          coverage html  # generate static website detailing coverage
+          echo "coverage: $(coverage report | grep TOTAL | awk '{ print $4 }')" > htmlcov/percentage.yml  # get overall percentage
+
+      - name: Deploy to Heroku
+        uses: akhileshns/heroku-deploy@v3.12.12
+        with:
+          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+          heroku_app_name: svgpathtools-coverage
+          heroku_email: ${{secrets.HEROKU_EMAIL}}
+#
+#      # send report to Codacy
+#      - name: Report to Codacy
+#        run: |
+#          export CODACY_API_TOKEN=${{ secrets.CODACY_API_TOKEN }}
+#          export CODACY_ORGANIZATION_PROVIDER=gh
+#          export CODACY_USERNAME=mathandy
+#          export CODACY_PROJECT_NAME=svgpathtools
+#          bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r <coverage report file name ???>

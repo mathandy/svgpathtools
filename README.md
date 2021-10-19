@@ -3,6 +3,7 @@
 [![PyPI](https://img.shields.io/pypi/v/svgpathtools)](https://pypi.org/project/svgpathtools/)
 ![Build](https://img.shields.io/github/workflow/status/mathandy/svgpathtools/Github%20CI%20Unit%20Testing)
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/svgpathtools?color=yellow)](https://pypistats.org/packages/svgpathtools)
+[![Code Coverage](https://img.shields.io/badge/dynamic/yaml?color=9cf&label=coverage&query=%24.DATA.SUBDATA&url=https%3A%2F%2Fsvgpathtools-coverage.herokuapp.com%2Fcoverage.yml)](https://svgpathtools-coverage.herokuapp.com)
 # svgpathtools
 
 
