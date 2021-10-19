@@ -1,3 +1,8 @@
+[![Donate](https://img.shields.io/badge/Donate-paypal-brightgreen)](https://www.paypal.com/donate?business=4SKJ27AM4EYYA&amp;no_recurring=0&amp;item_name=Support+the+creator+of+svgpathtools?++He%27s+a+student+and+would+appreciate+it.&amp;currency_code=USD)
+![Python](https://img.shields.io/pypi/pyversions/svgpathtools.svg)
+[![PyPI](https://img.shields.io/pypi/v/svgpathtools)](https://pypi.org/project/svgpathtools/)
+![Build](https://github.com/mathandy/svgpathtools/actions/workflows/github-ci.yml/badge.svg)
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/svgpathtools?color=yellow)](https://pypistats.org/packages/svgpathtools)
 # svgpathtools [![donate-button.svg](donate-button.svg)](https://www.paypal.com/donate?business=4SKJ27AM4EYYA&amp;no_recurring=0&amp;item_name=Support+the+creator+of+svgpathtools?++He%27s+a+student+and+would+appreciate+it.&amp;currency_code=USD)
 
 
