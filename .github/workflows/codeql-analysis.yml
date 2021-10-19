@@ -13,10 +13,7 @@ name: "CodeQL"
 
 on:
   push:
-    branches: [ master ]
   pull_request:
-    # The branches below must be a subset of the branches above
-    branches: [ master ]
   schedule:
     - cron: '30 2 * * 3'
 
@@ -33,9 +30,6 @@ jobs:
       fail-fast: false
       matrix:
         language: [ 'python' ]
-        # CodeQL supports [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python' ]
-        # Learn more:
-        # https://docs.github.com/en/free-pro-team@latest/github/finding-security-vulnerabilities-and-errors-in-your-code/configuring-code-scanning#changing-the-languages-that-are-analyzed
 
     steps:
     - name: Checkout repository
