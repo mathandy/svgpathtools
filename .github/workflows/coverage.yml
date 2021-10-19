@@ -23,7 +23,6 @@ jobs:
       # find and run all unit tests
       - name: Compute test coverage
         run: |
-#          coverage run --source=svgpathtools -m unittest discover test
           pip install scipy
           coverage run --source=svgpathtools -m unittest discover test  # run tests again w/ scipy
           coverage html  # generate static website detailing coverage
