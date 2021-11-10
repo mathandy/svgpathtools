@@ -3,7 +3,7 @@ import codecs
 import os
 
 
-VERSION = '1.4.2'
+VERSION = '1.4.3'
 AUTHOR_NAME = 'Andy Port'
 AUTHOR_EMAIL = 'AndyAPort@gmail.com'
 GITHUB = 'https://github.com/mathandy/svgpathtools'
@@ -30,9 +30,9 @@ setup(name='svgpathtools',
       download_url='{}/releases/download/{}/svgpathtools-{}-py2.py3-none-any.whl'
                    ''.format(GITHUB, VERSION, VERSION),
       license='MIT',
-      install_requires=['numpy', 'svgwrite'],
+      install_requires=['numpy', 'svgwrite', 'scipy'],
       platforms="OS Independent",
-      requires=['numpy', 'svgwrite'],
+      requires=['numpy', 'svgwrite', 'scipy'],
       keywords=['svg', 'svg path', 'svg.path', 'bezier', 'parse svg path', 'display svg'],
       classifiers=[
             "Development Status :: 4 - Beta",

@@ -36,20 +36,10 @@ Some included tools:
 ## Prerequisites
 - **numpy**
 - **svgwrite**
+- **scipy** (optional, but recommended for performance)
 
 ## Setup
 
-If not already installed, you can **install the prerequisites** using  pip.
-
-```bash
-$ pip install numpy
-```
-
-```bash
-$ pip install svgwrite
-```
-
-Then **install svgpathtools**:
 ```bash
 $ pip install svgpathtools
 ```  
