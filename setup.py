@@ -32,7 +32,6 @@ setup(name='svgpathtools',
       license='MIT',
       install_requires=['numpy', 'svgwrite', 'scipy'],
       platforms="OS Independent",
-      requires=['numpy', 'svgwrite', 'scipy'],
       keywords=['svg', 'svg path', 'svg.path', 'bezier', 'parse svg path', 'display svg'],
       classifiers=[
             "Development Status :: 4 - Beta",
