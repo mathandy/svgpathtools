@@ -2,7 +2,8 @@ name: Publish to TestPyPI
 
 on:
   push:
-    branches: [ master ]
+    branches:
+      - master
 
 jobs:
   build-n-publish:

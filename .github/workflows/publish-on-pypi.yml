@@ -2,8 +2,6 @@ name: Publish to TestPyPI and if new version PyPI
 
 on:
   push:
-    branches:
-      - PyPI
     tags:
       - 'v*'
 
