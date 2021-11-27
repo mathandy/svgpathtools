@@ -217,7 +217,7 @@ def disvg(paths=None, colors=None, filename=None, stroke_widths=None,
     dirname = os_path.abspath(os_path.dirname(filename))
     if not os_path.exists(dirname):
         makedirs(dirname)
-        
+
     # append time stamp to filename
     if timestamp:
         fbname, fext = os_path.splitext(filename)
