@@ -214,10 +214,13 @@ def disvg(paths=None, colors=None, filename=None, stroke_widths=None,
         timestamp = True if timestamp is None else timestamp
         filename = os_path.join(gettempdir(), 'disvg_output.svg')
 
+    dirname = os_path.abspath(os_path.dirname(filename))
+    if not os_path.exists(dirname):
+        makedirs(dirname)
+        
     # append time stamp to filename
     if timestamp:
         fbname, fext = os_path.splitext(filename)
-        dirname = os_path.abspath(os_path.dirname(filename))
         tstamp = str(time()).replace('.', '')
         stfilename = os_path.split(fbname)[1] + '_' + tstamp + fext
         filename = os_path.join(dirname, stfilename)
@@ -407,9 +410,6 @@ def disvg(paths=None, colors=None, filename=None, stroke_widths=None,
     if paths2Drawing:
         return dwg
       
-    # save svg
-    if not os_path.exists(os_path.dirname(filename)):
-        makedirs(os_path.dirname(filename))
     dwg.save()
 
     # re-open the svg, make the xml pretty, and save it again
