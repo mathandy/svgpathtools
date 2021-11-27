@@ -217,7 +217,7 @@ def disvg(paths=None, colors=None, filename=None, stroke_widths=None,
     # append time stamp to filename
     if timestamp:
         fbname, fext = os_path.splitext(filename)
-        dirname = os_path.dirname(filename)
+        dirname = os_path.abspath(os_path.dirname(filename))
         tstamp = str(time()).replace('.', '')
         stfilename = os_path.split(fbname)[1] + '_' + tstamp + fext
         filename = os_path.join(dirname, stfilename)
