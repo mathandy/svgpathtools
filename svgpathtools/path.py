@@ -6,7 +6,7 @@ Arc."""
 from __future__ import division, absolute_import, print_function
 from math import sqrt, cos, sin, acos, asin, degrees, radians, log, pi, ceil
 from cmath import exp, sqrt as csqrt, phase
-from collections import MutableSequence
+from collections.abc import MutableSequence
 from warnings import warn
 from operator import itemgetter
 import numpy as np
@@ -1294,7 +1294,7 @@ class Arc(object):
             This is the angular distance (in degrees) between the start and
             end of the arc after the arc has been sent to the unit circle
             through self.u1transform().
-            It is $\Delta\theta$ in the official documentation and ranges from
+            It is $\\Delta\\theta$ in the official documentation and ranges from
             -360 to 360; being positive when the arc travels CCW and negative
             otherwise (i.e. is positive/negative when sweep == True/False).
         self.center : complex
