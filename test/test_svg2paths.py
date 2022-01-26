@@ -3,6 +3,8 @@ import unittest
 from svgpathtools import *
 from os.path import join, dirname
 
+from svgpathtools.svg_to_paths import rect2pathd
+
 class TestSVG2Paths(unittest.TestCase):
     def test_svg2paths_polygons(self):
 
@@ -50,3 +52,9 @@ class TestSVG2Paths(unittest.TestCase):
         self.assertTrue(len(path_circle)==2)
         self.assertTrue(path_circle==path_circle_correct)
         self.assertTrue(path_circle.isclosed())
+
+    def test_rect2pathd(self):
+        non_rounded = {"x":"10", "y":"10", "width":"100","height":"100"}
+        self.assertEqual(rect2pathd(non_rounded), 'M10.0 10.0 L 110.0 10.0 L 110.0 110.0 L 10.0 110.0 z')
+        rounded = {"x":"10", "y":"10", "width":"100","height":"100", "rx":"15", "ry": "12"}
+        self.assertEqual(rect2pathd(rounded), "M 25.0 10.0 L 95.0 10.0 A 15.0 12.0 0 0 1 110.0 22.0 L 110.0 98.0 A 15.0 12.0 0 0 1 95.0 110.0 L 25.0 110.0 A 15.0 12.0 0 0 1 10.0 98.0 L 10.0 22.0 A 15.0 12.0 0 0 1 25.0 10.0 z")
