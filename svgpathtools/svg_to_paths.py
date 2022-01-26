@@ -84,14 +84,30 @@ def rect2pathd(rect):
     
     The rectangle will start at the (x,y) coordinate specified by the 
     rectangle object and proceed counter-clockwise."""
-    x0, y0 = float(rect.get('x', 0)), float(rect.get('y', 0))
+    x, y = float(rect.get('x', 0)), float(rect.get('y', 0))
     w, h = float(rect.get('width', 0)), float(rect.get('height', 0))
-    x1, y1 = x0 + w, y0
-    x2, y2 = x0 + w, y0 + h
-    x3, y3 = x0, y0 + h
+    if 'rx' in rect or 'ry' in rect:
+        rx = float(rect.get('rx', 0))
+        ry = float(rect.get('ry', 0))
+        d = "M {} {} ".format(x + rx, y) # right of p0
+        d += "L {} {} ".format(x + w - rx, y) # go to p1
+        d += "A {} {} 0 0 1 {} {} ".format(rx, ry, x+w, y+ry) # arc for p1
+        d += "L {} {} ".format(x+w, y+h-ry) # above p2
+        d += "A {} {} 0 0 1 {} {} ".format(rx, ry, x+w-rx, y+h) # arc for p2
+        d += "L {} {} ".format(x+rx, y+h) # right of p3
+        d += "A {} {} 0 0 1 {} {} ".format(rx, ry, x, y+h-ry) # arc for p3
+        d += "L {} {} ".format(x, y+ry) # below p0
+        d += "A {} {} 0 0 1 {} {} z".format(rx, ry, x+rx, y) # arc for p0
+        return d
+
+    x0, y0 = x, y
+    x1, y1 = x + w, y
+    x2, y2 = x + w, y + h
+    x3, y3 = x, y + h
 
     d = ("M{} {} L {} {} L {} {} L {} {} z"
          "".format(x0, y0, x1, y1, x2, y2, x3, y3))
+        
     return d
 
 
