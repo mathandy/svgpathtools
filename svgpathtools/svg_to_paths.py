@@ -171,14 +171,15 @@ def svg2paths(
         #     from IPython import embed; embed()  ### DEBUG
         return d
 
-    included_elements = {
-        'circles': convert_circles_to_paths,
-        'ellipses': convert_ellipses_to_paths,
-        'lines': convert_lines_to_paths,
+    include_dict = {
+        'circle': convert_circles_to_paths,
+        'ellipse': convert_ellipses_to_paths,
+        'line': convert_lines_to_paths,
         'polyline': convert_polylines_to_paths,
         'polygon': convert_polygons_to_paths,
         'rect': convert_rectangles_to_paths,
     }
+    included_elements = set(name for name, is_included in include_dict.items() if is_included)
 
     attribute_dictionaries = [
         (node.localName, dom2dict(node)) for node in doc.documentElement.childNodes
