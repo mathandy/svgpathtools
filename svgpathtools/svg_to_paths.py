@@ -87,8 +87,17 @@ def rect2pathd(rect):
     x, y = float(rect.get('x', 0)), float(rect.get('y', 0))
     w, h = float(rect.get('width', 0)), float(rect.get('height', 0))
     if 'rx' in rect or 'ry' in rect:
-        rx = float(rect.get('rx', 0))
-        ry = float(rect.get('ry', 0))
+
+        # if only one, rx or ry, is present, use that value for both
+        # https://developer.mozilla.org/en-US/docs/Web/SVG/Element/rect
+        rx = rect.get('rx', None)
+        ry = rect.get('ry', None)
+        if rx is None:
+            rx = ry or 0.
+        if ry is None:
+            ry = rx or 0.
+        rx, ry = float(rx), float(ry)
+
         d = "M {} {} ".format(x + rx, y) # right of p0
         d += "L {} {} ".format(x + w - rx, y) # go to p1
         d += "A {} {} 0 0 1 {} {} ".format(rx, ry, x+w, y+ry) # arc for p1
