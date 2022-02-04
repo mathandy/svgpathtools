@@ -24,7 +24,7 @@ COORD_PAIR_TMPLT = re.compile(
 
 
 def path2pathd(path):
-    return path['d']
+    return path.get('d')
 
 
 def ellipse2pathd(ellipse):
@@ -167,7 +167,8 @@ def svg2paths(
         keys = list(element.attributes.keys())
         values = [val.value for val in list(element.attributes.values())]
         d = dict(list(zip(keys, values)))
-        assert dict(element.attributes) == d
+        # if not dict((k, v) for k, v in element.attributes.items()) == d:
+        #     from IPython import embed; embed()  ### DEBUG
         return d
 
     included_elements = {
