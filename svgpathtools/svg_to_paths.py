@@ -13,6 +13,9 @@ from sys import version_info
 from .parser import parse_path
 
 
+# f-strings are available in Python 3.6+
+F_STRINGS_AVAILABLE = version_info < (3, 6)
+
 COORD_PAIR_TMPLT = re.compile(
     r'([\+-]?\d*[\.\d]\d*[eE][\+-]?\d+|[\+-]?\d*[\.\d]\d*)' +
     r'(?:\s*,\s*|\s+|(?=-))' +
@@ -22,7 +25,6 @@ COORD_PAIR_TMPLT = re.compile(
 
 def path2pathd(path):
     return path['d']
-
 
 
 def ellipse2pathd(ellipse):
@@ -69,7 +71,7 @@ def polyline2pathd(polyline, is_polygon=False):
     if is_polygon and closed:
         points.append(points[0])
 
-    d = 'M' + 'L'.join('{0} {1}'.format(x,y) for x,y in points)
+    d = 'M' + 'L'.join('{0} {1}'.format(x, y) for x, y in points)
     if is_polygon or closed:
         d += 'z'
     return d
@@ -125,12 +127,12 @@ def rect2pathd(rect):
     return d
 
 
-if version_info < (3, 6):
-    def line2pathd(node_dict):
-        return "M{} {}L{} {}".format(node_dict['x1'], node_dict['y1'], node_dict['x2'], node_dict['y2'])
-else:
+if F_STRINGS_AVAILABLE:
     def line2pathd(node_dict):
         return f"M{node_dict['x1']} {node_dict['y1']}L{node_dict['x2']} {node_dict['y2']}"
+else:
+    def line2pathd(node_dict):
+        return "M{} {}L{} {}".format(node_dict['x1'], node_dict['y1'], node_dict['x2'], node_dict['y2'])
 
 
 parser_dict = {
