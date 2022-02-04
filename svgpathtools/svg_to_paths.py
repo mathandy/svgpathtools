@@ -161,12 +161,14 @@ def svg2paths(
 
     doc = parse(svg_file_location)
 
-    # todo: is this equivalent to `element.attributes` or `dict(element.attributes.items())`?
+    # todo: is this equivalent to `dict(element.attributes())`?
     def dom2dict(element):
         """Converts DOM elements to dictionaries of attributes."""
         keys = list(element.attributes.keys())
         values = [val.value for val in list(element.attributes.values())]
-        return dict(list(zip(keys, values)))
+        d = dict(list(zip(keys, values)))
+        assert dict(element.attributes) == d
+        return d
 
     included_elements = {
         'circles': convert_circles_to_paths,
@@ -178,10 +180,10 @@ def svg2paths(
     }
 
     attribute_dictionaries = [
-        dom2dict(node) for node in doc.documentElement.childNodes
-        if included_elements.get(node.localName, False)
+        (node.localName, dom2dict(node)) for node in doc.documentElement.childNodes
+        if node.localName in included_elements
     ]
-    d_strings = [parser_dict[nd['localName']] for nd in attribute_dictionaries]
+    d_strings = [parser_dict[element_type](nd) for element_type, nd in attribute_dictionaries]
 
     if return_svg_attributes:
         svg_attributes = dom2dict(doc.getElementsByTagName("svg")[0])
