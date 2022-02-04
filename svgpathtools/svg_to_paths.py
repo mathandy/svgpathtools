@@ -181,11 +181,13 @@ def svg2paths(
     }
     included_elements = set(name for name, is_included in include_dict.items() if is_included)
 
-    attribute_dictionaries = [
+    type_attribute_dictionary_pairs = [
         (node.localName, dom2dict(node)) for node in doc.documentElement.childNodes
         if node.localName in included_elements
     ]
-    d_strings = [parser_dict[element_type](nd) for element_type, nd in attribute_dictionaries]
+    d_strings = [parser_dict[element_type](nd)
+                 for element_type, nd in type_attribute_dictionary_pairs]
+    attribute_dictionaries = [ad for _, ad in type_attribute_dictionary_pairs]
 
     if return_svg_attributes:
         svg_attributes = dom2dict(doc.getElementsByTagName("svg")[0])
