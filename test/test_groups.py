@@ -236,3 +236,10 @@ class TestGroups(unittest.TestCase):
         path = parse_path(path_d)
         svg_path = doc.add_path(path, group=new_leaf)
         self.assertEqual(path_d, svg_path.get('d'))
+
+        # Test that paths are added to the correct group
+        new_sibling = doc.get_or_add_group(
+            ['base_group', 'new_parent', 'new_sibling'])
+        doc.add_path(path, group=new_sibling)
+        self.assertEqual(len(new_sibling), 1)
+        self.assertEqual(path_d, new_sibling[0].get('d'))
