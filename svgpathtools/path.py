@@ -21,11 +21,17 @@ from numpy import sqrt, cos, sin, tan, arccos as acos, arcsin as asin, \
     degrees, radians, log, pi, ceil
 from numpy import exp, sqrt as csqrt, angle as phase, isnan
 
+_length_error_default = 1e-12
+_length_error_default_without_scipy = 1e-9
 try:
     from scipy.integrate import quad
     _quad_available = True
 except:
     _quad_available = False
+    warn("SciPy not found.  `LENGTH_ERROR`, `ILENGTH_ERROR`, and "
+         "`ILENGTH_S_TOL` defaults will be set to {} to avoid slow "
+         "computations (normally {})."
+         "".format(_length_error_default_without_scipy, _length_error_default))
 
 # Internal dependencies
 from .bezier import (bezier_intersections, bezier_bounding_box, split_bezier,
@@ -50,13 +56,13 @@ FLOAT_RE = re.compile("[-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?")
 
 # path segment .length() parameters for arc length computation
 LENGTH_MIN_DEPTH = 5
-LENGTH_ERROR = 1e-12
-USE_SCIPY_QUAD = True  # for elliptic Arc segment arc length computation
+LENGTH_ERROR = _length_error_default if _quad_available else _length_error_default_without_scipy
+USE_SCIPY_QUAD = True  # for Arc and CubicBezier length computation
 
 # path segment .ilength() parameters for inverse arc length computation
 ILENGTH_MIN_DEPTH = 5
-ILENGTH_ERROR = 1e-12
-ILENGTH_S_TOL = 1e-12
+ILENGTH_ERROR = _length_error_default if _quad_available else _length_error_default_without_scipy
+ILENGTH_S_TOL = _length_error_default if _quad_available else _length_error_default_without_scipy
 ILENGTH_MAXITS = 10000
 
 # compatibility/implementation related warnings and parameters
@@ -1189,7 +1195,7 @@ class CubicBezier(object):
                 return self._length_info['length']
 
         # using scipy.integrate.quad is quick
-        if _quad_available:
+        if _quad_available and USE_SCIPY_QUAD:
             s = quad(lambda tau: abs(self.derivative(tau)), t0, t1,
                             epsabs=error, limit=1000)[0]
         else:
@@ -1756,7 +1762,7 @@ class Arc(object):
             h = hash(self)
             if self.segment_length_hash is None or self.segment_length_hash != h:
                 self.segment_length_hash = h
-                if _quad_available:
+                if _quad_available and USE_SCIPY_QUAD:
                     self.segment_length = quad(lambda tau: abs(self.derivative(tau)),
                                                t0, t1, epsabs=error, limit=1000)[0]
                 else:
@@ -1764,7 +1770,7 @@ class Arc(object):
                                                          self.point(t1), error, min_depth, 0)
             return self.segment_length
 
-        if _quad_available:
+        if _quad_available and USE_SCIPY_QUAD:
             return quad(lambda tau: abs(self.derivative(tau)), t0, t1,
                         epsabs=error, limit=1000)[0]
         else:
