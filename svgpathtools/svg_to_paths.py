@@ -5,6 +5,7 @@ The main tool being the svg2paths() function."""
 from __future__ import division, absolute_import, print_function
 from xml.dom.minidom import parse
 from os import path as os_path, getcwd
+from io import StringIO
 import re
 
 # Internal dependencies
@@ -248,6 +249,52 @@ def svg2paths2(svg_file_name_or_file,
     return_svg_attributes=True by default.  See svg2paths() docstring for more
     info."""
     return svg2paths(svg_file_name_or_file=svg_file_name_or_file,
+                     return_svg_attributes=return_svg_attributes,
+                     convert_circles_to_paths=convert_circles_to_paths,
+                     convert_ellipses_to_paths=convert_ellipses_to_paths,
+                     convert_lines_to_paths=convert_lines_to_paths,
+                     convert_polylines_to_paths=convert_polylines_to_paths,
+                     convert_polygons_to_paths=convert_polygons_to_paths,
+                     convert_rectangles_to_paths=convert_rectangles_to_paths)
+
+
+def svg_string2paths(svg_string,
+               return_svg_attributes=False,
+               convert_circles_to_paths=True,
+               convert_ellipses_to_paths=True,
+               convert_lines_to_paths=True,
+               convert_polylines_to_paths=True,
+               convert_polygons_to_paths=True,
+               convert_rectangles_to_paths=True):
+    """Convenience function; identical to svg2paths() except that it takes the
+    svg object as string.  See svg2paths() docstring for more
+    info."""
+    # wrap string into StringIO object
+    svg_file_obj = StringIO(svg_string)
+    # reset cursor to the beginning of the buffer
+    svg_file_obj.seek(0)
+    return svg2paths(svg_file_name_or_file=svg_file_obj,
+                     return_svg_attributes=return_svg_attributes,
+                     convert_circles_to_paths=convert_circles_to_paths,
+                     convert_ellipses_to_paths=convert_ellipses_to_paths,
+                     convert_lines_to_paths=convert_lines_to_paths,
+                     convert_polylines_to_paths=convert_polylines_to_paths,
+                     convert_polygons_to_paths=convert_polygons_to_paths,
+                     convert_rectangles_to_paths=convert_rectangles_to_paths)
+
+
+def svg_string2paths2(svg_string,
+               return_svg_attributes=True,
+               convert_circles_to_paths=True,
+               convert_ellipses_to_paths=True,
+               convert_lines_to_paths=True,
+               convert_polylines_to_paths=True,
+               convert_polygons_to_paths=True,
+               convert_rectangles_to_paths=True):
+    """Convenience function; identical to svg2paths2() except that it takes the
+    svg object as string.  See svg2paths() docstring for more
+    info."""
+    return svg_string2paths(svg_string=svg_string,
                      return_svg_attributes=return_svg_attributes,
                      convert_circles_to_paths=convert_circles_to_paths,
                      convert_ellipses_to_paths=convert_ellipses_to_paths,
