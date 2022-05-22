@@ -2,6 +2,7 @@ from __future__ import division, absolute_import, print_function
 import unittest
 from svgpathtools import *
 from io import StringIO
+from io import open # overrides build-in open for compatibility with python2
 from os.path import join, dirname
 
 class TestDocument(unittest.TestCase):
@@ -20,7 +21,8 @@ class TestDocument(unittest.TestCase):
 
     def test_from_stringio(self):
         """ Test reading svg object contained in a StringIO object """
-        with open(join(dirname(__file__), 'polygons.svg'), 'r') as file:
+        with open(join(dirname(__file__), 'polygons.svg'),
+                  'r', encoding='utf-8') as file:
             # read entire file into string
             file_content = file.read()
             # prepare stringio object
@@ -34,9 +36,10 @@ class TestDocument(unittest.TestCase):
 
             self.assertEqual(len(doc.paths()), 2)
 
-    def test_from_string_without_svg_attrs(self):
-        """ Test reading svg object contained in a string without svg attributes"""
-        with open(join(dirname(__file__), 'polygons.svg'), 'r') as file:
+    def test_from_string(self):
+        """ Test reading svg object contained in a string"""
+        with open(join(dirname(__file__), 'polygons.svg'),
+                  'r', encoding='utf-8') as file:
             # read entire file into string
             file_content = file.read()
 

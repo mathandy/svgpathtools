@@ -2,6 +2,7 @@ from __future__ import division, absolute_import, print_function
 import unittest
 from svgpathtools import *
 from io import StringIO
+from io import open # overrides build-in open for compatibility with python2
 from os.path import join, dirname
 
 from svgpathtools.svg_to_paths import rect2pathd
@@ -75,7 +76,8 @@ class TestSVG2Paths(unittest.TestCase):
 
     def test_from_stringio(self):
         """ Test reading svg object contained in a StringIO object """
-        with open(join(dirname(__file__), 'polygons.svg'), 'r') as file:
+        with open(join(dirname(__file__), 'polygons.svg'),
+                  'r', encoding='utf-8') as file:
             # read entire file into string
             file_content = file.read()
             # prepare stringio object
@@ -91,7 +93,8 @@ class TestSVG2Paths(unittest.TestCase):
 
     def test_from_string_without_svg_attrs(self):
         """ Test reading svg object contained in a string without svg attributes"""
-        with open(join(dirname(__file__), 'polygons.svg'), 'r') as file:
+        with open(join(dirname(__file__), 'polygons.svg'),
+                  'r', encoding='utf-8') as file:
             # read entire file into string
             file_content = file.read()
 
@@ -101,7 +104,8 @@ class TestSVG2Paths(unittest.TestCase):
 
     def test_from_string_with_svg_attrs(self):
         """ Test reading svg object contained in a string with svg attributes"""
-        with open(join(dirname(__file__), 'polygons.svg'), 'r') as file:
+        with open(join(dirname(__file__), 'polygons.svg'),
+                  'r', encoding='utf-8') as file:
             # read entire file into string
             file_content = file.read()
 
