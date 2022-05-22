@@ -22,7 +22,7 @@ class TestDocument(unittest.TestCase):
         """ Test reading svg object contained in a StringIO object """
         with open(join(dirname(__file__), 'polygons.svg'), 'r') as file:
             # read entire file into string
-            file_content: str = file.read()
+            file_content = file.read()
             # prepare stringio object
             file_as_stringio = StringIO()
             # paste file content into it
@@ -38,7 +38,7 @@ class TestDocument(unittest.TestCase):
         """ Test reading svg object contained in a string without svg attributes"""
         with open(join(dirname(__file__), 'polygons.svg'), 'r') as file:
             # read entire file into string
-            file_content: str = file.read()
+            file_content = file.read()
 
             doc = Document.from_svg_string(file_content)
 

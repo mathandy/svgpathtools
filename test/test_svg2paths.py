@@ -77,7 +77,7 @@ class TestSVG2Paths(unittest.TestCase):
         """ Test reading svg object contained in a StringIO object """
         with open(join(dirname(__file__), 'polygons.svg'), 'r') as file:
             # read entire file into string
-            file_content: str = file.read()
+            file_content = file.read()
             # prepare stringio object
             file_as_stringio = StringIO()
             # paste file content into it
@@ -93,7 +93,7 @@ class TestSVG2Paths(unittest.TestCase):
         """ Test reading svg object contained in a string without svg attributes"""
         with open(join(dirname(__file__), 'polygons.svg'), 'r') as file:
             # read entire file into string
-            file_content: str = file.read()
+            file_content = file.read()
 
             paths, _ = svg_string2paths(file_content)
 
@@ -103,7 +103,7 @@ class TestSVG2Paths(unittest.TestCase):
         """ Test reading svg object contained in a string with svg attributes"""
         with open(join(dirname(__file__), 'polygons.svg'), 'r') as file:
             # read entire file into string
-            file_content: str = file.read()
+            file_content = file.read()
 
             paths, _, _ = svg_string2paths2(file_content)
 
