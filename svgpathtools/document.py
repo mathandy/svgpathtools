@@ -41,6 +41,7 @@ import xml.etree.ElementTree as etree
 from xml.etree.ElementTree import Element, SubElement, register_namespace
 from xml.dom.minidom import parseString
 import warnings
+from io import StringIO
 from tempfile import gettempdir
 from time import time
 
@@ -256,6 +257,18 @@ class Document:
             self.tree = etree.parse(svg_file_name_or_file)
 
         self.root = self.tree.getroot()
+
+    @staticmethod
+    def from_svg_string(svg_string):
+        """Factory method for creating a document from a string holding a svg
+        object
+        """
+        # wrap string into StringIO object
+        svg_file_obj = StringIO(svg_string)
+        # reset cursor to the beginning of the buffer
+        svg_file_obj.seek(0)
+        # create document from file object
+        return Document(svg_file_obj)
 
     def paths(self, group_filter=lambda x: True,
               path_filter=lambda x: True, path_conversions=CONVERSIONS):
