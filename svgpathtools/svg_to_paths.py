@@ -271,8 +271,6 @@ def svg_string2paths(svg_string,
     info."""
     # wrap string into StringIO object
     svg_file_obj = StringIO(svg_string)
-    # reset cursor to the beginning of the buffer
-    svg_file_obj.seek(0)
     return svg2paths(svg_file_name_or_file=svg_file_obj,
                      return_svg_attributes=return_svg_attributes,
                      convert_circles_to_paths=convert_circles_to_paths,

@@ -26,11 +26,7 @@ class TestDocument(unittest.TestCase):
             # read entire file into string
             file_content = file.read()
             # prepare stringio object
-            file_as_stringio = StringIO()
-            # paste file content into it
-            file_as_stringio.write(file_content)
-            # reset curser to its beginning
-            file_as_stringio.seek(0)
+            file_as_stringio = StringIO(file_content)
 
             doc = Document(file_as_stringio)
 

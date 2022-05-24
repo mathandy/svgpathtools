@@ -265,8 +265,6 @@ class Document:
         """
         # wrap string into StringIO object
         svg_file_obj = StringIO(svg_string)
-        # reset cursor to the beginning of the buffer
-        svg_file_obj.seek(0)
         # create document from file object
         return Document(svg_file_obj)
 
