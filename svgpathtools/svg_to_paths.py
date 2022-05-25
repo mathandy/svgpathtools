@@ -258,7 +258,7 @@ def svg2paths2(svg_file_location,
                      convert_rectangles_to_paths=convert_rectangles_to_paths)
 
 
-def svg_string2paths(svg_string,
+def svgstr2paths(svg_string,
                return_svg_attributes=False,
                convert_circles_to_paths=True,
                convert_ellipses_to_paths=True,

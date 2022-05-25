@@ -94,6 +94,6 @@ class TestSVG2Paths(unittest.TestCase):
             # read entire file into string
             file_content = file.read()
 
-            paths, _ = svg_string2paths(file_content)
+            paths, _ = svgstr2paths(file_content)
 
             self.assertEqual(len(paths), 2)
