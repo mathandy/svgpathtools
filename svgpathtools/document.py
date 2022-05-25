@@ -258,8 +258,8 @@ class Document:
 
         self.root = self.tree.getroot()
 
-    @staticmethod
-    def from_svg_string(svg_string):
+    @classmethod
+    def from_svg_string(cls, svg_string):
         """Factory method for creating a document from a string holding a svg
         object
         """
