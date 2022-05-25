@@ -87,24 +87,13 @@ class TestSVG2Paths(unittest.TestCase):
 
             self.assertEqual(len(paths), 2)
 
-    def test_from_string_without_svg_attrs(self):
-        """ Test reading svg object contained in a string without svg attributes"""
+    def test_from_string(self):
+        """ Test reading svg object contained in a string """
         with open(join(dirname(__file__), 'polygons.svg'),
                   'r', encoding='utf-8') as file:
             # read entire file into string
             file_content = file.read()
 
             paths, _ = svg_string2paths(file_content)
-
-            self.assertEqual(len(paths), 2)
-
-    def test_from_string_with_svg_attrs(self):
-        """ Test reading svg object contained in a string with svg attributes"""
-        with open(join(dirname(__file__), 'polygons.svg'),
-                  'r', encoding='utf-8') as file:
-            # read entire file into string
-            file_content = file.read()
-
-            paths, _, _ = svg_string2paths2(file_content)
 
             self.assertEqual(len(paths), 2)

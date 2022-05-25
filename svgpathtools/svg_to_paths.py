@@ -279,24 +279,3 @@ def svg_string2paths(svg_string,
                      convert_polylines_to_paths=convert_polylines_to_paths,
                      convert_polygons_to_paths=convert_polygons_to_paths,
                      convert_rectangles_to_paths=convert_rectangles_to_paths)
-
-
-def svg_string2paths2(svg_string,
-               return_svg_attributes=True,
-               convert_circles_to_paths=True,
-               convert_ellipses_to_paths=True,
-               convert_lines_to_paths=True,
-               convert_polylines_to_paths=True,
-               convert_polygons_to_paths=True,
-               convert_rectangles_to_paths=True):
-    """Convenience function; identical to svg2paths2() except that it takes the
-    svg object as string.  See svg2paths() docstring for more
-    info."""
-    return svg_string2paths(svg_string=svg_string,
-                     return_svg_attributes=return_svg_attributes,
-                     convert_circles_to_paths=convert_circles_to_paths,
-                     convert_ellipses_to_paths=convert_ellipses_to_paths,
-                     convert_lines_to_paths=convert_lines_to_paths,
-                     convert_polylines_to_paths=convert_polylines_to_paths,
-                     convert_polygons_to_paths=convert_polygons_to_paths,
-                     convert_rectangles_to_paths=convert_rectangles_to_paths)
