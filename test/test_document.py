@@ -4,10 +4,7 @@ from svgpathtools import *
 from io import StringIO
 from io import open  # overrides build-in open for compatibility with python2
 from os.path import join, dirname
-try:
-    import pathlib
-except ImportError:
-    import pathlib2 as pathlib
+from sys import version_info
 
 
 class TestDocument(unittest.TestCase):
@@ -19,9 +16,11 @@ class TestDocument(unittest.TestCase):
 
     def test_from_file_path(self):
         """Test reading svg from file provided as path"""
-        doc = Document(pathlib.Path(__file__).parent / 'polygons.svg')
+        if version_info >= (3, 6):
+            import pathlib
+            doc = Document(pathlib.Path(__file__).parent / 'polygons.svg')
 
-        self.assertEqual(len(doc.paths()), 2)
+            self.assertEqual(len(doc.paths()), 2)
 
     def test_from_file_object(self):
         """Test reading svg from file object that has already been opened"""
