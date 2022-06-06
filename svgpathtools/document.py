@@ -55,9 +55,13 @@ from .path import *
 
 # To maintain forward/backward compatibility
 try:
-    str = basestring
+    string = basestring
 except NameError:
-    pass
+    string = str
+try:
+    from os import PathLike
+except ImportError:
+    PathLike = string
 
 # Let xml.etree.ElementTree know about the SVG namespace
 SVG_NAMESPACE = {'svg': 'http://www.w3.org/2000/svg'}
@@ -239,16 +243,11 @@ class Document:
             filepath (str or file-like): The filepath of the
                 DOM-style object or a file-like object containing it.
         """
-        self.original_filepath = None
 
         # strings are interpreted as file location everything else is treated as
         # file-like object and passed to the xml parser directly
-        if isinstance(filepath, str):
-            # remember location of original svg file if any
-            self.original_filepath = filepath
-            if os.path.dirname(filepath) == '':
-                self.original_filepath = os.path.join(
-                    os.getcwd(), filepath)
+        from_filepath = isinstance(filepath, string) or isinstance(filepath, PathLike)
+        self.original_filepath = os.path.abspath(filepath) if from_filepath else None
 
         if filepath is None:
             self.tree = etree.ElementTree(Element('svg'))
@@ -280,7 +279,7 @@ class Document:
 
     def paths_from_group(self, group, recursive=True, group_filter=lambda x: True,
                          path_filter=lambda x: True, path_conversions=CONVERSIONS):
-        if all(isinstance(s, str) for s in group):
+        if all(isinstance(s, string) for s in group):
             # If we're given a list of strings, assume it represents a
             # nested sequence
             group = self.get_group(group)
@@ -325,7 +324,7 @@ class Document:
             path_svg = path.d()
         elif is_path_segment(path):
             path_svg = Path(path).d()
-        elif isinstance(path, str):
+        elif isinstance(path, string):
             # Assume this is a valid d-string.
             # TODO: Should we sanity check the input string?
             path_svg = path

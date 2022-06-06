@@ -2,25 +2,36 @@ from __future__ import division, absolute_import, print_function
 import unittest
 from svgpathtools import *
 from io import StringIO
-from io import open # overrides build-in open for compatibility with python2
+from io import open  # overrides build-in open for compatibility with python2
 from os.path import join, dirname
+try:
+    import pathlib
+except ImportError:
+    import pathlib2 as pathlib
+
 
 class TestDocument(unittest.TestCase):
-    def test_from_file_path(self):
-        """ Test reading svg from file provided as path """
+    def test_from_file_path_string(self):
+        """Test reading svg from file provided as path"""
         doc = Document(join(dirname(__file__), 'polygons.svg'))
 
         self.assertEqual(len(doc.paths()), 2)
 
+    def test_from_file_path(self):
+        """Test reading svg from file provided as path"""
+        doc = Document(pathlib.Path(__file__).parent / 'polygons.svg')
+
+        self.assertEqual(len(doc.paths()), 2)
+
     def test_from_file_object(self):
-        """ Test reading svg from file object that has already been opened """
+        """Test reading svg from file object that has already been opened"""
         with open(join(dirname(__file__), 'polygons.svg'), 'r') as file:
             doc = Document(file)
 
             self.assertEqual(len(doc.paths()), 2)
 
     def test_from_stringio(self):
-        """ Test reading svg object contained in a StringIO object """
+        """Test reading svg object contained in a StringIO object"""
         with open(join(dirname(__file__), 'polygons.svg'),
                   'r', encoding='utf-8') as file:
             # read entire file into string
@@ -33,7 +44,7 @@ class TestDocument(unittest.TestCase):
             self.assertEqual(len(doc.paths()), 2)
 
     def test_from_string(self):
-        """ Test reading svg object contained in a string"""
+        """Test reading svg object contained in a string"""
         with open(join(dirname(__file__), 'polygons.svg'),
                   'r', encoding='utf-8') as file:
             # read entire file into string
