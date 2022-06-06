@@ -259,9 +259,7 @@ class Document:
 
     @classmethod
     def from_svg_string(cls, svg_string):
-        """Factory method for creating a document from a string holding a svg
-        object
-        """
+        """Constructor for creating a Document object from a string."""
         # wrap string into StringIO object
         svg_file_obj = StringIO(svg_string)
         # create document from file object
