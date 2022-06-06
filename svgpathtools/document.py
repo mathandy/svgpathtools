@@ -41,6 +41,7 @@ import xml.etree.ElementTree as etree
 from xml.etree.ElementTree import Element, SubElement, register_namespace
 from xml.dom.minidom import parseString
 import warnings
+from io import StringIO
 from tempfile import gettempdir
 from time import time
 
@@ -235,13 +236,19 @@ class Document:
         The output Path objects will be transformed based on their parent groups.
         
         Args:
-            filepath (str): The filepath of the DOM-style object.
+            filepath (str or file-like): The filepath of the
+                DOM-style object or a file-like object containing it.
         """
+        self.original_filepath = None
 
-        # remember location of original svg file
-        self.original_filepath = filepath
-        if filepath is not None and os.path.dirname(filepath) == '':
-            self.original_filepath = os.path.join(os.getcwd(), filepath)
+        # strings are interpreted as file location everything else is treated as
+        # file-like object and passed to the xml parser directly
+        if isinstance(filepath, str):
+            # remember location of original svg file if any
+            self.original_filepath = filepath
+            if os.path.dirname(filepath) == '':
+                self.original_filepath = os.path.join(
+                    os.getcwd(), filepath)
 
         if filepath is None:
             self.tree = etree.ElementTree(Element('svg'))
@@ -250,6 +257,16 @@ class Document:
             self.tree = etree.parse(filepath)
 
         self.root = self.tree.getroot()
+
+    @classmethod
+    def from_svg_string(cls, svg_string):
+        """Factory method for creating a document from a string holding a svg
+        object
+        """
+        # wrap string into StringIO object
+        svg_file_obj = StringIO(svg_string)
+        # create document from file object
+        return Document(svg_file_obj)
 
     def paths(self, group_filter=lambda x: True,
               path_filter=lambda x: True, path_conversions=CONVERSIONS):
