@@ -4,9 +4,13 @@ The main tool being the svg2paths() function."""
 # External dependencies
 from __future__ import division, absolute_import, print_function
 from xml.dom.minidom import parse
-from os import path as os_path, getcwd
+import os
 from io import StringIO
 import re
+try:
+    from os import PathLike as FilePathLike
+except ImportError:
+    FilePathLike = str
 
 # Internal dependencies
 from .parser import parse_path
@@ -173,10 +177,8 @@ def svg2paths(svg_file_location,
     """
     # strings are interpreted as file location everything else is treated as
     # file-like object and passed to the xml parser directly
-    if isinstance(svg_file_location, str):
-        if os_path.dirname(svg_file_location) == '':
-            svg_file_location = os_path.join(
-                getcwd(), svg_file_location)
+    from_filepath = isinstance(svg_file_location, str) or isinstance(svg_file_location, FilePathLike)
+    svg_file_location = os.path.abspath(svg_file_location) if from_filepath else svg_file_location
 
     doc = parse(svg_file_location)
 
