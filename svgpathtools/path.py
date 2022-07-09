@@ -189,7 +189,6 @@ def bez2poly(bez, numpy_ordering=True, return_poly1d=False):
 def transform_segments_together(path, transformation):
     """Makes sure that, if joints were continuous, they're kept that way."""
     transformed_segs = [transformation(seg) for seg in path]
-    joint_was_continuous = [sa.end == sb.start for sa, sb in path.joints()]
 
     for i, (sa, sb) in enumerate(path.joints()):
         if sa.end == sb.start:
