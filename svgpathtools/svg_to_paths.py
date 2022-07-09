@@ -19,7 +19,7 @@ from .parser import parse_path
 
 
 # f-strings are available in Python 3.6+
-F_STRINGS_AVAILABLE = version_info < (3, 6)
+F_STRINGS_AVAILABLE = version_info >= (3, 6)
 
 COORD_PAIR_TMPLT = re.compile(
     r'([\+-]?\d*[\.\d]\d*[eE][\+-]?\d+|[\+-]?\d*[\.\d]\d*)' +
