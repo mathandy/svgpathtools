@@ -202,7 +202,7 @@ def rotate(curve, degs, origin=None):
     (a complex number).  By default origin is either `curve.point(0.5)`, or in
     the case that curve is an Arc object, `origin` defaults to `curve.center`.
     """
-    def transform(z):
+    def rotate_point(z):
         return exp(1j*radians(degs))*(z - origin) + origin
 
     if origin is None:
@@ -215,10 +215,10 @@ def rotate(curve, degs, origin=None):
         transformation = lambda seg: rotate(seg, degs, origin=origin)
         return transform_segments_together(curve, transformation)
     elif is_bezier_segment(curve):
-        return bpoints2bezier([transform(bpt) for bpt in curve.bpoints()])
+        return bpoints2bezier([rotate_point(bpt) for bpt in curve.bpoints()])
     elif isinstance(curve, Arc):
-        new_start = transform(curve.start)
-        new_end = transform(curve.end)
+        new_start = rotate_point(curve.start)
+        new_end = rotate_point(curve.end)
         new_rotation = curve.rotation + degs
         return Arc(new_start, radius=curve.radius, rotation=new_rotation,
                    large_arc=curve.large_arc, sweep=curve.sweep, end=new_end)
