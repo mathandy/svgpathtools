@@ -294,6 +294,10 @@ def scale(curve, sx, sy=None, origin=0j):
 
 def transform(curve, tf):
     """Transforms the curve by the homogeneous transformation matrix tf"""
+
+    if all((tf == np.eye(3)).ravel()):
+        return curve  # tf is identity, return curve as is
+
     def to_point(p):
         return np.array([[p.real], [p.imag], [1.0]])
 
@@ -311,8 +315,6 @@ def transform(curve, tf):
         return bpoints2bezier([to_complex(tf.dot(to_point(p)))
                                for p in curve.bpoints()])
     elif isinstance(curve, Arc):
-        if curve == Arc(start=(-3600000-31200000j), radius=(400000+400000j), rotation=0.0, large_arc=True, sweep=False, end=(-2800000-31200000j)):
-            from IPython import embed; embed()  ### DEBUG
         new_start = to_complex(tf.dot(to_point(curve.start)))
         new_end = to_complex(tf.dot(to_point(curve.end)))
         
@@ -339,7 +341,7 @@ def transform(curve, tf):
         else : 
             return Arc(new_start, radius=new_radius, rotation=curve.rotation + rot,
                        large_arc=curve.large_arc, sweep=curve.sweep, end=new_end,
-                       autoscale_radius=False)
+                       autoscale_radius=True)
 
     else:
         raise TypeError("Input `curve` should be a Path, Line, "
