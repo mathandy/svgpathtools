@@ -311,10 +311,12 @@ def transform(curve, tf):
         return bpoints2bezier([to_complex(tf.dot(to_point(p)))
                                for p in curve.bpoints()])
     elif isinstance(curve, Arc):
+        if curve == Arc(start=(-3600000-31200000j), radius=(400000+400000j), rotation=0.0, large_arc=True, sweep=False, end=(-2800000-31200000j)):
+            from IPython import embed; embed()  ### DEBUG
         new_start = to_complex(tf.dot(to_point(curve.start)))
         new_end = to_complex(tf.dot(to_point(curve.end)))
         
-        # Based on https://math.stackexchange.com/questions/2349726/compute-the-major-and-minor-axis-of-an-ellipse-after-linearly-transforming-it
+        # Based on https://math.stackexchange.com/questions/2349726/
         rx2 = curve.radius.real ** 2
         ry2 = curve.radius.imag ** 2
 
