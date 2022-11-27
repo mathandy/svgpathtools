@@ -2490,6 +2490,17 @@ class Path(MutableSequence):
         if 'tree_element' in kw:
             self._tree_element = kw['tree_element']
 
+        quadtree_width = 10e6
+        quadtree_height = 10e6
+        if "quadtree_width" in kw:
+            quadtree_width = kw["quadtree_width"]
+        if "quadtree_height" in kw:
+            quadtree_height = kw["quadtree_height"]
+
+        self._segment_quadtree = QuadTree(Rect(Point(complex(0, 0)),
+                                          quadtree_width, quadtree_height))
+        self._segment_quadtree.insert_path(self)
+
     def __hash__(self):
         return hash((tuple(self._segments), self._closed))
 
@@ -2523,6 +2534,7 @@ class Path(MutableSequence):
         self._length = None
         self._start = self._segments[0].start
         self._end = self._segments[-1].end
+        self._segment_quadtree.insert_segment(PathSegment(value, self))
 
     def reversed(self):
         """returns a copy of the Path object with its orientation reversed."""
@@ -2959,12 +2971,14 @@ class Path(MutableSequence):
                 bezier_path_approximation.append(seg)
         return area_without_arcs(Path(*bezier_path_approximation))
 
-    def intersect(self, other_curve, justonemode=False, tol=1e-12):
+    def intersect(self, other_curve, use_quadtree_lookup=True, justonemode=False, tol=1e-12):
         """Finds intersections of `self` with `other_curve`
 
         Args:
             other_curve: the path or path segment to check for intersections
                 with `self`
+            use_quadtree_lookup (bool): if true, will use the internal quadtree to lookup segments for
+                intersection which should always be faster than the brute-force lookup.
             justonemode (bool): if true, returns only the first
                 intersection found.
             tol (float): A tolerance used to check for redundant intersections
@@ -2984,14 +2998,21 @@ class Path(MutableSequence):
         assert path1 != path2
 
         intersection_list = []
-        for seg1 in path1:
-            for seg2 in path2:
-                if justonemode and intersection_list:
-                    return intersection_list[0]
-                for t1, t2 in seg1.intersect(seg2, tol=tol):
-                    T1 = path1.t2T(seg1, t1)
-                    T2 = path2.t2T(seg2, t2)
-                    intersection_list.append(((T1, seg1, t1), (T2, seg2, t2)))
+
+        if use_quadtree_lookup:
+            for intersection in self._segment_quadtree.get_intersections(path2):
+                if justonemode:
+                    return intersection
+                intersection_list.append(intersection)
+        else:
+            for seg1 in path1:
+                for seg2 in path2:
+                    if justonemode and intersection_list:
+                        return intersection_list[0]
+                    for t1, t2 in seg1.intersect(seg2, tol=tol):
+                        T1 = path1.t2T(seg1, t1)
+                        T2 = path2.t2T(seg2, t2)
+                        intersection_list.append(((T1, seg1, t1), (T2, seg2, t2)))
 
         if justonemode and intersection_list:
             return intersection_list[0]
@@ -3364,3 +3385,161 @@ class Path(MutableSequence):
                 current_pos = end
 
         return segments
+
+
+class PathSegment:
+    def __init__(self, segment, original_path):
+        self.original_segment = segment
+        self.original_path: Path = original_path
+
+
+class Point:
+    def __init__(self, point: complex):
+        self.x = point.real
+        self.y = point.imag
+
+    def translated(self, translation: complex):
+        return Point(complex(self.x + translation.real,
+                             self.y + translation.imag))
+
+    def to_tuple(self):
+        return self.x, self.y
+
+
+class Rect:
+    def __init__(self, origin: Point, width: float, height: float):
+        self.origin = origin
+        self.width = width
+        self.height = height
+
+    def in_bounds(self, p: Point):
+        return self.origin.x <= p.x < self.origin.x + self.width and self.origin.y <= p.y < self.origin.y + self.height
+
+    def overlaps(self, other):
+        if other.origin.x > self.origin.x + self.width or \
+                other.origin.y > self.origin.y + self.height or \
+                other.origin.x + other.width < self.origin.x or \
+                other.origin.y + other.height < self.origin.y:
+            return False
+        return True
+
+    def to_tuple(self):
+        return self.origin.x, self.origin.y, self.width, self.height
+
+
+class QuadTree:
+    """
+    QuadTree implementation adapted to SVG paths for faster intersection lookups
+    """
+    def __init__(self, boundary: Rect, capacity=10):
+        self.boundary = boundary
+        self.capacity = capacity
+        self._path_segments = []
+        self._is_split = False
+        self._subtreeNE = None
+        self._subtreeNW = None
+        self._subtreeSE = None
+        self._subtreeSW = None
+
+    def _split(self):
+        self._subtreeNE = QuadTree(
+            Rect(self.boundary.origin,
+                 int(self.boundary.width / 2), int(self.boundary.height / 2)),
+            self.capacity
+        )
+        self._subtreeNW = QuadTree(
+            Rect(self.boundary.origin.translated(complex(self.boundary.width / 2, 0)),
+                 int(self.boundary.width / 2), int(self.boundary.height / 2)),
+            self.capacity
+        )
+        self._subtreeSE = QuadTree(
+            Rect(self.boundary.origin.translated(complex(0, self.boundary.height / 2)),
+                 int(self.boundary.width / 2), int(self.boundary.height / 2)),
+            self.capacity
+        )
+        self._subtreeSW = QuadTree(
+            Rect(self.boundary.origin.translated(complex(self.boundary.width / 2, self.boundary.height / 2)),
+                 int(self.boundary.width / 2), int(self.boundary.height / 2)),
+            self.capacity
+        )
+        self._is_split = True
+
+    def insert_segment(self, segment: PathSegment):
+        """will insert a PathSegment into the tree"""
+        if not self.boundary.overlaps(bbox_to_rect(*segment.original_segment.bbox())):
+            return
+
+        if len(self._path_segments) < self.capacity:
+            self._path_segments.append(segment)
+        else:
+            if not self._is_split:
+                self._split()
+
+            self._subtreeNE.insert_segment(segment)
+            self._subtreeNW.insert_segment(segment)
+            self._subtreeSE.insert_segment(segment)
+            self._subtreeSW.insert_segment(segment)
+
+    def insert_path(self, path: Path):
+        """will split the path into segments and call insert_segment on each one"""
+        for segment in path:
+            self.insert_segment(PathSegment(segment, original_path=path))
+
+    def _get_segments_in_area(self, area: Rect, out=None) -> list[PathSegment]:
+        """returns a list of PathSegments that are present in the specified area"""
+        if out is None:
+            out = list()
+
+        if not self.boundary.overlaps(area):
+            return out
+
+        out.extend(self._path_segments)
+        if self._is_split:
+            out = out.union(self._subtreeNE._get_segments_in_area(area, out))
+            out = out.union(self._subtreeNW._get_segments_in_area(area, out))
+            out = out.union(self._subtreeSE._get_segments_in_area(area, out))
+            out = out.union(self._subtreeSW._get_segments_in_area(area, out))
+
+        return out
+
+    def get_intersections(self, other_curve: Path, tol=1e-12):
+        """Finds intersections of the loaded segments with `other_curve`
+
+        Args:
+            other_curve: the path or path segment to check for intersections
+                with `self`
+            tol (float): A tolerance used to check for redundant intersections
+                (see comment above the code block where tol is used).
+
+        Yields:
+            (tuple[tuple[float, Curve, float]], tuple[float, Curve, float]]): list of intersections, each
+                in the format ((T1, seg1, t1), (T2, seg2, t2)), where
+                self.point(T1) == seg1.point(t1) == seg2.point(t2) == other_curve.point(T2)
+
+        Scope:
+            If the two path objects coincide for more than a finite set of
+            points, this code will iterate to max depth and/or raise an error.
+        """
+        found_segments = set()
+        for segment in other_curve:
+            segment = Path(segment)
+            segments_in_area = self._get_segments_in_area(
+                bbox_to_rect(*segment.bbox()))
+            found_segments = found_segments.union(segments_in_area)
+
+        for segment in found_segments:
+            for collision_segment in other_curve:
+                path_intersections = segment.original_segment.intersect(collision_segment, tol=tol)
+                for intersection in path_intersections:
+                    t1, t2 = intersection
+                    T1 = segment.original_path.t2T(segment.original_segment, t1)
+                    T2 = other_curve.t2T(collision_segment, t2)
+                    yield (T1, segment.original_segment, t1), (T2, collision_segment, t2)
+
+
+def bbox_to_rect(xmin: float, xmax: float, ymin: float, ymax: float, expansion=0) -> Rect:
+    """converts from a Path.bbox() to a Rect"""
+    origin = Point(complex(xmin - expansion, ymin - expansion))
+    width = (xmax - xmin) + expansion
+    height = (ymax - ymin) + expansion
+    return Rect(origin, width, height)

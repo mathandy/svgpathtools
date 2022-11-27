@@ -16,7 +16,7 @@ from svgpathtools import (
     bpoints2bezier, closest_point_in_path, farthest_point_in_path,
     is_bezier_segment, is_bezier_path, parse_path
 )
-from svgpathtools.path import bezier_radialrange
+from svgpathtools.path import _NotImplemented4ArcException, bezier_radialrange, bbox_to_rect, QuadTree, Rect, Point
 
 # An important note for those doing any debugging:
 # ------------------------------------------------
@@ -1790,6 +1790,66 @@ class Test_intersect(unittest.TestCase):
         a1 = Arc(start=(10-0j), radius=(5+5j), rotation=0.0, large_arc=False, sweep=False, end=(5+5j))
         intersections = a0.intersect(a1)
         assert_intersections(self, a0, a1, intersections, 0)
+
+
+class TestQuadTree(unittest.TestCase):
+    def setUp(self):
+        self.rect_path = Path(Line(complex(0, 0), complex(0, 10)),
+                              Line(complex(0, 10), complex(10, 10)),
+                              Line(complex(10, 10), complex(10, 0)),
+                              Line(complex(10, 0), complex(0, 10)))
+
+    def test_bbox_to_rect_simple(self):
+        rect = bbox_to_rect(*self.rect_path.bbox())
+
+        self.assertEqual(rect.height, 10, "rect got incorrect height")
+        self.assertEqual(rect.width, 10, "rect got incorrect width")
+        self.assertEqual(rect.origin.to_tuple(), (0, 0), "rect got incorrect origin")
+
+    def test_bbox_to_rect_expanded(self):
+        p0 = Path(Line(complex(0, 0), complex(0, 10)),
+                  Line(complex(0, 10), complex(10, 10)),
+                  Line(complex(10, 10), complex(10, 0)),
+                  Line(complex(10, 0), complex(0, 10)))
+        rect = bbox_to_rect(*p0.bbox(), expansion=5)
+
+        self.assertEqual(rect.height, 15, "rect got incorrect height")
+        self.assertEqual(rect.width, 15, "rect got incorrect width")
+        self.assertEqual(rect.origin.to_tuple(), (-5, -5), "rect got incorrect origin")
+
+    def test_quadtree_split(self):
+        n_segments = len(self.rect_path._segments)
+        capacity = n_segments + 1
+        qt0 = QuadTree(Rect(
+            Point(complex(0, 0)),
+            10e6, 10e6
+        ), capacity=capacity)
+
+        self.assertEqual(len(qt0._path_segments), 0)
+        self.assertIsNone(qt0._subtreeNE)
+        self.assertIsNone(qt0._subtreeNW)
+        self.assertIsNone(qt0._subtreeSE)
+        self.assertIsNone(qt0._subtreeSW)
+
+        qt0.insert_path(self.rect_path)
+        # the quadtree should not have reached
+        # its capacity and therefor should not have split
+        self.assertEqual(len(qt0._path_segments), n_segments)
+        self.assertFalse(qt0._is_split)
+        self.assertIsNone(qt0._subtreeNE)
+        self.assertIsNone(qt0._subtreeNW)
+        self.assertIsNone(qt0._subtreeSE)
+        self.assertIsNone(qt0._subtreeSW)
+
+        qt0.insert_path(self.rect_path)
+        # here the quadtree should add more segments which will
+        # force it to split
+        self.assertEqual(len(qt0._path_segments), capacity)
+        self.assertTrue(qt0._is_split)
+        self.assertIsInstance(qt0._subtreeNE, QuadTree)
+        self.assertIsInstance(qt0._subtreeNW, QuadTree)
+        self.assertIsInstance(qt0._subtreeSE, QuadTree)
+        self.assertIsInstance(qt0._subtreeSW, QuadTree)
 
 
 class TestPathTools(unittest.TestCase):
