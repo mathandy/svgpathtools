@@ -1,6 +1,7 @@
 # External dependencies
 from __future__ import division, absolute_import, print_function
 import os
+import time
 from sys import version_info
 import unittest
 from math import sqrt, pi
@@ -1490,6 +1491,49 @@ class Test_intersect(unittest.TestCase):
             self.assertTrue(len(xiy) == 1)
             self.assertTrue(len(yix) == 1)
         ###################################################################
+
+    def test_random_intersections(self):
+        from random import Random
+        r = Random()
+        distance = 100
+        distribution = 10000
+        count = 500
+
+        def random_complex(offset_x=0.0, offset_y=0.0):
+            return complex(r.random() * distance + offset_x, r.random() * distance + offset_y)
+
+        def random_line():
+            offset_x = r.random() * distribution
+            offset_y = r.random() * distribution
+            return Line(random_complex(offset_x, offset_y), random_complex(offset_x, offset_y))
+
+        def random_quad():
+            offset_x = r.random() * distribution
+            offset_y = r.random() * distribution
+            return QuadraticBezier(random_complex(offset_x, offset_y), random_complex(offset_x, offset_y), random_complex(offset_x, offset_y))
+
+        def random_cubic():
+            offset_x = r.random() * distribution
+            offset_y = r.random() * distribution
+            return CubicBezier(random_complex(offset_x, offset_y), random_complex(offset_x, offset_y), random_complex(offset_x, offset_y), random_complex(offset_x, offset_y))
+
+        def random_path():
+            path = Path()
+            for i in range(count):
+                type_segment = random.randint(0, 3)
+                if type_segment == 0:
+                    path.append(random_line())
+                if type_segment == 1:
+                    path.append(random_quad())
+                if type_segment == 2:
+                    path.append(random_cubic())
+            return path
+
+        path1 = random_path()
+        path2 = random_path()
+        t = time.time()
+        path1.intersect(path2)
+        print(f"\nIntersection calculation took {time.time() - t} seconds.\n")
 
     def test_line_line_0(self):
         l0 = Line(start=(25.389999999999997+99.989999999999995j),
