@@ -711,6 +711,19 @@ class Line(object):
         Note: This will fail if the two segments coincide for more than a
         finite collection of points.
         tol is not used."""
+        if isinstance(other_seg, (Line, QuadraticBezier, CubicBezier)):
+            ob = [e.real for e in other_seg.bpoints()]
+            sb = [e.real for e in self.bpoints()]
+            if min(ob) > max(sb):
+                return []
+            if max(ob) < min(sb):
+                return []
+            ob = [e.imag for e in other_seg.bpoints()]
+            sb = [e.imag for e in self.bpoints()]
+            if min(ob) > max(sb):
+                return []
+            if max(ob) < min(sb):
+                return []
         if isinstance(other_seg, Line):
             assert other_seg.end != other_seg.start and self.end != self.start
             assert self != other_seg
@@ -1038,6 +1051,19 @@ class QuadraticBezier(object):
         self.point(t1) == other_seg.point(t2).
         Note: This will fail if the two segments coincide for more than a
         finite collection of points."""
+        if isinstance(other_seg, (Line, QuadraticBezier, CubicBezier)):
+            ob = [e.real for e in other_seg.bpoints()]
+            sb = [e.real for e in self.bpoints()]
+            if min(ob) > max(sb):
+                return []
+            if max(ob) < min(sb):
+                return []
+            ob = [e.imag for e in other_seg.bpoints()]
+            sb = [e.imag for e in self.bpoints()]
+            if min(ob) > max(sb):
+                return []
+            if max(ob) < min(sb):
+                return []
         if isinstance(other_seg, Line):
             return bezier_by_line_intersections(self, other_seg)
         elif isinstance(other_seg, QuadraticBezier):
@@ -1298,6 +1324,19 @@ class CubicBezier(object):
             This will fail if the two segments coincide for more than a
             finite collection of points.
         """
+        if isinstance(other_seg, (Line, QuadraticBezier, CubicBezier)):
+            ob = [e.real for e in other_seg.bpoints()]
+            sb = [e.real for e in self.bpoints()]
+            if min(ob) > max(sb):
+                return []
+            if max(ob) < min(sb):
+                return []
+            ob = [e.imag for e in other_seg.bpoints()]
+            sb = [e.imag for e in self.bpoints()]
+            if min(ob) > max(sb):
+                return []
+            if max(ob) < min(sb):
+                return []
         if isinstance(other_seg, Line):
             return bezier_by_line_intersections(self, other_seg)
         elif (isinstance(other_seg, QuadraticBezier) or
