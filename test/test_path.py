@@ -16,7 +16,7 @@ from svgpathtools import (
     bpoints2bezier, closest_point_in_path, farthest_point_in_path,
     is_bezier_segment, is_bezier_path, parse_path
 )
-from svgpathtools.path import _NotImplemented4ArcException, bezier_radialrange, bbox_to_rect, QuadTree, Rect, Point
+from svgpathtools.path import bezier_radialrange, QuadTree, Rect, Point
 
 # An important note for those doing any debugging:
 # ------------------------------------------------
