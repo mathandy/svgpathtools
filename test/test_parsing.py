@@ -1,8 +1,9 @@
 # Note: This file was taken mostly as is from the svg.path module (v 2.0)
 from __future__ import division, absolute_import, print_function
 import unittest
-from svgpathtools import *
+from svgpathtools import Path, Line, QuadraticBezier, CubicBezier, Arc, parse_path
 import svgpathtools
+
 import numpy as np
 
 

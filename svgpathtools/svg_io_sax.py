@@ -6,6 +6,7 @@
 from __future__ import division, absolute_import, print_function
 import os
 from xml.etree.ElementTree import iterparse, Element, ElementTree, SubElement
+import numpy as np
 
 # Internal dependencies
 from .parser import parse_path
@@ -13,13 +14,13 @@ from .parser import parse_transform
 from .svg_to_paths import (path2pathd, ellipse2pathd, line2pathd,
                            polyline2pathd, polygon2pathd, rect2pathd)
 from .misctools import open_in_browser
-from .path import *
+from .path import transform
 
 # To maintain forward/backward compatibility
 try:
-    str = basestring
+    string = basestring
 except NameError:
-    pass
+    string = str
 
 NAME_SVG = "svg"
 ATTR_VERSION = "version"
@@ -164,17 +165,17 @@ class SaxDocument:
             if matrix is not None and not np.all(np.equal(matrix, identity)):
                 matrix_string = "matrix("
                 matrix_string += " "
-                matrix_string += str(matrix[0][0])
+                matrix_string += string(matrix[0][0])
                 matrix_string += " "
-                matrix_string += str(matrix[1][0])
+                matrix_string += string(matrix[1][0])
                 matrix_string += " "
-                matrix_string += str(matrix[0][1])
+                matrix_string += string(matrix[0][1])
                 matrix_string += " "
-                matrix_string += str(matrix[1][1])
+                matrix_string += string(matrix[1][1])
                 matrix_string += " "
-                matrix_string += str(matrix[0][2])
+                matrix_string += string(matrix[0][2])
                 matrix_string += " "
-                matrix_string += str(matrix[1][2])
+                matrix_string += string(matrix[1][2])
                 matrix_string += ")"
                 path.set(ATTR_TRANSFORM, matrix_string)
             if ATTR_DATA in values:

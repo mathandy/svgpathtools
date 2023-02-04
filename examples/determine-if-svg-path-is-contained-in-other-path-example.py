@@ -7,7 +7,8 @@ Path.continuous_subpaths() method to split a paths into a list of its
 continuous subpaths.
 """
 
-from svgpathtools import *
+from svgpathtools import Path, Line
+
 
 def path1_is_contained_in_path2(path1, path2):
     assert path2.isclosed()  # This question isn't well-defined otherwise
@@ -16,11 +17,11 @@ def path1_is_contained_in_path2(path1, path2):
 
     # find a point that's definitely outside path2
     xmin, xmax, ymin, ymax = path2.bbox()
-    B = (xmin + 1) + 1j*(ymax + 1)
+    b = (xmin + 1) + 1j*(ymax + 1)
 
-    A = path1.start  # pick an arbitrary point in path1
-    AB_line = Path(Line(A, B))
-    number_of_intersections = len(AB_line.intersect(path2))
+    a = path1.start  # pick an arbitrary point in path1
+    ab_line = Path(Line(a, b))
+    number_of_intersections = len(ab_line.intersect(path2))
     if number_of_intersections % 2:  # if number of intersections is odd
         return True
     else:

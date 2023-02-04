@@ -8,7 +8,7 @@ Note: The relevant matrix transformation for quadratics can be found in the
 svgpathtools.bezier module."""
 from __future__ import print_function
 import numpy as np
-from svgpathtools import *
+from svgpathtools import bezier_point, Path, bpoints2bezier, polynomial2bezier
 
 
 class HigherOrderBezier:

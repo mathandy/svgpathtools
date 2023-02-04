@@ -1,6 +1,6 @@
 from __future__ import division, absolute_import, print_function
 import unittest
-from svgpathtools import *
+from svgpathtools import Path, Line, Arc, svg2paths, svgstr2paths
 from io import StringIO
 from io import open  # overrides build-in open for compatibility with python2
 from os.path import join, dirname

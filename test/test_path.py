@@ -10,8 +10,12 @@ import random
 import warnings
 
 # Internal dependencies
-from svgpathtools import *
-from svgpathtools.path import _NotImplemented4ArcException, bezier_radialrange
+from svgpathtools import (
+    Line, QuadraticBezier, CubicBezier, Arc, Path, poly2bez, path_encloses_pt,
+    bpoints2bezier, closest_point_in_path, farthest_point_in_path,
+    is_bezier_segment, is_bezier_path, parse_path
+)
+from svgpathtools.path import bezier_radialrange
 
 # An important note for those doing any debugging:
 # ------------------------------------------------
