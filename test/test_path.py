@@ -1536,8 +1536,9 @@ class Test_intersect(unittest.TestCase):
         path1 = random_path()
         path2 = random_path()
         t = time.time()
-        path1.intersect(path2)
-        print(f"\nIntersection calculation took {time.time() - t} seconds.\n")
+        intersections = path1.intersect(path2)
+        print("\nFound {} intersections in {} seconds.\n"
+              "".format(len(intersections), time.time() - t))
 
     def test_line_line_0(self):
         l0 = Line(start=(25.389999999999997+99.989999999999995j),
