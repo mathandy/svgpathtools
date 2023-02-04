@@ -13,7 +13,7 @@ An Historic Note:
 Example:
     Typical usage looks something like the following.
 
-        >> from svgpathtools import *
+        >> from svgpathtools import Document
         >> doc = Document('my_file.html')
         >> for path in doc.paths():
         >>     # Do something with the transformed Path object.
@@ -44,6 +44,7 @@ import warnings
 from io import StringIO
 from tempfile import gettempdir
 from time import time
+import numpy as np
 
 # Internal dependencies
 from .parser import parse_path
@@ -51,7 +52,7 @@ from .parser import parse_transform
 from .svg_to_paths import (path2pathd, ellipse2pathd, line2pathd,
                            polyline2pathd, polygon2pathd, rect2pathd)
 from .misctools import open_in_browser
-from .path import *
+from .path import transform, Path, is_path_segment
 
 # To maintain forward/backward compatibility
 try:

@@ -1,13 +1,16 @@
-from svgpathtools import *
+from svgpathtools import disvg, Line, CubicBezier
+from scipy.optimize import fminbound
 
 # create some example paths
 path1 = CubicBezier(1,2+3j,3-5j,4+1j)
 path2 = path1.rotated(60).translated(3)
 
-# find minimizer
-from scipy.optimize import fminbound
+
 def dist(t):
 	return path1.radialrange(path2.point(t))[0][0]
+
+
+# find minimizer
 T2 = fminbound(dist, 0, 1)
 
 # Let's do a visual check

@@ -4,7 +4,7 @@ import unittest
 import numpy as np
 
 # Internal dependencies
-from svgpathtools import *
+from svgpathtools import rational_limit
 
 
 class Test_polytools(unittest.TestCase):

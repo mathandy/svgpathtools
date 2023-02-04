@@ -1,7 +1,7 @@
 from __future__ import division, absolute_import, print_function
 import numpy as np
 import unittest
-from svgpathtools.bezier import *
+from svgpathtools.bezier import bezier_point, bezier2polynomial, polynomial2bezier
 from svgpathtools.path import bpoints2bezier
 
 

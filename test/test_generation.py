@@ -2,7 +2,7 @@
 #------------------------------------------------------------------------------
 from __future__ import division, absolute_import, print_function
 import unittest
-from svgpathtools import *
+from svgpathtools import parse_path
 
 
 class TestGeneration(unittest.TestCase):
