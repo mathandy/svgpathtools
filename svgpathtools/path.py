@@ -2971,7 +2971,7 @@ class Path(MutableSequence):
                 bezier_path_approximation.append(seg)
         return area_without_arcs(Path(*bezier_path_approximation))
 
-    def intersect(self, other_curve, use_quadtree_lookup=True, justonemode=False, tol=1e-12):
+    def intersect(self, other_curve, use_quadtree_lookup=False, justonemode=False, tol=1e-12):
         """Finds intersections of `self` with `other_curve`
 
         Args:
@@ -3488,12 +3488,12 @@ class QuadTree:
     def _get_segments_in_area(self, area: Rect, out=None) -> list[PathSegment]:
         """returns a list of PathSegments that are present in the specified area"""
         if out is None:
-            out = list()
+            out = set()
 
         if not self.boundary.overlaps(area):
             return out
 
-        out.extend(self._path_segments)
+        out = set(self._path_segments)
         if self._is_split:
             out = out.union(self._subtreeNE._get_segments_in_area(area, out))
             out = out.union(self._subtreeNW._get_segments_in_area(area, out))

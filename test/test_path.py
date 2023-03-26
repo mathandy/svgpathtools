@@ -1501,7 +1501,7 @@ class Test_intersect(unittest.TestCase):
         r = Random()
         distance = 100
         distribution = 10000
-        count = 500
+        count = 2000
 
         def random_complex(offset_x=0.0, offset_y=0.0):
             return complex(r.random() * distance + offset_x, r.random() * distance + offset_y)
@@ -1534,11 +1534,17 @@ class Test_intersect(unittest.TestCase):
             return path
 
         path1 = random_path()
-        path2 = random_path()
-        t = time.time()
-        intersections = path1.intersect(path2)
-        print("\nFound {} intersections in {} seconds.\n"
-              "".format(len(intersections), time.time() - t))
+        for i in range(10):
+            path2 = random_path()
+            t = time.time()
+            intersections = path1.intersect(path2)
+            print("\nFound {} intersections in {} seconds.\n"
+                "".format(len(intersections), time.time() - t))
+
+            t = time.time()
+            intersections = path1.intersect(path2, use_quadtree_lookup=False)
+            print("\nFound {} intersections in {} seconds without quadtree.\n"
+                "".format(len(intersections), time.time() - t))
 
     def test_line_line_0(self):
         l0 = Line(start=(25.389999999999997+99.989999999999995j),
