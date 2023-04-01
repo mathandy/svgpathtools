@@ -3,8 +3,11 @@ import unittest
 from svgpathtools import Path, Line, Arc, svg2paths, svgstr2paths
 from io import StringIO
 from io import open  # overrides build-in open for compatibility with python2
+import os
 from os.path import join, dirname
 from sys import version_info
+import tempfile
+import shutil
 
 from svgpathtools.svg_to_paths import rect2pathd
 
@@ -57,6 +60,26 @@ class TestSVG2Paths(unittest.TestCase):
         self.assertTrue(path_circle==path_circle_correct)
         self.assertTrue(path_circle.isclosed())
 
+        # test for issue #198 (circles not being closed)
+        svg = u"""<?xml version="1.0" encoding="UTF-8"?>
+        <svg xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" width="40mm" height="40mm" 
+          viewBox="0 0 40 40" version="1.1">
+            
+          <g id="layer">
+            <circle id="c1" cx="20.000" cy="20.000" r="11.000" />
+            <circle id="c2" cx="20.000" cy="20.000" r="5.15" />
+          </g>
+        </svg>"""
+        tmpdir = tempfile.mkdtemp()
+        svgfile = os.path.join(tmpdir, 'test.svg')
+        with open(svgfile, 'w') as f:
+            f.write(svg)
+        paths, _ = svg2paths(svgfile)
+        self.assertEqual(len(paths), 2)
+        self.assertTrue(paths[0].isclosed())
+        self.assertTrue(paths[1].isclosed())
+        shutil.rmtree(tmpdir)
+
     def test_rect2pathd(self):
         non_rounded = {"x":"10", "y":"10", "width":"100","height":"100"}
         self.assertEqual(rect2pathd(non_rounded), 'M10.0 10.0 L 110.0 10.0 L 110.0 110.0 L 10.0 110.0 z')
@@ -107,3 +130,7 @@ class TestSVG2Paths(unittest.TestCase):
             paths, _ = svgstr2paths(file_content)
 
             self.assertEqual(len(paths), 2)
+
+
+if __name__ == '__main__':
+    unittest.main()
