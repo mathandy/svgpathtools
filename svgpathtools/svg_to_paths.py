@@ -51,7 +51,7 @@ def ellipse2pathd(ellipse):
     d += 'a' + str(rx) + ',' + str(ry) + ' 0 1,0 ' + str(2 * rx) + ',0'
     d += 'a' + str(rx) + ',' + str(ry) + ' 0 1,0 ' + str(-2 * rx) + ',0'
 
-    return d
+    return d + 'z'
 
 
 def polyline2pathd(polyline, is_polygon=False):
