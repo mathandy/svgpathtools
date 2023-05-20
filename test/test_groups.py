@@ -5,9 +5,13 @@ $ python -m unittest test.test_groups.TestGroups.test_group_flatten
 """
 from __future__ import division, absolute_import, print_function
 import unittest
-from svgpathtools import Document, SVG_NAMESPACE, parse_path
+from svgpathtools import Document, SVG_NAMESPACE, parse_path, Line, Arc
 from os.path import join, dirname
 import numpy as np
+
+
+# When an assert fails, show the full error message, don't truncate it.
+unittest.util._MAX_LENGTH = 999999999
 
 
 def get_desired_path(name, paths):
@@ -41,6 +45,22 @@ class TestGroups(unittest.TestCase):
 
         self.check_values(tf.dot(v_s), actual.start)
         self.check_values(tf.dot(v_e), actual.end)
+
+    def test_group_transform(self):
+        # The input svg has a group transform of "scale(1,-1)", which
+        # can mess with Arc sweeps.
+        doc = Document(join(dirname(__file__), 'negative-scale.svg'))
+        path = doc.paths()[0]
+        self.assertEqual(path[0], Line(start=-10j, end=-80j))
+        self.assertEqual(path[1], Arc(start=-80j, radius=(30+30j), rotation=0.0, large_arc=True, sweep=True, end=-140j))
+        self.assertEqual(path[2], Arc(start=-140j, radius=(20+20j), rotation=0.0, large_arc=False, sweep=False, end=-100j))
+        self.assertEqual(path[3], Line(start=-100j, end=(100-100j)))
+        self.assertEqual(path[4], Arc(start=(100-100j), radius=(20+20j), rotation=0.0, large_arc=True, sweep=False, end=(100-140j)))
+        self.assertEqual(path[5], Arc(start=(100-140j), radius=(30+30j), rotation=0.0, large_arc=False, sweep=True, end=(100-80j)))
+        self.assertEqual(path[6], Line(start=(100-80j), end=(100-10j)))
+        self.assertEqual(path[7], Arc(start=(100-10j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=True, end=(90+0j)))
+        self.assertEqual(path[8], Line(start=(90+0j), end=(10+0j)))
+        self.assertEqual(path[9], Arc(start=(10+0j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=True, end=-10j))
 
     def test_group_flatten(self):
         # Test the Document.paths() function against the

@@ -338,9 +338,13 @@ def transform(curve, tf):
 
         if new_radius.real == 0 or new_radius.imag == 0 :
             return Line(new_start, new_end)
-        else : 
+        else:
+            if tf[0][0] * tf[1][1] >= 0.0:
+                new_sweep = curve.sweep
+            else:
+                new_sweep = not curve.sweep
             return Arc(new_start, radius=new_radius, rotation=curve.rotation + rot,
-                       large_arc=curve.large_arc, sweep=curve.sweep, end=new_end,
+                       large_arc=curve.large_arc, sweep=new_sweep, end=new_end,
                        autoscale_radius=True)
 
     else:
