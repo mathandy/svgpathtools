@@ -43,8 +43,8 @@ except NameError:
 COMMANDS = set('MmZzLlHhVvCcSsQqTtAa')
 UPPERCASE = set('MZLHVCSQTA')
 
-COMMAND_RE = re.compile("([MmZzLlHhVvCcSsQqTtAa])")
-FLOAT_RE = re.compile("[-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?")
+COMMAND_RE = re.compile(r"([MmZzLlHhVvCcSsQqTtAa])")
+FLOAT_RE = re.compile(r"[-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?")
 
 # Default Parameters ##########################################################
 
@@ -1398,7 +1398,7 @@ class CubicBezier(object):
 class Arc(object):
     def __init__(self, start, radius, rotation, large_arc, sweep, end,
                  autoscale_radius=True):
-        """
+        r"""
         This should be thought of as a part of an ellipse connecting two
         points on that ellipse, start and end.
         Parameters
