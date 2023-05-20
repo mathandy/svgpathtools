@@ -2572,7 +2572,7 @@ class Path(MutableSequence):
 
         # Shortcuts
         if len(self._segments) == 0:
-            return None
+            raise ValueError("This path contains no segments!")
         if pos == 0.0:
             return self._segments[0].point(pos)
         if pos == 1.0:
@@ -2589,6 +2589,7 @@ class Path(MutableSequence):
                     segment_end - segment_start)
                 return segment.point(segment_pos)
             segment_start = segment_end
+        raise RuntimeError("Something has gone wrong.  Could not compute Path.point({}) for path {}".format(pos, self))
 
     def length(self, T0=0, T1=1, error=LENGTH_ERROR, min_depth=LENGTH_MIN_DEPTH):
         self._calc_lengths(error=error, min_depth=min_depth)
