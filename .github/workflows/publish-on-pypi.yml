@@ -2,8 +2,8 @@ name: Publish to PyPI if new version
 
 on:
   push:
-    branches:
-      - PyPI
+    tags:
+      - 'v*'
 
 jobs:
   build-n-publish:
