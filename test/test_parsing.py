@@ -187,7 +187,7 @@ class TestParser(unittest.TestCase):
         with self.assertRaises(SyntaxError) as e:
             parse_path("M 0 \n1 N 2 3")
         assert "invalid token" in e.exception.msg
-    
+
     def test_error_not_enough_arguments(self):
         with self.assertRaises(SyntaxError) as e:
             Path("M 0 1\n 2")
