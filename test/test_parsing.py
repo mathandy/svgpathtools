@@ -178,10 +178,20 @@ class TestParser(unittest.TestCase):
         path2 = Path(Line(-3.4e+38 + 3.4e+38j, -3.4e-38 + 3.4e-38j))
         self.assertEqual(path1, path2)
 
-    def test_errors(self):
-        self.assertRaises(ValueError, parse_path,
-                          'M 100 100 L 200 200 Z 100 200')
+    def test_error_missing_command(self):
+        with self.assertRaises(SyntaxError) as e:
+            parse_path('M 100 100 L 200 200 Z 100 200')
+        assert "missing command" in e.exception.msg
 
+    def test_error_invalid_token(self):
+        with self.assertRaises(SyntaxError) as e:
+            parse_path("M 0 \n1 N 2 3")
+        assert "invalid token" in e.exception.msg
+
+    def test_error_not_enough_arguments(self):
+        with self.assertRaises(SyntaxError) as e:
+            Path("M 0 1\n 2")
+        assert "not enough arguments" in e.exception.msg
 
     def test_transform(self):
 

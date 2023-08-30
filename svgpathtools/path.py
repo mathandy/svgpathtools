@@ -43,8 +43,15 @@ except NameError:
 COMMANDS = set('MmZzLlHhVvCcSsQqTtAa')
 UPPERCASE = set('MZLHVCSQTA')
 
-COMMAND_RE = re.compile(r"([MmZzLlHhVvCcSsQqTtAa])")
-FLOAT_RE = re.compile(r"[-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?")
+TOKEN_RE = re.compile(r"""
+    (
+    [MmZzLlHhVvCcSsQqTtAa]                       # command
+    |
+    (?:[-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?) # float
+    )
+    """, re.VERBOSE
+)
+SEPARATORS = ', \t\r\n'
 
 # Default Parameters ##########################################################
 
@@ -3179,19 +3186,28 @@ class Path(MutableSequence):
         next(b, None)
         return zip(a, b)
 
-    def _tokenize_path(self, pathdef):
-        for x in COMMAND_RE.split(pathdef):
-            if x in COMMANDS:
-                yield x
-            for token in FLOAT_RE.findall(x):
-                yield token
+    @staticmethod
+    def _tokenize_path(*pathdef_lines):
+        # yield line number and offset in addition to token
+        # so we can raise syntax errors
+        for lineno, line in enumerate(pathdef_lines):
+            start = 0
+            for token in TOKEN_RE.split(line):
+                if token.strip(SEPARATORS):
+                    yield token, lineno, start
+                start += len(token)
 
     def _parse_path(self, pathdef, current_pos=0j, tree_element=None):
         # In the SVG specs, initial movetos are absolute, even if
         # specified as 'm'. This is the default behavior here as well.
         # But if you pass in a current_pos variable, the initial moveto
         # will be relative to that current_pos. This is useful.
-        elements = list(self._tokenize_path(pathdef))
+        
+        # we need to keep the pathdef split by lines so we can retrieve a specific line
+        # to throw syntax errors
+        pathdef_lines = pathdef.splitlines()
+
+        elements = list(self._tokenize_path(*pathdef_lines))
         # Reverse for easy use of .pop()
         elements.reverse()
 
@@ -3200,27 +3216,43 @@ class Path(MutableSequence):
         start_pos = None
         command = None
 
-        while elements:
+        def pop_float(elements):
+            try:
+                token, lineno, start = elements.pop()
+                try:
+                    return float(token)
+                except ValueError:
+                    line = pathdef_lines[lineno]
+                    end = start + len(token)
+                    raise self._syntax_error('invalid token %r' % token, lineno, line, start, end)
+            except IndexError:
+                lineno = len(pathdef_lines) - 1
+                line = pathdef_lines[lineno]
+                end = len(line) - 1
+                raise self._syntax_error('not enough arguments', lineno, line, end, end)
 
-            if elements[-1] in COMMANDS:
+        while elements:
+            if elements[-1][0] in COMMANDS:
                 # New command.
                 last_command = command  # Used by S and T
-                command = elements.pop()
+                command = elements.pop()[0]
                 absolute = command in UPPERCASE
                 command = command.upper()
             else:
                 # If this element starts with numbers, it is an implicit command
                 # and we don't change the command. Check that it's allowed:
                 if command is None:
-                    raise ValueError("Unallowed implicit command in %s, position %s" % (
-                        pathdef, len(pathdef.split()) - len(elements)))
+                    token, lineno, start = elements[-1]
+                    end = start + len(token)
+                    line = pathdef_lines[lineno]
+                    raise self._syntax_error("missing command", lineno, line, start, end)
                 last_command = command  # Used by S and T
 
             if command == 'M':
                 # Moveto command.
-                x = elements.pop()
-                y = elements.pop()
-                pos = float(x) + float(y) * 1j
+                x = pop_float(elements)
+                y = pop_float(elements)
+                pos = x + y * 1j
                 if absolute:
                     current_pos = pos
                 else:
@@ -3245,34 +3277,34 @@ class Path(MutableSequence):
                 command = None
 
             elif command == 'L':
-                x = elements.pop()
-                y = elements.pop()
-                pos = float(x) + float(y) * 1j
+                x = pop_float(elements)
+                y = pop_float(elements)
+                pos = x + y * 1j
                 if not absolute:
                     pos += current_pos
                 segments.append(Line(current_pos, pos))
                 current_pos = pos
 
             elif command == 'H':
-                x = elements.pop()
-                pos = float(x) + current_pos.imag * 1j
+                x = pop_float(elements)
+                pos = x + current_pos.imag * 1j
                 if not absolute:
                     pos += current_pos.real
                 segments.append(Line(current_pos, pos))
                 current_pos = pos
 
             elif command == 'V':
-                y = elements.pop()
-                pos = current_pos.real + float(y) * 1j
+                y = pop_float(elements)
+                pos = current_pos.real + y * 1j
                 if not absolute:
                     pos += current_pos.imag * 1j
                 segments.append(Line(current_pos, pos))
                 current_pos = pos
 
             elif command == 'C':
-                control1 = float(elements.pop()) + float(elements.pop()) * 1j
-                control2 = float(elements.pop()) + float(elements.pop()) * 1j
-                end = float(elements.pop()) + float(elements.pop()) * 1j
+                control1 = pop_float(elements) + pop_float(elements) * 1j
+                control2 = pop_float(elements) + pop_float(elements) * 1j
+                end = pop_float(elements) + pop_float(elements) * 1j
 
                 if not absolute:
                     control1 += current_pos
@@ -3297,8 +3329,8 @@ class Path(MutableSequence):
                     # to the current point.
                     control1 = current_pos + current_pos - segments[-1].control2
 
-                control2 = float(elements.pop()) + float(elements.pop()) * 1j
-                end = float(elements.pop()) + float(elements.pop()) * 1j
+                control2 = pop_float(elements) + pop_float(elements) * 1j
+                end = pop_float(elements) + pop_float(elements) * 1j
 
                 if not absolute:
                     control2 += current_pos
@@ -3308,8 +3340,8 @@ class Path(MutableSequence):
                 current_pos = end
 
             elif command == 'Q':
-                control = float(elements.pop()) + float(elements.pop()) * 1j
-                end = float(elements.pop()) + float(elements.pop()) * 1j
+                control = pop_float(elements) + pop_float(elements) * 1j
+                end = pop_float(elements) + pop_float(elements) * 1j
 
                 if not absolute:
                     control += current_pos
@@ -3333,7 +3365,7 @@ class Path(MutableSequence):
                     # to the current point.
                     control = current_pos + current_pos - segments[-1].control
 
-                end = float(elements.pop()) + float(elements.pop()) * 1j
+                end = pop_float(elements) + pop_float(elements) * 1j
 
                 if not absolute:
                     end += current_pos
@@ -3343,11 +3375,11 @@ class Path(MutableSequence):
 
             elif command == 'A':
 
-                radius = float(elements.pop()) + float(elements.pop()) * 1j
-                rotation = float(elements.pop())
-                arc = float(elements.pop())
-                sweep = float(elements.pop())
-                end = float(elements.pop()) + float(elements.pop()) * 1j
+                radius = pop_float(elements) + pop_float(elements) * 1j
+                rotation = pop_float(elements)
+                arc = pop_float(elements)
+                sweep = pop_float(elements)
+                end = pop_float(elements) + pop_float(elements) * 1j
 
                 if not absolute:
                     end += current_pos
@@ -3369,3 +3401,12 @@ class Path(MutableSequence):
                 current_pos = end
 
         return segments
+
+    @classmethod
+    def _syntax_error(cls, msg, lineno, line, offset,end_offset):
+        filename = '<svg-d-string>'
+        try:
+            return SyntaxError(msg, (filename, lineno+1, offset + 1, line, lineno, end_offset + 1))
+        except IndexError:
+            # on python < 3.10
+            return SyntaxError(msg, (filename, lineno+1, offset + 1, line))
