@@ -382,12 +382,11 @@ def quadratic_intersections(bez1, bez2):
 
         if root_2.imag==0 and root_2.real<=1 and root_2.real>=0:
             condition_2 = True# append in t2
-        
         if condition_1 and condition_2:
             t1.append(root)
             t2.append(root_2)
             intersections.append(intersection)
-        
+
     intersection_list = list(zip(t1,t2))
     assert len(intersection_list)<=4
 
