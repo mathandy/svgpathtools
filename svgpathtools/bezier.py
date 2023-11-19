@@ -348,7 +348,6 @@ def quadratic_intersections(bez1, bez2):
 
     Note: This will return exactly one such tuple for each intersection
     with a maximum of four intersections."""
-    
     #obtaining cartesian coordinates of control points for each curve
     x01, x11, x21 = bez1.start.real, bez1.control.real, bez1.end.real
     x02, x12, x22 = bez2.start.real, bez2.control.real, bez2.end.real
@@ -432,4 +431,3 @@ def bezier_by_line_intersections(bezier, line):
             line_t = xval/line_length
             intersection_list.append((bez_t, line_t))
     return intersection_list
-
