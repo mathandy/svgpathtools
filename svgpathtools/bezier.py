@@ -10,6 +10,7 @@ from numpy import poly1d
 
 # Internal dependencies
 from .polytools import real, imag, polyroots, polyroots01
+from .constants import FLOAT_EPSILON
 
 
 # Evaluation ##################################################################
@@ -171,7 +172,7 @@ def bezier_real_minmax(p):
     if len(p) == 4:  # cubic case
         a = [p.real for p in p]
         denom = a[0] - 3*a[1] + 3*a[2] - a[3]
-        if denom != 0:
+        if abs(denom) > FLOAT_EPSILON:  # check that denom != 0 accounting for floating point error
             delta = a[1]**2 - (a[0] + a[1])*a[2] + a[2]**2 + (a[0] - a[1])*a[3]
             if delta >= 0:  # otherwise no local extrema
                 sqdelta = sqrt(delta)
