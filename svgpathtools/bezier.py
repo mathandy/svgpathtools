@@ -12,6 +12,7 @@ from numpy import poly1d
 from .polytools import real, imag, polyroots, polyroots01
 from .constants import FLOAT_EPSILON
 
+
 # Evaluation ##################################################################
 
 def n_choose_k(n, k):
