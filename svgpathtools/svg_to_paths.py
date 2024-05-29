@@ -46,12 +46,18 @@ def ellipse2pathd(ellipse):
     cx = float(cx)
     cy = float(cy)
 
-    d = ''
-    d += 'M' + str(cx - rx) + ',' + str(cy)
-    d += 'a' + str(rx) + ',' + str(ry) + ' 0 1,0 ' + str(2 * rx) + ',0'
-    d += 'a' + str(rx) + ',' + str(ry) + ' 0 1,0 ' + str(-2 * rx) + ',0'
+    PATH_KAPPA = 0.552284
+    rxKappa = rx * PATH_KAPPA;
+    ryKappa = ry * PATH_KAPPA;
 
-    return d + 'z'
+    d = ''
+    d += 'M ' + str(cx) + ' ' + str(cy - ry)
+    d += ' C ' + str(cx + rxKappa) + ' ' + str(cy - ry) + ' ' + str(cx + rx) + ' ' + str(cy - ryKappa) + ' ' + str(cx + rx) + ' ' + str(cy)
+    d += ' C ' + str(cx + rx) + ' ' + str(cy + ryKappa) + ' ' + str(cx + rxKappa) + ' ' + str(cy + ry) + ' ' + str(cx) + ' ' + str(cy + ry)
+    d += ' C ' + str(cx - rxKappa) + ' ' + str(cy + ry) + ' ' + str(cx - rx) + ' ' + str(cy + ryKappa) + ' ' + str(cx - rx) + ' ' + str(cy)
+    d += ' C ' + str(cx - rx) + ' ' + str(cy - ryKappa) + ' ' + str(cx - rxKappa) + ' ' + str(cy - ry) + ' ' + str(cx) + ' ' + str(cy - ry)
+    
+    return d + ' Z'
 
 
 def polyline2pathd(polyline, is_polygon=False):
