@@ -334,7 +334,7 @@ def transform(curve, tf):
         new_radius = complex(rx, ry)
 
         xeigvec = eigvecs[:, 0]
-        rot = np.degrees(np.arccos(xeigvec[0]))
+        rot = np.degrees(np.arctan2(xeigvec[1], xeigvec[0]))
 
         if new_radius.real == 0 or new_radius.imag == 0 :
             return Line(new_start, new_end)
