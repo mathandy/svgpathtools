@@ -62,6 +62,42 @@ class TestGroups(unittest.TestCase):
         self.assertEqual(path[8], Line(start=(90+0j), end=(10+0j)))
         self.assertEqual(path[9], Arc(start=(10+0j), radius=(10+10j), rotation=0.0, large_arc=False, sweep=True, end=-10j))
 
+    def test_ellipse_transform(self):
+        # Check that ellipse to path conversion respects rotation transforms
+
+        cx, cy = 40, 80
+        rx, ry = 15, 20
+
+        def dist_to_ellipse(angle, pt):
+            rot = np.exp(-1j * np.radians(angle))
+            transformed_pt = rot * complex(pt.real - cx, pt.imag - cy)
+            return transformed_pt.real**2 / rx**2 + transformed_pt.imag**2 / ry**2 - 1
+
+        for angle in np.linspace(-179, 180, num=123):
+            svgstring = "\n".join(
+                [
+                    '<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg"',
+                    '     style="fill:green;stroke:black;stroke-width:1.5">',
+                    f'  <ellipse cx="{cx}" cy="{cy}" rx="{rx}" ry="{ry}" transform="rotate({angle} {cx} {cy})"/>',
+                    "</svg>",
+                ]
+            )
+
+            doc = Document.from_svg_string(svgstring)
+
+            for p in doc.paths():
+                subtended_angle = 0.0
+                for s in p:
+                    if isinstance(s, Arc):
+                        # check that several points lie on the original ellipse
+                        for t in [0.0, 1 / 3.0, 0.5, 2 / 3.0, 1.0]:
+                            dist = dist_to_ellipse(angle, s.point(t))
+                            self.assertAlmostEqual(dist, 0)
+
+                        # and that the subtended angles sum to 2*pi
+                        subtended_angle = subtended_angle + s.delta
+                self.assertAlmostEqual(np.abs(subtended_angle), 360)
+
     def test_group_flatten(self):
         # Test the Document.paths() function against the
         # groups.svg test file.
