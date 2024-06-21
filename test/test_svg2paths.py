@@ -81,32 +81,47 @@ class TestSVG2Paths(unittest.TestCase):
         shutil.rmtree(tmpdir)
 
     def test_rect2pathd(self):
-        non_rounded_dict = {"x":"10", "y":"10", "width":"100","height":"100"}
-        self.assertEqual(rect2pathd(non_rounded_dict), 'M10.0 10.0 L 110.0 10.0 L 110.0 110.0 L 10.0 110.0 z')
+        non_rounded_dict = {"x": "10", "y": "10", "width": "100", "height": "100"}
+        self.assertEqual(
+            rect2pathd(non_rounded_dict),
+            "M10.0 10.0 L 110.0 10.0 L 110.0 110.0 L 10.0 110.0 z",
+        )
 
-        non_rounded_svg = u"""<?xml version="1.0" encoding="UTF-8"?>
+        non_rounded_svg = """<?xml version="1.0" encoding="UTF-8"?>
           <svg xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" width="200mm" height="200mm" version="1.1">
               <rect id="non_rounded" x="10" y="10" width="100" height="100" />
           </svg>"""
-        
+
         paths, _ = svg2paths(StringIO(non_rounded_svg))
         self.assertEqual(len(paths), 1)
         self.assertTrue(paths[0].isclosed())
-        self.assertEqual(paths[0].d(use_closed_attrib=True), 'M 10.0,10.0 L 110.0,10.0 L 110.0,110.0 L 10.0,110.0 Z')
-        self.assertEqual(paths[0].d(use_closed_attrib=False), 'M 10.0,10.0 L 110.0,10.0 L 110.0,110.0 L 10.0,110.0 L 10.0,10.0')
+        self.assertEqual(
+            paths[0].d(use_closed_attrib=True),
+            "M 10.0,10.0 L 110.0,10.0 L 110.0,110.0 L 10.0,110.0 Z",
+        )
+        self.assertEqual(
+            paths[0].d(use_closed_attrib=False),
+            "M 10.0,10.0 L 110.0,10.0 L 110.0,110.0 L 10.0,110.0 L 10.0,10.0",
+        )
 
-        rounded_dict = {"x":"10", "y":"10", "width":"100","height":"100", "rx":"15", "ry": "12"}
-        self.assertEqual(rect2pathd(rounded_dict), "M 25.0 10.0 L 95.0 10.0 A 15.0 12.0 0 0 1 110.0 22.0 L 110.0 98.0 A 15.0 12.0 0 0 1 95.0 110.0 L 25.0 110.0 A 15.0 12.0 0 0 1 10.0 98.0 L 10.0 22.0 A 15.0 12.0 0 0 1 25.0 10.0 z")
+        rounded_dict = {"x": "10", "y": "10", "width": "100","height": "100", "rx": "15", "ry": "12"}
+        self.assertEqual(
+            rect2pathd(rounded_dict),
+            "M 25.0 10.0 L 95.0 10.0 A 15.0 12.0 0 0 1 110.0 22.0 L 110.0 98.0 A 15.0 12.0 0 0 1 95.0 110.0 L 25.0 110.0 A 15.0 12.0 0 0 1 10.0 98.0 L 10.0 22.0 A 15.0 12.0 0 0 1 25.0 10.0 z",
+        )
 
-        rounded_svg = u"""<?xml version="1.0" encoding="UTF-8"?>
+        rounded_svg = """<?xml version="1.0" encoding="UTF-8"?>
           <svg xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" width="200mm" height="200mm" version="1.1">
               <rect id="rounded" x="10" y="10" width="100" height ="100" rx="15" ry="12" />
           </svg>"""
-        
+
         paths, _ = svg2paths(StringIO(rounded_svg))
         self.assertEqual(len(paths), 1)
         self.assertTrue(paths[0].isclosed())
-        self.assertEqual(paths[0].d(), "M 25.0,10.0 L 95.0,10.0 A 15.0,12.0 0.0 0,1 110.0,22.0 L 110.0,98.0 A 15.0,12.0 0.0 0,1 95.0,110.0 L 25.0,110.0 A 15.0,12.0 0.0 0,1 10.0,98.0 L 10.0,22.0 A 15.0,12.0 0.0 0,1 25.0,10.0")
+        self.assertEqual(
+            paths[0].d(),
+            "M 25.0,10.0 L 95.0,10.0 A 15.0,12.0 0.0 0,1 110.0,22.0 L 110.0,98.0 A 15.0,12.0 0.0 0,1 95.0,110.0 L 25.0,110.0 A 15.0,12.0 0.0 0,1 10.0,98.0 L 10.0,22.0 A 15.0,12.0 0.0 0,1 25.0,10.0",
+        )
 
     def test_from_file_path_string(self):
         """Test reading svg from file provided as path"""
