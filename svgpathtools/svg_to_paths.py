@@ -93,7 +93,8 @@ def rect2pathd(rect):
     rectangle object and proceed counter-clockwise."""
     x, y = float(rect.get('x', 0)), float(rect.get('y', 0))
     w, h = float(rect.get('width', 0)), float(rect.get('height', 0))
-    if 'rx' in rect or 'ry' in rect:
+
+    if 'rx' in rect.keys() or 'ry' in rect.keys():
 
         # if only one, rx or ry, is present, use that value for both
         # https://developer.mozilla.org/en-US/docs/Web/SVG/Element/rect
