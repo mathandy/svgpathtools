@@ -52,16 +52,18 @@ class TestGroups(unittest.TestCase):
         x, y = 10, 10
         w, h = 100, 100
 
-        doc = Document.from_svg_string("\n".join(
-            [
-                '<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg"',
-                '     style="fill:green;stroke:black;stroke-width:1.5">',
-                f'  <rect x="{x}" y="{y}" width="{w}" height="{h}"/>',
-                "</svg>",
-            ]
-        ))
+        doc = Document.from_svg_string(
+            "\n".join(
+                [
+                    '<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg"',
+                    '     style="fill:green;stroke:black;stroke-width:1.5">',
+                    f'  <rect x="{x}" y="{y}" width="{w}" height="{h}"/>',
+                    "</svg>",
+                ]
+            )
+        )
 
-        line_count,arc_count = 0, 0
+        line_count, arc_count = 0, 0
 
         for p in doc.paths():
             for s in p:
@@ -80,16 +82,18 @@ class TestGroups(unittest.TestCase):
         rx, ry = 15, 12
         w, h = 100, 100
 
-        doc = Document.from_svg_string("\n".join(
-            [
-                '<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg"',
-                '     style="fill:green;stroke:black;stroke-width:1.5">',
-                f'  <rect x="{x}" y="{y}" rx="{rx}" ry="{ry}" width="{w}" height="{h}"/>',
-                "</svg>",
-            ]
-        ))
+        doc = Document.from_svg_string(
+            "\n".join(
+                [
+                    '<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg"',
+                    '     style="fill:green;stroke:black;stroke-width:1.5">',
+                    f'  <rect x="{x}" y="{y}" rx="{rx}" ry="{ry}" width="{w}" height="{h}"/>',
+                    "</svg>",
+                ]
+            )
+        )
 
-        line_count,arc_count = 0, 0
+        line_count, arc_count = 0, 0
 
         for p in doc.paths():
             for s in p:
