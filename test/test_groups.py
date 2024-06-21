@@ -46,6 +46,61 @@ class TestGroups(unittest.TestCase):
         self.check_values(tf.dot(v_s), actual.start)
         self.check_values(tf.dot(v_e), actual.end)
 
+    def test_nonrounded_rect(self):
+        # Check that (nonrounded) rect is parsed properly
+
+        x, y = 10, 10
+        w, h = 100, 100
+
+        doc = Document.from_svg_string("\n".join(
+            [
+                '<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg"',
+                '     style="fill:green;stroke:black;stroke-width:1.5">',
+                f'  <rect x="{x}" y="{y}" width="{w}" height="{h}"/>',
+                "</svg>",
+            ]
+        ))
+
+        line_count,arc_count = 0, 0
+
+        for p in doc.paths():
+            for s in p:
+                if isinstance(s, Line):
+                    line_count += 1
+                if isinstance(s, Arc):
+                    arc_count += 1
+
+        self.assertEqual(line_count, 4)
+        self.assertEqual(arc_count, 0)
+
+    def test_rounded_rect(self):
+        # Check that rounded rect is parsed properly
+
+        x, y = 10, 10
+        rx, ry = 15, 12
+        w, h = 100, 100
+
+        doc = Document.from_svg_string("\n".join(
+            [
+                '<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg"',
+                '     style="fill:green;stroke:black;stroke-width:1.5">',
+                f'  <rect x="{x}" y="{y}" rx="{rx}" ry="{ry}" width="{w}" height="{h}"/>',
+                "</svg>",
+            ]
+        ))
+
+        line_count,arc_count = 0, 0
+
+        for p in doc.paths():
+            for s in p:
+                if isinstance(s, Line):
+                    line_count += 1
+                if isinstance(s, Arc):
+                    arc_count += 1
+
+        self.assertEqual(line_count, 4)
+        self.assertEqual(arc_count, 4)
+
     def test_group_transform(self):
         # The input svg has a group transform of "scale(1,-1)", which
         # can mess with Arc sweeps.
