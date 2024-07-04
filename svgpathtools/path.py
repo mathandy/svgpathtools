@@ -2731,14 +2731,14 @@ class Path(MutableSequence):
                     _seg_start = seg_start - current_pos if current_pos is not None else seg_start
                 else:
                     _seg_start = seg_start
-                parts.append('M {},{}'.format(_seg_start.real, _seg_start.imag))
+                parts.append('M {:g},{:g}'.format(_seg_start.real, _seg_start.imag))
     
             if isinstance(segment, Line):
                 if rel:
                     _seg_end = segment.end - seg_start
                 else:
                     _seg_end = segment.end
-                parts.append('L {},{}'.format(_seg_end.real, _seg_end.imag))
+                parts.append('L {:g},{:g}'.format(_seg_end.real, _seg_end.imag))
             elif isinstance(segment, CubicBezier):
                 if useSandT and segment.is_smooth_from(previous_segment,
                                                        warning_on=False):
@@ -2750,7 +2750,7 @@ class Path(MutableSequence):
                         _seg_end = segment.end
                     args = (_seg_control2.real, _seg_control2.imag,
                             _seg_end.real, _seg_end.imag)
-                    parts.append('S {},{} {},{}'.format(*args))
+                    parts.append('S {:g},{:g} {:g},{:g}'.format(*args))
                 else:
                     if rel:
                         _seg_control1 = segment.control1 - seg_start
@@ -2763,7 +2763,7 @@ class Path(MutableSequence):
                     args = (_seg_control1.real, _seg_control1.imag,
                             _seg_control2.real, _seg_control2.imag,
                             _seg_end.real, _seg_end.imag)
-                    parts.append('C {},{} {},{} {},{}'.format(*args))
+                    parts.append('C {:g},{:g} {:g},{:g} {:g},{:g}'.format(*args))
             elif isinstance(segment, QuadraticBezier):
                 if useSandT and segment.is_smooth_from(previous_segment,
                                                        warning_on=False):
@@ -2772,7 +2772,7 @@ class Path(MutableSequence):
                     else:
                         _seg_end = segment.end
                     args = _seg_end.real, _seg_end.imag
-                    parts.append('T {},{}'.format(*args))
+                    parts.append('T {:g},{:g}'.format(*args))
                 else:
                     if rel:
                         _seg_control = segment.control - seg_start
@@ -2782,7 +2782,7 @@ class Path(MutableSequence):
                         _seg_end = segment.end
                     args = (_seg_control.real, _seg_control.imag,
                             _seg_end.real, _seg_end.imag)
-                    parts.append('Q {},{} {},{}'.format(*args))
+                    parts.append('Q {:g},{:g} {:g},{:g}'.format(*args))
     
             elif isinstance(segment, Arc):
                 if rel:
@@ -2792,7 +2792,7 @@ class Path(MutableSequence):
                 args = (segment.radius.real, segment.radius.imag,
                         segment.rotation,int(segment.large_arc),
                         int(segment.sweep),_seg_end.real, _seg_end.imag)
-                parts.append('A {},{} {} {:d},{:d} {},{}'.format(*args))
+                parts.append('A {:g},{:g} {:g} {:d},{:d} {:g},{:g}'.format(*args))
             current_pos = segment.end
             previous_segment = segment
     
