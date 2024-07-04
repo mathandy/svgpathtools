@@ -245,10 +245,10 @@ class TestGroups(unittest.TestCase):
             'base_group', 'new_parent', 'new_child', 'new_leaf']))
         self.check_group_count(doc, 7)
 
-        path_d = ('M 206.07112,858.41289 L 206.07112,-2.02031 '
-                  'C -50.738,-81.14814 -20.36402,-105.87055 52.52793,-101.01525 '
-                  'L 103.03556,0.0 '
-                  'L 0.0,111.11678')
+        path_d = ('M 206.071,858.413 L 206.071,-2.02031 '
+                  'C -50.738,-81.1481 -20.364,-105.871 52.5279,-101.015 '
+                  'L 103.036,0 '
+                  'L 0,111.117')
 
         svg_path = doc.add_path(path_d, group=new_leaf)
         self.assertEqual(path_d, svg_path.get('d'))
