@@ -31,8 +31,8 @@ def ellipse2pathd(ellipse):
     """converts the parameters from an ellipse or a circle to a string for a 
     Path object d-attribute"""
 
-    cx = ellipse.get('cx', 0)
-    cy = ellipse.get('cy', 0)
+    cx = (ellipse.get('cx', 0) or 0)
+    cy = (ellipse.get('cy', 0) or 0)
     rx = ellipse.get('rx', None)
     ry = ellipse.get('ry', None)
     r = ellipse.get('r', None)
@@ -40,8 +40,8 @@ def ellipse2pathd(ellipse):
     if r is not None:
         rx = ry = float(r)
     else:
-        rx = float(rx)
-        ry = float(ry)
+        rx = float(rx or 0)
+        ry = float(ry or 0)
 
     cx = float(cx)
     cy = float(cy)
@@ -66,7 +66,11 @@ def polyline2pathd(polyline, is_polygon=False):
     if isinstance(polyline, str):
         points = polyline
     else:
-        points = COORD_PAIR_TMPLT.findall(polyline.get('points', ''))
+        raw_points = polyline.get('points', '')
+        if not raw_points:
+            points = [(0,0)]
+        else:
+            points = COORD_PAIR_TMPLT.findall(raw_points)
 
     closed = (float(points[0][0]) == float(points[-1][0]) and
               float(points[0][1]) == float(points[-1][1]))
@@ -97,8 +101,8 @@ def rect2pathd(rect):
     
     The rectangle will start at the (x,y) coordinate specified by the 
     rectangle object and proceed counter-clockwise."""
-    x, y = float(rect.get('x', 0)), float(rect.get('y', 0))
-    w, h = float(rect.get('width', 0)), float(rect.get('height', 0))
+    x, y = float(rect.get('x', 0) or 0), float(rect.get('y', 0) or 0)
+    w, h = float(rect.get('width', 0) or 0), float(rect.get('height', 0) or 0)
     if 'rx' in rect or 'ry' in rect:
 
         # if only one, rx or ry, is present, use that value for both
