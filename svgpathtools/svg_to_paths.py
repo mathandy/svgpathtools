@@ -87,6 +87,9 @@ def polyline2pathd(polyline, is_polygon=False):
     else:
         points = COORD_PAIR_TMPLT.findall(polyline.get('points', ''))
 
+    if len(points) == 0:
+        return ''
+
     closed = (float(points[0][0]) == float(points[-1][0]) and
               float(points[0][1]) == float(points[-1][1]))
 
@@ -102,13 +105,13 @@ def polyline2pathd(polyline, is_polygon=False):
     return d
 
 
-def polygon2pathd(polyline):
+def polygon2pathd(polyline, is_polygon=True):
     """converts the string from a polygon points-attribute to a string 
     for a Path object d-attribute.
     Note:  For a polygon made from n points, the resulting path will be
     composed of n lines (even if some of these lines have length zero).
     """
-    return polyline2pathd(polyline, True)
+    return polyline2pathd(polyline, is_polygon)
 
 
 def rect2pathd(rect):
@@ -230,7 +233,7 @@ def svg2paths(svg_file_location,
     # path strings, add to list
     if convert_polygons_to_paths:
         pgons = [dom2dict(el) for el in doc.getElementsByTagName('polygon')]
-        d_strings += [polygon2pathd(pg) for pg in pgons]
+        d_strings += [polygon2pathd(pg, True) for pg in pgons]
         attribute_dictionary_list += pgons
 
     if convert_lines_to_paths:
