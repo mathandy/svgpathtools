@@ -78,7 +78,7 @@ def polyline2pathd(polyline, is_polygon=False):
     # The `parse_path` call ignores redundant 'z' (closure) commands
     # e.g. `parse_path('M0 0L100 100Z') == parse_path('M0 0L100 100L0 0Z')`
     # This check ensures that an n-point polygon is converted to an n-Line path.
-    if is_polygon and closed:
+    if is_polygon or closed:
         points.append(points[0])
 
     d = 'M ' + ' L '.join('{0} {1}'.format(x,y) for x,y in points)
