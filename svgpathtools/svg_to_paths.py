@@ -50,12 +50,21 @@ def ellipse2pathd(ellipse):
     rxKappa = rx * PATH_KAPPA;
     ryKappa = ry * PATH_KAPPA;
 
+    #According to the SVG specification (https://lists.w3.org/Archives/Public/www-archive/2005May/att-0005/SVGT12_Main.pdf),
+    #Section 9.4, "The 'ellipse' element": "The arc of an 'ellipse' element begins at the "3 o'clock" point on
+    #the radius and progresses towards the "9 o'clock". Therefore, the ellipse begins at the rightmost point
+    #and progresses clockwise.
     d = ''
-    d += 'M ' + str(cx) + ' ' + str(cy - ry)
-    d += ' C ' + str(cx + rxKappa) + ' ' + str(cy - ry) + ' ' + str(cx + rx) + ' ' + str(cy - ryKappa) + ' ' + str(cx + rx) + ' ' + str(cy)
+    # Move to the rightmost point
+    d += 'M ' + str(cx + rx) + ' ' + str(cy)
+    # Draw bottom-right quadrant
     d += ' C ' + str(cx + rx) + ' ' + str(cy + ryKappa) + ' ' + str(cx + rxKappa) + ' ' + str(cy + ry) + ' ' + str(cx) + ' ' + str(cy + ry)
+    # Draw bottom-left quadrant
     d += ' C ' + str(cx - rxKappa) + ' ' + str(cy + ry) + ' ' + str(cx - rx) + ' ' + str(cy + ryKappa) + ' ' + str(cx - rx) + ' ' + str(cy)
+    # Draw top-left quadrant
     d += ' C ' + str(cx - rx) + ' ' + str(cy - ryKappa) + ' ' + str(cx - rxKappa) + ' ' + str(cy - ry) + ' ' + str(cx) + ' ' + str(cy - ry)
+    # Draw top-right quadrant
+    d += ' C ' + str(cx + rxKappa) + ' ' + str(cy - ry) + ' ' + str(cx + rx) + ' ' + str(cy - ryKappa) + ' ' + str(cx + rx) + ' ' + str(cy)
     
     return d + ' Z'
 
