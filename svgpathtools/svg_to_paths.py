@@ -77,9 +77,9 @@ def polyline2pathd(polyline, is_polygon=False):
     if is_polygon and closed:
         points.append(points[0])
 
-    d = 'M' + 'L'.join('{0} {1}'.format(x,y) for x,y in points)
+    d = 'M ' + ' L '.join('{0} {1}'.format(x,y) for x,y in points)
     if is_polygon or closed:
-        d += 'z'
+        d += ' z'
     return d
 
 
@@ -127,7 +127,7 @@ def rect2pathd(rect):
     x2, y2 = x + w, y + h
     x3, y3 = x, y + h
 
-    d = ("M{} {} L {} {} L {} {} L {} {} z"
+    d = ("M {} {} L {} {} L {} {} L {} {} z"
          "".format(x0, y0, x1, y1, x2, y2, x3, y3))
         
     return d
