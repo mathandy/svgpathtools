@@ -1,3 +1,6 @@
+#
+# Modified by NXP 2024
+#
 """This submodule contains tools for creating path objects from SVG files.
 The main tool being the svg2paths() function."""
 
