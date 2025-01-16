@@ -2915,7 +2915,7 @@ class Path(MutableSequence):
     #         Ts += [self.t2T(i, t) for t in seg.icurvature(kappa)]
     #     return Ts
 
-    def area(self, tol=1e-6):
+    def area(self, tol=1e-12):
         """Find area enclosed by path.
         
         Approximates any Arc segments in the Path with lines
@@ -2938,47 +2938,60 @@ class Path(MutableSequence):
         desired accuracy).
         """
         # calculate longest arc if there are any
-        arcs = [seq.length() for seq in self if isinstance(seq,Arc)]
-        longest_arc = max(arcs) if len(arcs)>0 else 0
+        arcs = [seq.length() for seq in self if isinstance(seq, Arc)]
+        longest_arc = max(arcs) if len(arcs) > 0 else 0
 
         def area_without_arcs(path):
             area_enclosed = 0
             for seg in path:
                 x = real(seg.poly())
                 dy = imag(seg.poly()).deriv()
-                integrand = x*dy
+                integrand = x * dy
                 integral = integrand.integ()
                 area_enclosed += integral(1) - integral(0)
             return area_enclosed
 
-        def seg2lines(seg_,num_lines):
-            pts = [seg_.point(t) for t in np.linspace(0, 1, num_lines+1)]
-            return [Line(pts[i], pts[i+1]) for i in range(num_lines)]
+        seg_cache = dict()
+
+        def seg2lines(seg_, num_lines):
+            key = (seg_, num_lines)
+            if key in seg_cache:
+                return seg_cache[key]
+            pts = [seg_.point(t) for t in np.linspace(0, 1, num_lines + 1)]
+            lines = [Line(pts[i], pts[i + 1]) for i in range(num_lines)]
+            seg_cache[key] = lines
+            return lines
 
         assert self.isclosed()
-        
+
         def calc_area(partitions):
             bezier_path_approximation = []
             for seg in self:
                 if isinstance(seg, Arc):
-                    num_segments = int(max(1,(round(partitions*seg.length()/longest_arc))))
-                    bezier_path_approximation += seg2lines(seg,num_segments)
+                    num_segments = int(
+                        max(1, (round(partitions * seg.length() / longest_arc)))
+                    )
+                    bezier_path_approximation += seg2lines(seg, num_segments)
                 else:
                     bezier_path_approximation.append(seg)
             return area_without_arcs(Path(*bezier_path_approximation))
-        max_partitions = 1
+
+        current_partitions = 1
         previous_area = None
         while True:
-            current_area = calc_area(max_partitions)
+            current_area = calc_area(current_partitions)
             if previous_area is None:
                 previous_area = current_area
+                current_partitions += 1
+                continue
             else:
-                deviation = abs(previous_area-current_area)/max(abs(previous_area),abs(current_area))
+                deviation = abs(previous_area - current_area) / max(
+                    abs(previous_area), abs(current_area)
+                )
                 if deviation < tol:
                     break
-                else:
-                    previous_area = current_area
-            max_partitions *= 2
+                previous_area = current_area
+                current_partitions += max(1, int(log(1/(1-deviation))**np.e))
         return current_area
         
 
