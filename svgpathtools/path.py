@@ -2915,7 +2915,7 @@ class Path(MutableSequence):
     #         Ts += [self.t2T(i, t) for t in seg.icurvature(kappa)]
     #     return Ts
 
-    def area(self, chord_length=1e-4):
+    def area(self, tol=1e-6):
         """Find area enclosed by path.
         
         Approximates any Arc segments in the Path with lines
@@ -2937,6 +2937,9 @@ class Path(MutableSequence):
         approximation scheme for paths (one with controls to guarantee a
         desired accuracy).
         """
+        # calculate longest arc if there are any
+        arcs = [seq.length() for seq in self if isinstance(seq,Arc)]
+        longest_arc = max(arcs) if len(arcs)>0 else 0
 
         def area_without_arcs(path):
             area_enclosed = 0
@@ -2948,21 +2951,36 @@ class Path(MutableSequence):
                 area_enclosed += integral(1) - integral(0)
             return area_enclosed
 
-        def seg2lines(seg_):
-            """Find piecewise-linear approximation of `seg`."""
-            num_lines = int(ceil(seg_.length() / chord_length))
+        def seg2lines(seg_,num_lines):
             pts = [seg_.point(t) for t in np.linspace(0, 1, num_lines+1)]
             return [Line(pts[i], pts[i+1]) for i in range(num_lines)]
 
         assert self.isclosed()
-
-        bezier_path_approximation = []
-        for seg in self:
-            if isinstance(seg, Arc):
-                bezier_path_approximation += seg2lines(seg)
+        
+        def calc_area(partitions):
+            bezier_path_approximation = []
+            for seg in self:
+                if isinstance(seg, Arc):
+                    num_segments = int(max(1,(round(partitions*seg.length()/longest_arc))))
+                    bezier_path_approximation += seg2lines(seg,num_segments)
+                else:
+                    bezier_path_approximation.append(seg)
+            return area_without_arcs(Path(*bezier_path_approximation))
+        max_partitions = 1
+        previous_area = None
+        while True:
+            current_area = calc_area(max_partitions)
+            if previous_area is None:
+                previous_area = current_area
             else:
-                bezier_path_approximation.append(seg)
-        return area_without_arcs(Path(*bezier_path_approximation))
+                deviation = abs(previous_area-current_area)/max(abs(previous_area),abs(current_area))
+                if deviation < tol:
+                    break
+                else:
+                    previous_area = current_area
+            max_partitions *= 2
+        return current_area
+        
 
     def intersect(self, other_curve, justonemode=False, tol=1e-12):
         """Finds intersections of `self` with `other_curve`

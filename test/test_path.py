@@ -25,7 +25,7 @@ from svgpathtools.path import bezier_radialrange
 # to be correct visually with the disvg() function.
 
 
-RUN_SLOW_TESTS = False
+RUN_SLOW_TESTS = True
 TOL = 1e-4  # default for tests that don't specify a `delta` or `places`
 
 
@@ -2047,13 +2047,13 @@ class TestPathTools(unittest.TestCase):
         cw_half_circle.append(Line((0+0j), (0+100j)))
         cw_half_circle.append(Arc(start=(0+100j), radius=(50+50j), rotation=0, large_arc=False, sweep=False, end=(0+0j)))
         self.assertAlmostEqual(cw_half_circle.area(), -3926.9908169872415, places=3)
-        self.assertAlmostEqual(cw_half_circle.area(chord_length=1e-3), -3926.9908169872415, places=6)
+        self.assertAlmostEqual(cw_half_circle.area(tol=1e-3), -3926.9908169872415, places=6)
 
         ccw_half_circle = Path()
         ccw_half_circle.append(Line((0+100j), (0+0j)))
         ccw_half_circle.append(Arc(start=(0+0j), radius=(50+50j), rotation=0, large_arc=False, sweep=True, end=(0+100j)))
         self.assertAlmostEqual(ccw_half_circle.area(), 3926.9908169872415, places=3)
-        self.assertAlmostEqual(ccw_half_circle.area(chord_length=1e-3), 3926.9908169872415, places=6)
+        self.assertAlmostEqual(ccw_half_circle.area(tol=1e-3), 3926.9908169872415, places=6)
 
     def test_is_contained_by(self):
         enclosing_shape = Path()
