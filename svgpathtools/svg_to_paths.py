@@ -99,7 +99,7 @@ def polyline2pathd(polyline, is_polygon=False):
     return d
 
 
-def polygon2pathd(polyline, is_polygon):
+def polygon2pathd(polyline, is_polygon=True):
     """converts the string from a polygon points-attribute to a string 
     for a Path object d-attribute.
     Note:  For a polygon made from n points, the resulting path will be
