@@ -1,9 +1,10 @@
+from __future__ import annotations
 import hashlib
 import struct
-import sys
+from typing import Iterable, Union
 
 
-def hash_numbers(numbers):
+def hash_numbers(numbers: Iterable[Union[complex, int, float]]) -> int:
     """Platform-agnostic hashing function
 
     Args:
@@ -24,4 +25,4 @@ def hash_numbers(numbers):
     packed = b''.join(packed_parts)
 
     digest = hashlib.sha256(packed).digest()
-    return int.from_bytes(digest, byteorder='big') if sys.version_info[0] >= 3 else long(int(digest.encode('hex'), 16))
+    return int.from_bytes(digest, byteorder='big')
