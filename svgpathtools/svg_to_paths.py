@@ -86,11 +86,7 @@ def polyline2pathd(polyline, is_polygon=False):
     if isinstance(polyline, str):
         points = polyline
     else:
-        raw_points = polyline.get('points', '')
-        if not raw_points:
-            points = [(0,0)]
-        else:
-            points = COORD_PAIR_TMPLT.findall(raw_points)
+        points = COORD_PAIR_TMPLT.findall(polyline.get('points', ''))
 
     closed = (float(points[0][0]) == float(points[-1][0]) and
               float(points[0][1]) == float(points[-1][1]))
