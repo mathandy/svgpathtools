@@ -33,12 +33,15 @@ from .bezier import (bezier_intersections, bezier_bounding_box, split_bezier,
                      bezier2polynomial)
 from .misctools import BugException
 from .polytools import rational_limit, polyroots, polyroots01, imag, real
+from .utils import hash_numbers
 
 # To maintain forward/backward compatibility
 try:
     str = basestring
 except NameError:
     pass
+import hashlib
+
 
 COMMANDS = set('MmZzLlHhVvCcSsQqTtAa')
 UPPERCASE = set('MZLHVCSQTA')
@@ -603,7 +606,7 @@ class Line(object):
         self.end = end
 
     def __hash__(self):
-        return hash((self.start, self.end))
+        return hash_numbers((self.start, self.end))
 
     def __repr__(self):
         return 'Line(start=%s, end=%s)' % (self.start, self.end)
@@ -875,7 +878,7 @@ class QuadraticBezier(object):
         self._length_info = {'length': None, 'bpoints': None}
 
     def __hash__(self):
-        return hash((self.start, self.control, self.end))
+        return hash_numbers((self.start, self.control, self.end))
 
     def __repr__(self):
         return 'QuadraticBezier(start=%s, control=%s, end=%s)' % (
@@ -1146,7 +1149,7 @@ class CubicBezier(object):
                              'min_depth': None}
 
     def __hash__(self):
-        return hash((self.start, self.control1, self.control2, self.end))
+        return hash_numbers((self.start, self.control1, self.control2, self.end))
 
     def __repr__(self):
         return 'CubicBezier(start=%s, control1=%s, control2=%s, end=%s)' % (
@@ -1493,8 +1496,12 @@ class Arc(object):
         # Derive derived parameters
         self._parameterize()
 
+    def apoints(self):
+        """Analog of the Bezier path method, .bpoints(), for Arc objects."""
+        return self.start, self.radius, self.rotation, self.large_arc, self.sweep, self.end
+
     def __hash__(self):
-        return hash((self.start, self.radius, self.rotation, self.large_arc, self.sweep, self.end))
+        return hash_numbers(self.apoints())
 
     def __repr__(self):
         params = (self.start, self.radius, self.rotation,
@@ -2495,7 +2502,12 @@ class Path(MutableSequence):
             self._tree_element = kw['tree_element']
 
     def __hash__(self):
-        return hash((tuple(self._segments), self._closed))
+
+        def _pointify(segment):
+            return segment.apoints() if isinstance(segment, Arc) else segment.bpoints()
+
+        pts = tuple(x for segment in self._segments for x in _pointify(segment))
+        return hash_numbers(pts + (self._closed,))
 
     def __getitem__(self, index):
         return self._segments[index]
