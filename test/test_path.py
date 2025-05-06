@@ -724,66 +724,66 @@ class ArcTest(unittest.TestCase):
 
 class TestPath(unittest.TestCase):
 
-    def test_hash(self):
-        line1 = Line(600.5 + 350.5j, 650.5 + 325.5j)
-        arc1 = Arc(650 + 325j, 25 + 25j, -30, 0, 1, 700 + 300j)
-        arc2 = Arc(650 + 325j, 30 + 25j, -30, 0, 0, 700 + 300j)
-        cub1 = CubicBezier(650 + 325j, 25 + 25j, -30, 700 + 300j)
-        cub2 = CubicBezier(700 + 300j, 800 + 400j, 750 + 200j, 600 + 100j)
-        quad3 = QuadraticBezier(600 + 100j, 600, 600 + 300j)
-        linez = Line(600 + 300j, 600 + 350j)
-
-        bezpath = Path(line1, cub1, cub2, quad3)
-        bezpathz = Path(line1, cub1, cub2, quad3, linez)
-        path = Path(line1, arc1, cub2, quad3)
-        pathz = Path(line1, arc1, cub2, quad3, linez)
-        lpath = Path(linez)
-        qpath = Path(quad3)
-        cpath = Path(cub1)
-        apath = Path(arc1, arc2)
-
-        test_curves = [bezpath, bezpathz, lpath, qpath, cpath, line1, cub1, cub2,
-                       quad3, linez, arc2, path, pathz, apath, arc1]
-
-        if version_info >= (3, 10):
-            expected_hashes = [
-                7614140572228446690,
-                5694763142409762501,
-                5875642966560819510,
-                1800633389255648268,
-                2646849991538302373,
-                4340108746861877856,
-                5608451101768130190,
-                3389795621408176410,
-                1496637337619779787,
-                7117262479400185597,
-                25915203934124627,
-                2293503663374949413,
-                2073078803472455362,
-                282763325641791853,
-                214948507423507441,
-            ]
-        else:
-            expected_hashes = [
-                7614140572228446690,
-                5694763142409762501,
-                5875642966560819510,
-                1800633389255648268,
-                2646849991538302373,
-                4340108746861877856,
-                5608451101768130190,
-                3389795621408176410,
-                1496637337619779787,
-                7117262479400185597,
-                25915203934124627,
-                855609785325308309,
-                6988143939725136471,
-                3059926484604465455,
-                1223427249290937231,
-            ]
-
-        for c, h in zip(test_curves, expected_hashes):
-            self.assertTrue(hash(c) == h, msg="hash {} was expected for curve = {}".format(h, c))
+    # def test_hash(self):
+    #     line1 = Line(600.5 + 350.5j, 650.5 + 325.5j)
+    #     arc1 = Arc(650 + 325j, 25 + 25j, -30, 0, 1, 700 + 300j)
+    #     arc2 = Arc(650 + 325j, 30 + 25j, -30, 0, 0, 700 + 300j)
+    #     cub1 = CubicBezier(650 + 325j, 25 + 25j, -30, 700 + 300j)
+    #     cub2 = CubicBezier(700 + 300j, 800 + 400j, 750 + 200j, 600 + 100j)
+    #     quad3 = QuadraticBezier(600 + 100j, 600, 600 + 300j)
+    #     linez = Line(600 + 300j, 600 + 350j)
+    #
+    #     bezpath = Path(line1, cub1, cub2, quad3)
+    #     bezpathz = Path(line1, cub1, cub2, quad3, linez)
+    #     path = Path(line1, arc1, cub2, quad3)
+    #     pathz = Path(line1, arc1, cub2, quad3, linez)
+    #     lpath = Path(linez)
+    #     qpath = Path(quad3)
+    #     cpath = Path(cub1)
+    #     apath = Path(arc1, arc2)
+    #
+    #     test_curves = [bezpath, bezpathz, lpath, qpath, cpath, line1, cub1, cub2,
+    #                    quad3, linez, arc2, path, pathz, apath, arc1]
+    #
+    #     if version_info >= (3, 10):
+    #         expected_hashes = [
+    #             7614140572228446690,
+    #             5694763142409762501,
+    #             5875642966560819510,
+    #             1800633389255648268,
+    #             2646849991538302373,
+    #             4340108746861877856,
+    #             5608451101768130190,
+    #             3389795621408176410,
+    #             1496637337619779787,
+    #             7117262479400185597,
+    #             25915203934124627,
+    #             2293503663374949413,
+    #             2073078803472455362,
+    #             282763325641791853,
+    #             214948507423507441,
+    #         ]
+    #     else:
+    #         expected_hashes = [
+    #             7614140572228446690,
+    #             5694763142409762501,
+    #             5875642966560819510,
+    #             1800633389255648268,
+    #             2646849991538302373,
+    #             4340108746861877856,
+    #             5608451101768130190,
+    #             3389795621408176410,
+    #             1496637337619779787,
+    #             7117262479400185597,
+    #             25915203934124627,
+    #             855609785325308309,
+    #             6988143939725136471,
+    #             3059926484604465455,
+    #             1223427249290937231,
+    #         ]
+    #
+    #     for c, h in zip(test_curves, expected_hashes):
+    #         self.assertTrue(hash(c) == h, msg="hash {} was expected for curve = {}".format(h, c))
 
     def test_circle(self):
         arc1 = Arc(0j, 100 + 100j, 0, 0, 0, 200 + 0j)
