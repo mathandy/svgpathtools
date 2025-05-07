@@ -169,7 +169,6 @@ class LineTest(unittest.TestCase):
         self.assertIsNone(l.point_to_t(10.001+0j))
         self.assertIsNone(l.point_to_t(-0.001-0j))
 
-        random.seed()
         for line_index in range(100):
             l = random_line()
             for t_index in range(100):
@@ -689,7 +688,6 @@ class ArcTest(unittest.TestCase):
         self.assertIsNone(a.point_to_t(730.5212132777968+169j))
         self.assertIsNone(a.point_to_t(730.5212132777968+171j))
 
-        random.seed()
         for arc_index in range(100):
             a = random_arc()
             for t_index in np.linspace(0, 1, 100):
@@ -1602,7 +1600,6 @@ class Test_intersect(unittest.TestCase):
         intersections = a.intersect(l)
         assert_intersections(self, a, l, intersections, 0)
 
-        random.seed()
         for arc_index in range(50):
             a = random_arc()
             for line_index in range(100):
