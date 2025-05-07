@@ -29,6 +29,12 @@ RUN_SLOW_TESTS = False
 TOL = 1e-4  # default for tests that don't specify a `delta` or `places`
 
 
+seed = 2718
+np.random.seed(seed)
+random.seed(seed)
+os.environ["PYTHONHASHSEED"] = str(seed)
+
+
 def random_line():
     x = (random.random() - 0.5) * 2000
     y = (random.random() - 0.5) * 2000
