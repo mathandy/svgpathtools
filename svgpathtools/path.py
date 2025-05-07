@@ -39,7 +39,6 @@ try:
     str = basestring
 except NameError:
     pass
-import hashlib
 
 
 COMMANDS = set('MmZzLlHhVvCcSsQqTtAa')

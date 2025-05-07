@@ -2,7 +2,6 @@
 from __future__ import division, absolute_import, print_function
 import os
 import time
-from sys import version_info
 import unittest
 from math import sqrt, pi
 from operator import itemgetter
