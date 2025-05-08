@@ -1,3 +1,6 @@
+#
+# Modified by NXP 2024
+#
 """This submodule contains tools for creating path objects from SVG files.
 The main tool being the svg2paths() function."""
 
@@ -27,12 +30,12 @@ def path2pathd(path):
     return path.get('d', '')
 
 
-def ellipse2pathd(ellipse):
+def ellipse2pathd(ellipse, use_cubics=False):
     """converts the parameters from an ellipse or a circle to a string for a 
     Path object d-attribute"""
 
-    cx = ellipse.get('cx', 0)
-    cy = ellipse.get('cy', 0)
+    cx = (ellipse.get('cx', 0) or 0)
+    cy = (ellipse.get('cy', 0) or 0)
     rx = ellipse.get('rx', None)
     ry = ellipse.get('ry', None)
     r = ellipse.get('r', None)
@@ -40,18 +43,41 @@ def ellipse2pathd(ellipse):
     if r is not None:
         rx = ry = float(r)
     else:
-        rx = float(rx)
-        ry = float(ry)
+        rx = float(rx or 0)
+        ry = float(ry or 0)
 
     cx = float(cx)
     cy = float(cy)
 
-    d = ''
-    d += 'M' + str(cx - rx) + ',' + str(cy)
-    d += 'a' + str(rx) + ',' + str(ry) + ' 0 1,0 ' + str(2 * rx) + ',0'
-    d += 'a' + str(rx) + ',' + str(ry) + ' 0 1,0 ' + str(-2 * rx) + ',0'
+    if use_cubics:
 
-    return d + 'z'
+        PATH_KAPPA = 0.552284
+        rxKappa = rx * PATH_KAPPA;
+        ryKappa = ry * PATH_KAPPA;
+
+        #According to the SVG specification (https://lists.w3.org/Archives/Public/www-archive/2005May/att-0005/SVGT12_Main.pdf),
+        #Section 9.4, "The 'ellipse' element": "The arc of an 'ellipse' element begins at the "3 o'clock" point on
+        #the radius and progresses towards the "9 o'clock". Therefore, the ellipse begins at the rightmost point
+        #and progresses clockwise.
+        d = ''
+        # Move to the rightmost point
+        d += 'M ' + str(cx + rx) + ' ' + str(cy)
+        # Draw bottom-right quadrant
+        d += ' C ' + str(cx + rx) + ' ' + str(cy + ryKappa) + ' ' + str(cx + rxKappa) + ' ' + str(cy + ry) + ' ' + str(cx) + ' ' + str(cy + ry)
+        # Draw bottom-left quadrant
+        d += ' C ' + str(cx - rxKappa) + ' ' + str(cy + ry) + ' ' + str(cx - rx) + ' ' + str(cy + ryKappa) + ' ' + str(cx - rx) + ' ' + str(cy)
+        # Draw top-left quadrant
+        d += ' C ' + str(cx - rx) + ' ' + str(cy - ryKappa) + ' ' + str(cx - rxKappa) + ' ' + str(cy - ry) + ' ' + str(cx) + ' ' + str(cy - ry)
+        # Draw top-right quadrant
+        d += ' C ' + str(cx + rxKappa) + ' ' + str(cy - ry) + ' ' + str(cx + rx) + ' ' + str(cy - ryKappa) + ' ' + str(cx + rx) + ' ' + str(cy)
+    else:
+        d = ''
+        d += 'M' + str(cx - rx) + ',' + str(cy)
+        d += 'a' + str(rx) + ',' + str(ry) + ' 0 1,0 ' + str(2 * rx) + ',0'
+        d += 'a' + str(rx) + ',' + str(ry) + ' 0 1,0 ' + str(-2 * rx) + ',0'
+
+    
+    return d + ' Z'
 
 
 def polyline2pathd(polyline, is_polygon=False):
@@ -68,22 +94,22 @@ def polyline2pathd(polyline, is_polygon=False):
     # The `parse_path` call ignores redundant 'z' (closure) commands
     # e.g. `parse_path('M0 0L100 100Z') == parse_path('M0 0L100 100L0 0Z')`
     # This check ensures that an n-point polygon is converted to an n-Line path.
-    if is_polygon and closed:
+    if is_polygon or closed:
         points.append(points[0])
 
-    d = 'M' + 'L'.join('{0} {1}'.format(x,y) for x,y in points)
+    d = 'M ' + ' L '.join('{0} {1}'.format(x,y) for x,y in points)
     if is_polygon or closed:
-        d += 'z'
+        d += ' z'
     return d
 
 
-def polygon2pathd(polyline):
+def polygon2pathd(polyline, is_polygon=True):
     """converts the string from a polygon points-attribute to a string 
     for a Path object d-attribute.
     Note:  For a polygon made from n points, the resulting path will be
     composed of n lines (even if some of these lines have length zero).
     """
-    return polyline2pathd(polyline, True)
+    return polyline2pathd(polyline, is_polygon)
 
 
 def rect2pathd(rect):
@@ -91,8 +117,8 @@ def rect2pathd(rect):
     
     The rectangle will start at the (x,y) coordinate specified by the 
     rectangle object and proceed counter-clockwise."""
-    x, y = float(rect.get('x', 0)), float(rect.get('y', 0))
-    w, h = float(rect.get('width', 0)), float(rect.get('height', 0))
+    x, y = float(rect.get('x', 0) or 0), float(rect.get('y', 0) or 0)
+    w, h = float(rect.get('width', 0) or 0), float(rect.get('height', 0) or 0)
     if 'rx' in rect or 'ry' in rect:
 
         # if only one, rx or ry, is present, use that value for both
@@ -121,7 +147,7 @@ def rect2pathd(rect):
     x2, y2 = x + w, y + h
     x3, y3 = x, y + h
 
-    d = ("M{} {} L {} {} L {} {} L {} {} z"
+    d = ("M {} {} L {} {} L {} {} L {} {} z"
          "".format(x0, y0, x1, y1, x2, y2, x3, y3))
         
     return d
@@ -204,7 +230,7 @@ def svg2paths(svg_file_location,
     # path strings, add to list
     if convert_polygons_to_paths:
         pgons = [dom2dict(el) for el in doc.getElementsByTagName('polygon')]
-        d_strings += [polygon2pathd(pg) for pg in pgons]
+        d_strings += [polygon2pathd(pg, True) for pg in pgons]
         attribute_dictionary_list += pgons
 
     if convert_lines_to_paths:
