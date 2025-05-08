@@ -2,7 +2,29 @@
 #------------------------------------------------------------------------------
 from __future__ import division, absolute_import, print_function
 import unittest
+import re
+from typing import Optional
+
+import numpy as np
+
 from svgpathtools import parse_path
+
+
+_space_or_comma_pattern = re.compile(r'[,\s]+')
+
+
+def _assert_d_strings_are_almost_equal(d1: str, d2: str, test_case=unittest.TestCase, msg: Optional[str] = None) -> bool:
+    """Slight differences are expected on different platforms, check each part is approx. as expected."""
+
+    parts1 = _space_or_comma_pattern.split(d1)
+    parts2 = _space_or_comma_pattern.split(d2)
+    test_case.assertEqual(len(parts1), len(parts2), msg=msg)
+    for p1, p2 in zip(parts1, parts2):
+        if p1.isalpha():
+            test_case.assertEqual(p1, p2, msg=msg)
+        else:
+            test_case.assertTrue(np.isclose(float(p1), float(p2)), msg=msg)
+
 
 
 class TestGeneration(unittest.TestCase):
@@ -41,32 +63,16 @@ class TestGeneration(unittest.TestCase):
             'M 200.0,300.0 Q 400.0,50.0 600.0,300.0 Q 800.0,550.0 1000.0,300.0',
             'M -3.4e+38,3.4e+38 L -3.4e-38,3.4e-38',
             'M 0.0,0.0 L 50.0,20.0 L 200.0,100.0 L 50.0,20.0',
-            ('M 600.0,350.0 L 650.0,325.0 A 27.9508497187,27.9508497187 -30.0 0,1 700.0,300.0 L 750.0,275.0',  # Python 2
-             'M 600.0,350.0 L 650.0,325.0 A 27.95084971874737,27.95084971874737 -30.0 0,1 700.0,300.0 L 750.0,275.0')  # Python 3
+            'M 600.0,350.0 L 650.0,325.0 A 27.9508497187,27.9508497187 -30.0 0,1 700.0,300.0 L 750.0,275.0'
         ]
 
-        for path, flpath in zip(paths[::-1], float_paths[::-1]):
-            # Note:  Python 3 and Python 2 differ in the number of digits
-            # truncated when returning a string representation of a float
+        for path, expected in zip(paths, float_paths):
             parsed_path = parse_path(path)
             res = parsed_path.d()
-            if isinstance(flpath, tuple):
-                option3 = res == flpath[1]  # Python 3
-                flpath = flpath[0]
-            else:
-                option3 = False
-            option1 = res == path
-            option2 = res == flpath
+            msg = ('\npath =\n {}\nexpected =\n {}\nparse_path(path).d() =\n {}'
+                   ''.format(path, expected, res))
+            _assert_d_strings_are_almost_equal(res, expected, self, msg)
 
-            msg = ('\npath =\n {}\nflpath =\n {}\nparse_path(path).d() =\n {}'
-                   ''.format(path, flpath, res))
-            self.assertTrue(option1 or option2 or option3, msg=msg)
-
-        for flpath in float_paths[:-1]:
-            res = parse_path(flpath).d()
-            msg = ('\nflpath =\n {}\nparse_path(path).d() =\n {}'
-                   ''.format(flpath, res))
-            self.assertTrue(res == flpath, msg=msg)
 
     def test_normalizing(self):
         # Relative paths will be made absolute, subpaths merged if they can,

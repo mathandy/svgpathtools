@@ -3,7 +3,7 @@ svgpathtools is built around: Path, Line, QuadraticBezier, CubicBezier, and
 Arc."""
 
 # External dependencies
-from __future__ import division, absolute_import, print_function
+from __future__ import annotations
 import re
 try:
     from collections.abc import MutableSequence  # noqa
@@ -39,6 +39,7 @@ try:
     str = basestring
 except NameError:
     pass
+
 
 COMMANDS = set('MmZzLlHhVvCcSsQqTtAa')
 UPPERCASE = set('MZLHVCSQTA')
@@ -602,7 +603,7 @@ class Line(object):
         self.start = start
         self.end = end
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.start, self.end))
 
     def __repr__(self):
@@ -610,7 +611,7 @@ class Line(object):
 
     def __eq__(self, other):
         if not isinstance(other, Line):
-            return NotImplemented
+            return False
         return self.start == other.start and self.end == other.end
 
     def __ne__(self, other):
@@ -874,7 +875,7 @@ class QuadraticBezier(object):
         # used to know if self._length needs to be updated
         self._length_info = {'length': None, 'bpoints': None}
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.start, self.control, self.end))
 
     def __repr__(self):
@@ -883,7 +884,7 @@ class QuadraticBezier(object):
 
     def __eq__(self, other):
         if not isinstance(other, QuadraticBezier):
-            return NotImplemented
+            return False
         return self.start == other.start and self.end == other.end \
             and self.control == other.control
 
@@ -1145,7 +1146,7 @@ class CubicBezier(object):
         self._length_info = {'length': None, 'bpoints': None, 'error': None,
                              'min_depth': None}
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.start, self.control1, self.control2, self.end))
 
     def __repr__(self):
@@ -1154,7 +1155,7 @@ class CubicBezier(object):
 
     def __eq__(self, other):
         if not isinstance(other, CubicBezier):
-            return NotImplemented
+            return False
         return self.start == other.start and self.end == other.end \
             and self.control1 == other.control1 \
             and self.control2 == other.control2
@@ -1493,8 +1494,12 @@ class Arc(object):
         # Derive derived parameters
         self._parameterize()
 
-    def __hash__(self):
-        return hash((self.start, self.radius, self.rotation, self.large_arc, self.sweep, self.end))
+    def apoints(self) -> tuple[complex, complex, float, bool, bool, complex]:
+        """Analog of the Bezier path method, .bpoints(), for Arc objects."""
+        return self.start, self.radius, self.rotation, self.large_arc, self.sweep, self.end
+
+    def __hash__(self) -> int:
+        return hash(self.apoints())
 
     def __repr__(self):
         params = (self.start, self.radius, self.rotation,
@@ -1504,7 +1509,7 @@ class Arc(object):
 
     def __eq__(self, other):
         if not isinstance(other, Arc):
-            return NotImplemented
+            return False
         return self.start == other.start and self.end == other.end \
             and self.radius == other.radius \
             and self.rotation == other.rotation \
@@ -2494,8 +2499,13 @@ class Path(MutableSequence):
         if 'tree_element' in kw:
             self._tree_element = kw['tree_element']
 
-    def __hash__(self):
-        return hash((tuple(self._segments), self._closed))
+    def __hash__(self) -> int:
+
+        def _pointify(segment):
+            return segment.apoints() if isinstance(segment, Arc) else segment.bpoints()
+
+        pts = tuple(x for segment in self._segments for x in _pointify(segment))
+        return hash(pts + (self._closed,))
 
     def __getitem__(self, index):
         return self._segments[index]
@@ -2543,7 +2553,7 @@ class Path(MutableSequence):
 
     def __eq__(self, other):
         if not isinstance(other, Path):
-            return NotImplemented
+            return False
         if len(self) != len(other):
             return False
         for s, o in zip(self._segments, other._segments):

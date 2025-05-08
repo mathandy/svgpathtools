@@ -5,6 +5,10 @@ from svgpathtools.bezier import bezier_point, bezier2polynomial, polynomial2bezi
 from svgpathtools.path import bpoints2bezier
 
 
+seed = 2718
+np.random.seed(seed)
+
+
 class HigherOrderBezier:
     def __init__(self, bpoints):
         self.bpts = bpoints
