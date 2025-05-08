@@ -2583,6 +2583,8 @@ class Path(MutableSequence):
         # Shortcuts
         if len(self._segments) == 0:
             raise ValueError("This path contains no segments!")
+        if pos < 0.0 or pos > 1.0:
+            raise ValueError("Pos for Path.point must be between 0 and 1, but was {}".format(pos))
         if pos == 0.0:
             return self._segments[0].point(pos)
         if pos == 1.0:
