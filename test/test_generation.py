@@ -82,6 +82,12 @@ class TestGeneration(unittest.TestCase):
         psf = 'M 0.0,0.0 L 340.0,-10.0 L 100.0,100.0 L 200.0,0.0'
         self.assertTrue(parse_path(path).d() in (ps, psf))
 
+    def test_floating_point_stability(self):
+        # Check that reading and then outputting a d-string
+        # does not introduce floating point error noise.
+        path = "M 70.63,10.42 C 0.11,0.33 -0.89,2.09 -1.54,2.45 C -4.95,2.73 -17.52,7.24 -39.46,11.04"
+        self.assertEqual(parse_path(path).d(), path)
+
 
 if __name__ == '__main__':
     unittest.main()
