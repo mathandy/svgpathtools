@@ -28,7 +28,7 @@ except:
     _quad_available = False
 
 # Internal dependencies
-from .bezier import (bezier_intersections, bezier_bounding_box, split_bezier,
+from .bezier import (bezier_intersections, quadratic_intersections, bezier_bounding_box, split_bezier,
                      bezier_by_line_intersections, polynomial2bezier,
                      bezier2polynomial)
 from .misctools import BugException
@@ -1073,10 +1073,12 @@ class QuadraticBezier(object):
             return bezier_by_line_intersections(self, other_seg)
         elif isinstance(other_seg, QuadraticBezier):
             assert self != other_seg
-            longer_length = max(self.length(), other_seg.length())
-            return bezier_intersections(self, other_seg,
-                                        longer_length=longer_length,
-                                        tol=tol, tol_deC=tol)
+            return quadratic_intersections(self,other_seg)
+        
+            # longer_length = max(self.length(), other_seg.length())
+            # return bezier_intersections(self, other_seg,
+            #                             longer_length=longer_length,
+            #                             tol=tol, tol_deC=tol)
         elif isinstance(other_seg, CubicBezier):
             longer_length = max(self.length(), other_seg.length())
             return bezier_intersections(self, other_seg,

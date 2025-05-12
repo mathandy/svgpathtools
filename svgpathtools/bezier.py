@@ -6,7 +6,7 @@ points given by their standard representation."""
 # External dependencies:
 from __future__ import division, absolute_import, print_function
 from math import factorial as fac, ceil, log, sqrt
-from numpy import poly1d
+from numpy import poly1d, roots as rt
 
 # Internal dependencies
 from .polytools import real, imag, polyroots, polyroots01
@@ -336,6 +336,64 @@ def bezier_intersections(bez1, bez2, longer_length, tol=1e-8, tol_deC=1e-8):
     return intersection_list
 
 
+def quadratic_intersections(bez1, bez2):
+    """INPUT:
+    bez1, bez2 = [P0,P1,P2,...PN], [Q0,Q1,Q2,...,PN] defining the two
+    Quadratic Bezier curves to check for intersections between.
+    OUTPUT: a list of tuples (t,s) in [0,1]x[0,1] such that
+    bezier_point(bez1[0],t) and bezier_point(bez2[1],s) are almost equal
+    NOTATION:
+    'xn' and 'yn' represents coordinates of each control points 0, 1, and 2.
+    Parametric forms of coordinates used: X = At^2 + Bt + x0 and Y = Ct^2 + Dt + y0.
+    Equation at^4 + bt^3 + ct^2 + d = 0 identifies intersections as roots.
+
+    Note: This will return exactly one such tuple for each intersection
+    with a maximum of four intersections."""
+    #obtaining cartesian coordinates of control points for each curve
+    x01, x11, x21 = bez1.start.real, bez1.control.real, bez1.end.real
+    x02, x12, x22 = bez2.start.real, bez2.control.real, bez2.end.real
+    y01, y11, y21 = bez1.start.imag, bez1.control.imag, bez1.end.imag
+    y02, y12, y22 = bez2.start.imag, bez2.control.imag, bez2.end.imag
+
+    #seting indexes for the quadratic form of a bezzier curve (A,B for x and C,D for y)
+    A1, B1 = x01 - 2*x11 + x21, 2*x11 - 2*x01
+    A2, B2 = x02 - 2*x12 + x22, 2*x12 - 2*x02
+    C1, D1 = y01 - 2*y11 + y21, 2*y11 - 2*y01
+    C2, D2 = y02 - 2*y12 + y22, 2*y12 - 2*y02
+
+    #solving equation system {X1=X2, Y1=Y2} for t1
+    a = 4*(A1**2*C2**2 - 2*A1*A2*C1*C2 + A2**2*C1**2)*A2**2
+    b = -8*(A1*C2 - A2*C1)*A2**2*(A2*D1 - B1*C2)
+    c = -4*(A1*(A2*(2*C2*(y01 - y02) + D2**2) - (B2*D2 + 2*C2*(x01 - x02))*C2) - A2**2*(2*C1*(y01 - y02) + D1**2) + A2*(2*B1*C2*D1 - (B2*D2 - 2*C2*(x01 - x02))*C1) - (B1**2*C2 - B2**2*C1)*C2)*A2**2
+    d = 4*A2**2*(2*A2**2*D1*(y01 - y02) - A2*(B1*(2*C2*(y01 - y02) + D2**2) - (B2*D2 - 2*C2*(x01 - x02))*D1) + (B1*(B2*D2 + 2*C2*(x01 - x02)) - B2**2*D1)*C2)
+    e = 4*A2**2*(A2**2*(y01**2 - 2*y01*y02 + y02**2) + A2*(B2*D2*(y01 - y02) - (2*C2*(y01 - y02) + D2**2)*(x01 - x02)) - (B2**2*(y01 - y02) - B2*D2*(x01 - x02) - C2*(x01**2 - 2*x01*x02 + x02**2))*C2)
+
+    roots = rt([a,b,c,d,e])
+
+    # obtaining parameter t at intersection for each curve
+    t1 = []; t2 = []; intersections = []
+    condition_1 = False; condition_2 = False
+
+    for root in roots:
+        if root.imag==0 and root.real<=1 and root.real>=0:
+            condition_1 = True# append in t1
+        intersection = bez1.point(root)
+        roots_2 = rt([A2,B2,x02 - (A1*root.real**2 + B1*root.real + x01)])
+        root_2 = min(roots_2, key=lambda x: abs(x - intersection))
+
+        if root_2.imag==0 and root_2.real<=1 and root_2.real>=0:
+            condition_2 = True# append in t2
+        if condition_1 and condition_2:
+            t1.append(root)
+            t2.append(root_2)
+            intersections.append(intersection)
+
+    intersection_list = list(zip(t1,t2))
+    assert len(intersection_list)<=4
+
+    return intersection_list
+
+
 def bezier_by_line_intersections(bezier, line):
     """Returns tuples (t1,t2) such that bezier.point(t1) ~= line.point(t2)."""
     # The method here is to translate (shift) then rotate the complex plane so
@@ -373,4 +431,3 @@ def bezier_by_line_intersections(bezier, line):
             line_t = xval/line_length
             intersection_list.append((bez_t, line_t))
     return intersection_list
-
