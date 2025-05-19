@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg version="1.2" baseProfile="tiny" xml:id="svg-root" width="100%" height="100%"
+  viewBox="0 0 480 360" xmlns="http://www.w3.org/2000/svg"
+  xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xe="http://www.w3.org/2001/xml-events">
+    <polyline xml:id="polyline-04" fill="none" stroke="red" stroke-width="8" points="59,185,98,203,108,245,82,279,39,280,11,247,19,205" />
+    <polyline xml:id="polyline-02" fill="none" stroke="blue" stroke-width="8" points="220,50,267,84,249,140,190,140,172,84,220,50" />
+</svg>
