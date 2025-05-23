@@ -1,0 +1,22 @@
+repos:
+  - repo: https://github.com/psf/black
+    rev: 24.4.2  # Use the latest stable version or pin as needed
+    hooks:
+      - id: black
+        language_version: python3
+        exclude: '(^|/)(README\.md|.*\.svg|.*\.html)$'
+        args: ["--line-length=120", "--target-version=py38"]
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.0.0  # Use the latest stable version or pin as needed
+    hooks:
+      - id: flake8
+        language_version: python3
+        exclude: '(^|/)(README\.md|.*\.svg|.*\.html)$'
+        args: ["--max-line-length=120", "--extend-ignore=E203,W503"]
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
