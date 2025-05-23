@@ -41,9 +41,9 @@ Some included tools:
 
 ```bash
 $ pip install svgpathtools
-```  
-  
-### Alternative Setup 
+```
+
+### Alternative Setup
 You can download the source from Github and install by using the command (from inside the folder containing setup.py):
 
 ```bash
@@ -130,7 +130,7 @@ from svgpathtools import kinks, smoothed_path
 print("path contains non-differentiable points? ", len(kinks(path)) > 0)
 
 # If we want, we can smooth these out (Experimental and only for line/cubic paths)
-# Note:  smoothing will always works (except on 180 degree turns), but you may want 
+# Note:  smoothing will always works (except on 180 degree turns), but you may want
 # to play with the maxjointsize and tightness parameters to get pleasing results
 # Note also: smoothing will increase the number of segments in a path
 spath = smoothed_path(path)
@@ -141,7 +141,7 @@ print(spath)
 # The following commands will open two browser windows to display path and spaths
 from svgpathtools import disvg
 from time import sleep
-disvg(path) 
+disvg(path)
 sleep(1)  # needed when not giving the SVGs unique names (or not using timestamp)
 disvg(spath)
 print("Notice that path contains {} segments and spath contains {} segments."
@@ -169,12 +169,12 @@ print("Notice that path contains {} segments and spath contains {} segments."
 
 ### Reading SVGSs
 
-The **svg2paths()** function converts an svgfile to a list of Path objects and a separate list of dictionaries containing the attributes of each said path.  
+The **svg2paths()** function converts an svgfile to a list of Path objects and a separate list of dictionaries containing the attributes of each said path.
 Note: Line, Polyline, Polygon, and Path SVG elements can all be converted to Path objects using this function.
 
 
 ```python
-# Read SVG into a list of path objects and list of dictionaries of attributes 
+# Read SVG into a list of path objects and list of dictionaries of attributes
 from svgpathtools import svg2paths, wsvg
 paths, attributes = svg2paths('test.svg')
 
@@ -184,7 +184,7 @@ from svgpathtools import svg2paths2
 paths, attributes, svg_attributes = svg2paths2('test.svg')
 
 # Let's print out the first path object and the color it was in the SVG
-# We'll see it is composed of two CubicBezier objects and, in the SVG file it 
+# We'll see it is composed of two CubicBezier objects and, in the SVG file it
 # came from, it was red
 redpath = paths[0]
 redpath_attribs = attributes[0]
@@ -217,27 +217,27 @@ SVG Path elements and their segments have official parameterizations.
 These parameterizations can be accessed using the ``Path.point()``, ``Line.point()``, ``QuadraticBezier.point()``, ``CubicBezier.point()``, and ``Arc.point()`` methods.
 All these parameterizations are defined over the domain 0 <= t <= 1.
 
-**Note:** In this document and in inline documentation and doctrings, I use a capital ``T`` when referring to the parameterization of a Path object and a lower case ``t`` when referring speaking about path segment objects (i.e. Line, QaudraticBezier, CubicBezier, and Arc objects).  
-Given a ``T`` value, the ``Path.T2t()`` method can be used to find the corresponding segment index, ``k``, and segment parameter, ``t``, such that ``path.point(T)=path[k].point(t)``.  
+**Note:** In this document and in inline documentation and doctrings, I use a capital ``T`` when referring to the parameterization of a Path object and a lower case ``t`` when referring speaking about path segment objects (i.e. Line, QaudraticBezier, CubicBezier, and Arc objects).
+Given a ``T`` value, the ``Path.T2t()`` method can be used to find the corresponding segment index, ``k``, and segment parameter, ``t``, such that ``path.point(T)=path[k].point(t)``.
 There is also a ``Path.t2T()`` method to solve the inverse problem.
 
 
 ```python
 # Example:
 
-# Let's check that the first segment of redpath starts 
+# Let's check that the first segment of redpath starts
 # at the same point as redpath
-firstseg = redpath[0] 
+firstseg = redpath[0]
 print(redpath.point(0) == firstseg.point(0) == redpath.start == firstseg.start)
 
 # Let's check that the last segment of redpath ends on the same point as redpath
-lastseg = redpath[-1] 
+lastseg = redpath[-1]
 print(redpath.point(1) == lastseg.point(1) == redpath.end == lastseg.end)
 
 # This next boolean should return False as redpath is composed multiple segments
 print(redpath.point(0.5) == firstseg.point(0.5))
 
-# If we want to figure out which segment of redpoint the 
+# If we want to figure out which segment of redpoint the
 # point redpath.point(0.5) lands on, we can use the path.T2t() method
 k, t = redpath.T2t(0.5)
 print(redpath[k].point(t) == redpath.point(0.5))
@@ -250,21 +250,21 @@ print(redpath[k].point(t) == redpath.point(0.5))
 
 
 ### Bezier curves as NumPy polynomial objects
-Another great way to work with the parameterizations for `Line`, `QuadraticBezier`, and `CubicBezier` objects is to convert them to ``numpy.poly1d`` objects.  This is done easily using the ``Line.poly()``, ``QuadraticBezier.poly()`` and ``CubicBezier.poly()`` methods.  
-There's also a ``polynomial2bezier()`` function in the pathtools.py submodule to convert polynomials back to Bezier curves.  
+Another great way to work with the parameterizations for `Line`, `QuadraticBezier`, and `CubicBezier` objects is to convert them to ``numpy.poly1d`` objects.  This is done easily using the ``Line.poly()``, ``QuadraticBezier.poly()`` and ``CubicBezier.poly()`` methods.
+There's also a ``polynomial2bezier()`` function in the pathtools.py submodule to convert polynomials back to Bezier curves.
 
 **Note:** cubic Bezier curves are parameterized as $$\mathcal{B}(t) = P_0(1-t)^3 + 3P_1(1-t)^2t + 3P_2(1-t)t^2 + P_3t^3$$
-where $P_0$, $P_1$, $P_2$, and $P_3$ are the control points ``start``, ``control1``, ``control2``, and ``end``, respectively, that svgpathtools uses to define a CubicBezier object.  The ``CubicBezier.poly()`` method expands this polynomial to its standard form 
+where $P_0$, $P_1$, $P_2$, and $P_3$ are the control points ``start``, ``control1``, ``control2``, and ``end``, respectively, that svgpathtools uses to define a CubicBezier object.  The ``CubicBezier.poly()`` method expands this polynomial to its standard form
 $$\mathcal{B}(t) = c_0t^3 + c_1t^2 +c_2t+c3$$
 where
-$$\begin{bmatrix}c_0\\c_1\\c_2\\c_3\end{bmatrix} = 
+$$\begin{bmatrix}c_0\\c_1\\c_2\\c_3\end{bmatrix} =
 \begin{bmatrix}
 -1 & 3 & -3 & 1\\
 3 & -6 & -3 & 0\\
 -3 & 3 & 0 & 0\\
 1 & 0 & 0 & 0\\
 \end{bmatrix}
-\begin{bmatrix}P_0\\P_1\\P_2\\P_3\end{bmatrix}$$  
+\begin{bmatrix}P_0\\P_1\\P_2\\P_3\end{bmatrix}$$
 
 `QuadraticBezier.poly()` and `Line.poly()` are [defined similarly](https://en.wikipedia.org/wiki/B%C3%A9zier_curve#General_definition).
 
@@ -277,34 +277,34 @@ p = b.poly()
 # p(t) == b.point(t)
 print(p(0.235) == b.point(0.235))
 
-# What is p(t)?  It's just the cubic b written in standard form.  
+# What is p(t)?  It's just the cubic b written in standard form.
 bpretty = "{}*(1-t)^3 + 3*{}*(1-t)^2*t + 3*{}*(1-t)*t^2 + {}*t^3".format(*b.bpoints())
-print("The CubicBezier, b.point(x) = \n\n" + 
-      bpretty + "\n\n" + 
+print("The CubicBezier, b.point(x) = \n\n" +
+      bpretty + "\n\n" +
       "can be rewritten in standard form as \n\n" +
       str(p).replace('x','t'))
 ```
 
     True
-    The CubicBezier, b.point(x) = 
-    
+    The CubicBezier, b.point(x) =
+
     (300+100j)*(1-t)^3 + 3*(100+100j)*(1-t)^2*t + 3*(200+200j)*(1-t)*t^2 + (200+300j)*t^3
-    
-    can be rewritten in standard form as 
-    
+
+    can be rewritten in standard form as
+
                     3                2
     (-400 + -100j) t + (900 + 300j) t - 600 t + (300 + 100j)
 
 
-The ability to convert between Bezier objects to NumPy polynomial objects is very useful.  For starters, we can take turn a list of Bézier segments into a NumPy array 
+The ability to convert between Bezier objects to NumPy polynomial objects is very useful.  For starters, we can take turn a list of Bézier segments into a NumPy array
 
-### Numpy Array operations on Bézier path segments 
+### Numpy Array operations on Bézier path segments
 
-[Example available here](https://github.com/mathandy/svgpathtools/blob/master/examples/compute-many-points-quickly-using-numpy-arrays.py) 
+[Example available here](https://github.com/mathandy/svgpathtools/blob/master/examples/compute-many-points-quickly-using-numpy-arrays.py)
 
-To further illustrate the power of being able to convert our Bezier curve objects to numpy.poly1d objects and back, lets compute the unit tangent vector of the above CubicBezier object, b, at t=0.5 in four different ways. 
+To further illustrate the power of being able to convert our Bezier curve objects to numpy.poly1d objects and back, lets compute the unit tangent vector of the above CubicBezier object, b, at t=0.5 in four different ways.
 
-### Tangent vectors (and more on NumPy polynomials) 
+### Tangent vectors (and more on NumPy polynomials)
 
 
 ```python
@@ -312,22 +312,22 @@ t = 0.5
 ### Method 1: the easy way
 u1 = b.unit_tangent(t)
 
-### Method 2: another easy way 
+### Method 2: another easy way
 # Note: This way will fail if it encounters a removable singularity.
 u2 = b.derivative(t)/abs(b.derivative(t))
 
-### Method 2: a third easy way 
+### Method 2: a third easy way
 # Note: This way will also fail if it encounters a removable singularity.
-dp = p.deriv() 
+dp = p.deriv()
 u3 = dp(t)/abs(dp(t))
 
-### Method 4: the removable-singularity-proof numpy.poly1d way  
+### Method 4: the removable-singularity-proof numpy.poly1d way
 # Note: This is roughly how Method 1 works
 from svgpathtools import real, imag, rational_limit
-dx, dy = real(dp), imag(dp)  # dp == dx + 1j*dy 
+dx, dy = real(dp), imag(dp)  # dp == dx + 1j*dy
 p_mag2 = dx**2 + dy**2  # p_mag2(t) = |p(t)|**2
 # Note: abs(dp) isn't a polynomial, but abs(dp)**2 is, and,
-#  the limit_{t->t0}[f(t) / abs(f(t))] == 
+#  the limit_{t->t0}[f(t) / abs(f(t))] ==
 # sqrt(limit_{t->t0}[f(t)**2 / abs(f(t))**2])
 from cmath import sqrt
 u4 = sqrt(rational_limit(dp**2, p_mag2, t))
@@ -352,19 +352,19 @@ n = b.normal(t)
 normal_line = Line(b.point(t), b.point(t) + mag*n)
 disvg([b, tangent_line, normal_line], 'bgp', nodes=[b.point(t)])
 
-# and let's reverse the orientation of b! 
+# and let's reverse the orientation of b!
 # the tangent and normal lines should be sent to their opposites
 br = b.reversed()
 
 # Let's also shift b_r over a bit to the right so we can view it next to b
-# The simplest way to do this is br = br.translated(3*mag),  but let's use 
+# The simplest way to do this is br = br.translated(3*mag),  but let's use
 # the .bpoints() instead, which returns a Bezier's control points
-br.start, br.control1, br.control2, br.end = [3*mag + bpt for bpt in br.bpoints()]  # 
+br.start, br.control1, br.control2, br.end = [3*mag + bpt for bpt in br.bpoints()]  #
 
 tangent_line_r = Line(br.point(t), br.point(t) + mag*br.unit_tangent(t))
 normal_line_r = Line(br.point(t), br.point(t) + mag*br.normal(t))
-wsvg([b, tangent_line, normal_line, br, tangent_line_r, normal_line_r], 
-     'bgpkgp', nodes=[b.point(t), br.point(t)], filename='vectorframes.svg', 
+wsvg([b, tangent_line, normal_line, br, tangent_line_r, normal_line_r],
+     'bgpkgp', nodes=[b.point(t), br.point(t)], filename='vectorframes.svg',
      text=["b's tangent", "br's tangent"], text_path=[tangent_line, tangent_line_r])
 ```
 
@@ -385,7 +385,7 @@ decorated_ellipse = Path(top_half, bottom_half)
 # Now let's add the decorations
 for k in range(12):
     decorated_ellipse.append(midline.rotated(30*k))
-    
+
 # Let's move it over so we can see the original Line and Arc object next
 # to the final product
 decorated_ellipse = decorated_ellipse.translated(4+0j)
@@ -404,8 +404,8 @@ Here we'll create an SVG that shows off the parametric and geometric midpoints o
 paths, attributes = svg2paths('test.svg')
 
 # Let's mark the parametric midpoint of each segment
-# I say "parametric" midpoint because Bezier curves aren't 
-# parameterized by arclength 
+# I say "parametric" midpoint because Bezier curves aren't
+# parameterized by arclength
 # If they're also the geometric midpoint, let's mark them
 # purple and otherwise we'll mark the geometric midpoint green
 min_depth = 5
@@ -429,7 +429,7 @@ for path in paths:
             nradii += [5] * 2
 
 # In 'output2.svg' the paths will retain their original attributes
-wsvg(paths, nodes=dots, node_colors=ncols, node_radii=nradii, 
+wsvg(paths, nodes=dots, node_colors=ncols, node_radii=nradii,
      attributes=attributes, filename='output2.svg')
 ```
 
@@ -439,14 +439,14 @@ wsvg(paths, nodes=dots, node_colors=ncols, node_radii=nradii,
 
 
 ```python
-# Let's find all intersections between redpath and the other 
+# Let's find all intersections between redpath and the other
 redpath = paths[0]
 redpath_attribs = attributes[0]
 intersections = []
 for path in paths[1:]:
     for (T1, seg1, t1), (T2, seg2, t2) in redpath.intersect(path):
         intersections.append(redpath.point(T1))
-        
+
 disvg(paths, filename='output_intersections.svg', attributes=attributes,
       nodes = intersections, node_radii = [5]*len(intersections))
 ```
@@ -461,7 +461,7 @@ Here we'll find the [offset curve](https://en.wikipedia.org/wiki/Parallel_curve)
 from svgpathtools import parse_path, Line, Path, wsvg
 def offset_curve(path, offset_distance, steps=1000):
     """Takes in a Path object, `path`, and a distance,
-    `offset_distance`, and outputs an piecewise-linear approximation 
+    `offset_distance`, and outputs an piecewise-linear approximation
     of the 'parallel' offset curve."""
     nls = []
     for seg in path:
