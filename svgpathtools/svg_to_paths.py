@@ -13,7 +13,7 @@ except ImportError:
     FilePathLike = str
 
 # Internal dependencies
-from .parser import parse_path
+from .parser import parse_path, parse_transform
 
 
 COORD_PAIR_TMPLT = re.compile(
@@ -212,10 +212,17 @@ def svg2paths(svg_file_location,
         """Converts DOM elements to dictionaries of attributes."""
         keys = list(element.attributes.keys())
         values = [val.value for val in list(element.attributes.values())]
-        return dict(list(zip(keys, values)))
+        transform = element.parentNode.parentNode.getAttribute("transform")
+        return (dict(list(zip(keys, values))), transform)
 
     # Use minidom to extract path strings from input SVG
-    paths = [dom2dict(el) for el in doc.getElementsByTagName('path')]
+    paths = []
+    transforms = []
+    for el in doc.getElementsByTagName('path'):
+        path, transform = dom2dict(el)
+        paths.append(path)
+        transforms.append(parse_transform(transform))
+
     d_strings = [el['d'] for el in paths]
     attribute_dictionary_list = paths
 
@@ -257,11 +264,11 @@ def svg2paths(svg_file_location,
     if return_svg_attributes:
         svg_attributes = dom2dict(doc.getElementsByTagName('svg')[0])
         doc.unlink()
-        path_list = [parse_path(d) for d in d_strings]
+        path_list = [parse_path(d, transform=t) for d, t in zip(d_strings, transforms)]
         return path_list, attribute_dictionary_list, svg_attributes
     else:
         doc.unlink()
-        path_list = [parse_path(d) for d in d_strings]
+        path_list = [parse_path(d, transform=t) for d, t in zip(d_strings, transforms)]
         return path_list, attribute_dictionary_list
 
 

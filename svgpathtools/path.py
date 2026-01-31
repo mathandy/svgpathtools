@@ -2476,6 +2476,8 @@ class Path(MutableSequence):
         self._lengths = None
         if 'closed' in kw:
             self.closed = kw['closed']  # DEPRECATED
+        if 'transform' in kw:
+            self.transform = kw['transform']
         if len(segments) >= 1:
             if isinstance(segments[0], str):
                 if len(segments) >= 2:
