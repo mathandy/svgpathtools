@@ -46,6 +46,35 @@ UPPERCASE = set('MZLHVCSQTA')
 
 COMMAND_RE = re.compile(r"([MmZzLlHhVvCcSsQqTtAa])")
 FLOAT_RE = re.compile(r"[-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?")
+# In an elliptical arc argument the large-arc-flag and sweep-flag are each a
+# single "0"/"1" character that, unlike the other fields, may be written with
+# no separator before the next number (e.g. "0110 0" == "0 1 10 0"); see the
+# SVG path grammar: https://www.w3.org/TR/SVG/paths.html#PathDataBNF
+ARC_FLAG_RE = re.compile(r"[01]")
+WSP_COMMA_RE = re.compile(r"[\s,]*")
+
+
+def _tokenize_arc_args(arg_chunk):
+    """Yield the tokens of one or more seven-field elliptical-arc groups."""
+    pos = 0
+    field = 0
+    n = len(arg_chunk)
+    while True:
+        sep = WSP_COMMA_RE.match(arg_chunk, pos)
+        if sep:
+            pos = sep.end()
+        if pos >= n:
+            return
+        match = None
+        if field % 7 in (3, 4):
+            match = ARC_FLAG_RE.match(arg_chunk, pos)
+        if match is None:
+            match = FLOAT_RE.match(arg_chunk, pos)
+        if match is None:
+            return
+        yield match.group()
+        pos = match.end()
+        field += 1
 
 # Default Parameters ##########################################################
 
@@ -3191,11 +3220,20 @@ class Path(MutableSequence):
         return zip(a, b)
 
     def _tokenize_path(self, pathdef):
+        command = None
         for x in COMMAND_RE.split(pathdef):
             if x in COMMANDS:
+                command = x
                 yield x
-            for token in FLOAT_RE.findall(x):
-                yield token
+                continue
+            if command in ('A', 'a'):
+                # Arc arguments need flag-aware tokenizing; the other commands
+                # only carry plain numbers.
+                for token in _tokenize_arc_args(x):
+                    yield token
+            else:
+                for token in FLOAT_RE.findall(x):
+                    yield token
 
     def _parse_path(self, pathdef, current_pos=0j, tree_element=None):
         # In the SVG specs, initial movetos are absolute, even if
