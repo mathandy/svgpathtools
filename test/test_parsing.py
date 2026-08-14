@@ -182,6 +182,22 @@ class TestParser(unittest.TestCase):
         self.assertRaises(ValueError, parse_path,
                           'M 100 100 L 200 200 Z 100 200')
 
+    def test_truncated_commands(self):
+        # A command missing some of its coordinates used to pop past the end of
+        # the token list and raise a bare IndexError instead of a ValueError.
+        for d in ('M', 'M 10', 'M 0 0 L', 'M 0 0 C 1 1 2 2',
+                  'H', 'V', 'Q 1 1', 'A 1 1 0 0 1'):
+            self.assertRaises(ValueError, parse_path, d)
+
+    def test_leading_smooth_command(self):
+        # A path starting with a smooth command (S/T) has no previous control
+        # point to reflect; the first control point coincides with the current
+        # point. This used to raise a TypeError from ``None in 'CS'``.
+        self.assertEqual(parse_path('S 1 1 2 2'),
+                         Path(CubicBezier(0j, 0j, 1 + 1j, 2 + 2j)))
+        self.assertEqual(parse_path('T 1 1'),
+                         Path(QuadraticBezier(0j, 0j, 1 + 1j)))
+
 
     def test_transform(self):
 
