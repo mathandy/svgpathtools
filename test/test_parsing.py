@@ -295,6 +295,19 @@ class TestParser(unittest.TestCase):
                    scale(10 0.5)""")
         ))
 
+    def test_transform_malformed(self):
+        # Malformed transform substrings (non-numeric values, missing or extra
+        # parentheses) used to raise a bare ValueError; they should degrade to
+        # the identity matrix like the unknown-type case.
+        import warnings
+        identity = np.identity(3)
+        for bad in ('matrix(1 x 3 4 5 6)', 'translate(a)', 'scale()',
+                    'rotate(1 2 z)', 'foo(1', 'matrix'):
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore')
+                tf = svgpathtools.parser.parse_transform(bad)
+            self.assertTrue(np.array_equal(identity, tf))
+
     def test_pathd_init(self):
         path0 = Path('')
         path1 = parse_path("M 100 100 L 300 100 L 200 300 z")

@@ -30,11 +30,23 @@ def _check_num_parsed_values(values, allowed):
 
 def _parse_transform_substr(transform_substr):
 
+    transform = np.identity(3)
+
+    # A well-formed transform substring is `type(v1 v2 ...)`. Malformed input
+    # (no/extra parenthesis, or non-numeric values) previously raised a bare
+    # ValueError; degrade to the identity matrix with a warning, like the
+    # unknown-type and wrong-argument-count cases below.
+    if transform_substr.count('(') != 1:
+        warnings.warn('Invalid SVG transform substring: {0}'.format(transform_substr))
+        return transform
+
     type_str, value_str = transform_substr.split('(')
     value_str = value_str.replace(',', ' ')
-    values = list(map(float, filter(None, value_str.split(' '))))
-
-    transform = np.identity(3)
+    try:
+        values = list(map(float, filter(None, value_str.split(' '))))
+    except ValueError:
+        warnings.warn('Invalid SVG transform substring: {0}'.format(transform_substr))
+        return transform
     if 'matrix' in type_str:
         if not _check_num_parsed_values(values, [6]):
             return transform
