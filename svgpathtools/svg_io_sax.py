@@ -44,14 +44,20 @@ VALUE_NONE = "none"
 
 
 class SaxDocument:
-    def __init__(self, filename):
-        """A container for a SAX SVG light tree objects document.
+    def __init__(self, filename, strict_transform_parsing=False):
+        """
+        A container for a SAX SVG light tree objects document.
 
         This class provides functions for extracting SVG data into Path objects.
 
         Args:
             filename (str): The filename of the SVG file
+            strict_transform_parsing (bool): If true, a ValueError is
+                raised when a transform attribute contains invalid
+                syntax; by default invalid transform substrings are
+                skipped with an SVGSyntaxWarning.
         """
+        self.strict_transform_parsing = strict_transform_parsing
         self.root_values = {}
         self.tree = []
         # remember location of original svg file
@@ -85,7 +91,9 @@ class SaxDocument:
                         equal_item = equate.split(":")
                         values[equal_item[0]] = equal_item[1]
                 if "transform" in attrs:
-                    transform_matrix = parse_transform(attrs["transform"])
+                    transform_matrix = parse_transform(
+                        attrs["transform"],
+                        strict=self.strict_transform_parsing)
                     if matrix is None:
                         matrix = np.identity(3)
                     matrix = transform_matrix.dot(matrix)

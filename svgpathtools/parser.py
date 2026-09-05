@@ -16,6 +16,10 @@ import warnings
 from .path import Path
 
 
+class SVGSyntaxWarning(UserWarning):
+    """Category for warnings about invalid SVG syntax handled leniently."""
+
+
 def parse_path(pathdef, current_pos=0j, tree_element=None):
     """Convert an SVG path element d-string into a Path object."""
     return Path(pathdef, current_pos=current_pos, tree_element=tree_element)
@@ -119,6 +123,10 @@ def parse_transform(transform_str: Optional[str], strict: bool = False) -> np.nd
     skipped (i.e. contributes an identity matrix) with a warning.  If
     `strict` is true, a ValueError is raised on invalid transform
     syntax instead.
+
+    The warnings use the SVGSyntaxWarning category, so they can be
+    silenced or escalated selectively, e.g.
+    `warnings.simplefilter('error', SVGSyntaxWarning)`.
     """
     if transform_str is None or transform_str == '':
         return np.identity(3)
@@ -137,7 +145,8 @@ def parse_transform(transform_str: Optional[str], strict: bool = False) -> np.nd
     if trailing.strip(', \t\n\r'):
         if strict:
             raise ValueError('Invalid SVG transform substring: {0!r}'.format(trailing))
-        warnings.warn('Skipping invalid SVG transform substring: {0!r}'.format(trailing))
+        warnings.warn('Skipping invalid SVG transform substring: {0!r}'.format(trailing),
+                      SVGSyntaxWarning)
 
     total_transform = np.identity(3)
     for substr in transform_substrs:
@@ -146,6 +155,7 @@ def parse_transform(transform_str: Optional[str], strict: bool = False) -> np.nd
         except ValueError as e:
             if strict:
                 raise
-            warnings.warn('Skipping invalid SVG transform substring {0!r}: {1}'.format(substr, e))
+            warnings.warn('Skipping invalid SVG transform substring {0!r}: {1}'.format(substr, e),
+                          SVGSyntaxWarning)
 
     return total_transform

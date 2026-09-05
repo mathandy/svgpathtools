@@ -379,6 +379,44 @@ class TestParser(unittest.TestCase):
                 tf = svgpathtools.parser.parse_transform(tf_str, strict=True)
             self.assertTrue(np.array_equal(expected, tf), msg=tf_str)
 
+    def test_transform_warning_category(self):
+        # Lenient-mode warnings use SVGSyntaxWarning, a UserWarning
+        # subclass, so they can be filtered or escalated selectively
+        # while existing UserWarning filters keep working.
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter('always')
+            svgpathtools.parser.parse_transform('translate(a)')
+        self.assertTrue(caught)
+        for w in caught:
+            self.assertTrue(issubclass(w.category,
+                                       svgpathtools.SVGSyntaxWarning))
+            self.assertTrue(issubclass(w.category, UserWarning))
+
+    def test_document_strict_transform_parsing(self):
+        svg = ('<svg xmlns="http://www.w3.org/2000/svg">'
+               '<path d="M 0,0 L 1,1" transform="translate(a)"/></svg>')
+
+        # Default: lenient, warns with SVGSyntaxWarning.
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter('always')
+            paths = svgpathtools.Document.from_svg_string(svg).paths()
+        self.assertEqual(len(paths), 1)
+        self.assertTrue(any(issubclass(w.category,
+                                       svgpathtools.SVGSyntaxWarning)
+                            for w in caught))
+
+        # The warning category can be escalated to an error.
+        with warnings.catch_warnings():
+            warnings.simplefilter('error', svgpathtools.SVGSyntaxWarning)
+            with self.assertRaises(svgpathtools.SVGSyntaxWarning):
+                svgpathtools.Document.from_svg_string(svg).paths()
+
+        # Opt-in strict parsing raises ValueError.
+        doc = svgpathtools.Document.from_svg_string(
+            svg, strict_transform_parsing=True)
+        with self.assertRaises(ValueError):
+            doc.paths()
+
     def test_pathd_init(self):
         path0 = Path('')
         path1 = parse_path("M 100 100 L 300 100 L 200 300 z")

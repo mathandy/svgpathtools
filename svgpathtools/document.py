@@ -84,7 +84,8 @@ SVG_GROUP_TAG = 'svg:g'
 
 def flattened_paths(group, group_filter=lambda x: True,
                     path_filter=lambda x: True, path_conversions=CONVERSIONS,
-                    group_search_xpath=SVG_GROUP_TAG):
+                    group_search_xpath=SVG_GROUP_TAG,
+                    strict_transform_parsing=False):
     """Returns the paths inside a group (recursively), expressing the
     paths in the base coordinates.
 
@@ -123,7 +124,8 @@ def flattened_paths(group, group_filter=lambda x: True,
 
     def new_stack_element(element, last_tf):
         return StackElement(element, last_tf.dot(
-            parse_transform(element.get('transform'))))
+            parse_transform(element.get('transform'),
+                            strict=strict_transform_parsing)))
 
     def get_relevant_children(parent, last_tf):
         children = []
@@ -145,7 +147,8 @@ def flattened_paths(group, group_filter=lambda x: True,
             for path_elem in filter(path_filter, top.group.iterfind(
                     'svg:'+key, SVG_NAMESPACE)):
                 path_tf = top.transform.dot(
-                    parse_transform(path_elem.get('transform')))
+                    parse_transform(path_elem.get('transform'),
+                                    strict=strict_transform_parsing))
                 path = transform(parse_path(converter(path_elem)), path_tf)
                 path.element = path_elem
                 path.transform = path_tf
@@ -160,7 +163,8 @@ def flattened_paths_from_group(group_to_flatten, root, recursive=True,
                                group_filter=lambda x: True,
                                path_filter=lambda x: True,
                                path_conversions=CONVERSIONS,
-                               group_search_xpath=SVG_GROUP_TAG):
+                               group_search_xpath=SVG_GROUP_TAG,
+                               strict_transform_parsing=False):
     """Flatten all the paths in a specific group.
 
     The paths will be flattened into the 'root' frame. Note that root
@@ -226,24 +230,31 @@ def flattened_paths_from_group(group_to_flatten, root, recursive=True,
         return (id(x) not in ignore_paths) and path_filter(x)
 
     return flattened_paths(root, desired_group_filter, desired_path_filter,
-                           path_conversions, group_search_xpath)
+                           path_conversions, group_search_xpath,
+                           strict_transform_parsing=strict_transform_parsing)
 
 
 class Document:
-    def __init__(self, filepath=None):
-        """A container for a DOM-style SVG document.
+    def __init__(self, filepath=None, strict_transform_parsing=False):
+        """
+        A container for a DOM-style SVG document.
 
-        The `Document` class provides a simple interface to modify and analyze 
-        the path elements in a DOM-style document.  The DOM-style document is 
+        The `Document` class provides a simple interface to modify and analyze
+        the path elements in a DOM-style document.  The DOM-style document is
         parsed into an ElementTree object (stored in the `tree` attribute).
 
         This class provides functions for extracting SVG data into Path objects.
         The output Path objects will be transformed based on their parent groups.
-        
+
         Args:
             filepath (str or file-like): The filepath of the
                 DOM-style object or a file-like object containing it.
+            strict_transform_parsing (bool): If true, a ValueError is
+                raised when a transform attribute contains invalid
+                syntax; by default invalid transform substrings are
+                skipped with an SVGSyntaxWarning.
         """
+        self.strict_transform_parsing = strict_transform_parsing
 
         # strings are interpreted as file location everything else is treated as
         # file-like object and passed to the xml parser directly
@@ -259,12 +270,13 @@ class Document:
         self.root = self.tree.getroot()
 
     @classmethod
-    def from_svg_string(cls, svg_string):
+    def from_svg_string(cls, svg_string, strict_transform_parsing=False):
         """Constructor for creating a Document object from a string."""
         # wrap string into StringIO object
         svg_file_obj = StringIO(svg_string)
         # create document from file object
-        return Document(svg_file_obj)
+        return Document(svg_file_obj,
+                        strict_transform_parsing=strict_transform_parsing)
 
     def paths(self, group_filter=lambda x: True,
               path_filter=lambda x: True, path_conversions=CONVERSIONS):
@@ -273,8 +285,9 @@ class Document:
         Note that any transform attributes are applied before returning
         the paths.
         """
-        return flattened_paths(self.tree.getroot(), group_filter,
-                               path_filter, path_conversions)
+        return flattened_paths(
+            self.tree.getroot(), group_filter, path_filter, path_conversions,
+            strict_transform_parsing=self.strict_transform_parsing)
 
     def paths_from_group(self, group, recursive=True, group_filter=lambda x: True,
                          path_filter=lambda x: True, path_conversions=CONVERSIONS):
@@ -292,8 +305,10 @@ class Document:
             warnings.warn("Could not find the requested group!")
             return []
 
-        return flattened_paths_from_group(group, self.tree.getroot(), recursive,
-                                          group_filter, path_filter, path_conversions)
+        return flattened_paths_from_group(
+            group, self.tree.getroot(), recursive, group_filter, path_filter,
+            path_conversions,
+            strict_transform_parsing=self.strict_transform_parsing)
 
     def add_path(self, path, attribs=None, group=None):
         """Add a new path to the SVG."""
