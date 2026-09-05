@@ -44,14 +44,20 @@ VALUE_NONE = "none"
 
 
 class SaxDocument:
-    def __init__(self, filename):
-        """A container for a SAX SVG light tree objects document.
+    def __init__(self, filename, strict_transform_parsing=False):
+        """
+        A container for a SAX SVG light tree objects document.
 
         This class provides functions for extracting SVG data into Path objects.
 
         Args:
             filename (str): The filename of the SVG file
+            strict_transform_parsing (bool): If true, a ValueError is
+                raised when a transform attribute contains invalid
+                syntax; by default invalid transform substrings are
+                skipped with an SVGSyntaxWarning.
         """
+        self.strict_transform_parsing = strict_transform_parsing
         self.root_values = {}
         self.tree = []
         # remember location of original svg file
@@ -69,57 +75,63 @@ class SaxDocument:
         stack = []
         values = {}
         matrix = None
-        for event, elem in iterparse(filename, events=('start', 'end')):
-            if event == 'start':
-                stack.append((values, matrix))
-                if matrix is not None:
-                    matrix = matrix.copy()  # copy of matrix
-                current_values = values
-                values = {}
-                values.update(current_values)  # copy of dictionary
-                attrs = elem.attrib
-                values.update(attrs)
-                name = elem.tag[28:]
-                if "style" in attrs:
-                    for equate in attrs["style"].split(";"):
-                        equal_item = equate.split(":")
-                        values[equal_item[0]] = equal_item[1]
-                if "transform" in attrs:
-                    transform_matrix = parse_transform(attrs["transform"])
-                    if matrix is None:
-                        matrix = np.identity(3)
-                    matrix = transform_matrix.dot(matrix)
-                if "svg" == name:
+        # Open the file ourselves (rather than letting iterparse do it)
+        # so the handle is closed even if parsing raises; otherwise the
+        # file stays locked on Windows until garbage collection.
+        with open(filename, 'rb') as svg_file:
+            for event, elem in iterparse(svg_file, events=('start', 'end')):
+                if event == 'start':
+                    stack.append((values, matrix))
+                    if matrix is not None:
+                        matrix = matrix.copy()  # copy of matrix
                     current_values = values
                     values = {}
-                    values.update(current_values)
-                    self.root_values = current_values
-                    continue
-                elif "g" == name:
-                    continue
-                elif 'path' == name:
-                    values['d'] = path2pathd(values)
-                elif 'circle' == name:
-                    values["d"] = ellipse2pathd(values)
-                elif 'ellipse' == name:
-                    values["d"] = ellipse2pathd(values)
-                elif 'line' == name:
-                    values["d"] = line2pathd(values)
-                elif 'polyline' == name:
-                    values["d"] = polyline2pathd(values)
-                elif 'polygon' == name:
-                    values["d"] = polygon2pathd(values)
-                elif 'rect' == name:
-                    values["d"] = rect2pathd(values)
+                    values.update(current_values)  # copy of dictionary
+                    attrs = elem.attrib
+                    values.update(attrs)
+                    name = elem.tag[28:]
+                    if "style" in attrs:
+                        for equate in attrs["style"].split(";"):
+                            equal_item = equate.split(":")
+                            values[equal_item[0]] = equal_item[1]
+                    if "transform" in attrs:
+                        transform_matrix = parse_transform(
+                            attrs["transform"],
+                            strict=self.strict_transform_parsing)
+                        if matrix is None:
+                            matrix = np.identity(3)
+                        matrix = transform_matrix.dot(matrix)
+                    if "svg" == name:
+                        current_values = values
+                        values = {}
+                        values.update(current_values)
+                        self.root_values = current_values
+                        continue
+                    elif "g" == name:
+                        continue
+                    elif 'path' == name:
+                        values['d'] = path2pathd(values)
+                    elif 'circle' == name:
+                        values["d"] = ellipse2pathd(values)
+                    elif 'ellipse' == name:
+                        values["d"] = ellipse2pathd(values)
+                    elif 'line' == name:
+                        values["d"] = line2pathd(values)
+                    elif 'polyline' == name:
+                        values["d"] = polyline2pathd(values)
+                    elif 'polygon' == name:
+                        values["d"] = polygon2pathd(values)
+                    elif 'rect' == name:
+                        values["d"] = rect2pathd(values)
+                    else:
+                        continue
+                    values["matrix"] = matrix
+                    values["name"] = name
+                    self.tree.append(values)
                 else:
-                    continue
-                values["matrix"] = matrix
-                values["name"] = name
-                self.tree.append(values)
-            else:
-                v = stack.pop()
-                values = v[0]
-                matrix = v[1]
+                    v = stack.pop()
+                    values = v[0]
+                    matrix = v[1]
 
     def flatten_all_paths(self):
         flat = []

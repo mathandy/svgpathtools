@@ -1,6 +1,9 @@
 # Note: This file was taken mostly as is from the svg.path module (v 2.0)
 from __future__ import division, absolute_import, print_function
+import os
+import tempfile
 import unittest
+import warnings
 from svgpathtools import Path, Line, QuadraticBezier, CubicBezier, Arc, parse_path
 import svgpathtools
 
@@ -294,6 +297,152 @@ class TestParser(unittest.TestCase):
                    skewX(40)
                    scale(10 0.5)""")
         ))
+
+    def test_transform_whitespace(self):
+        # Values may be separated by any whitespace, not just spaces.
+        expected_tf_matrix = np.identity(3)
+        expected_tf_matrix[0:2, 0:3] = np.array([[1.0, 3.0, 5.0],
+                                                 [2.0, 4.0, 6.0]])
+        tf_matrix = svgpathtools.parser.parse_transform(
+            'matrix(1, 2,\n3  4\t5 6)')
+        self.assertTrue(np.array_equal(expected_tf_matrix, tf_matrix))
+
+    def test_transform_malformed(self):
+        bad_transforms = ('matrix(1 x 3 4 5 6)',       # non-numeric value
+                          'translate(a)',              # non-numeric value
+                          'scale()',                   # wrong number of values
+                          'rotate(1 2 z)',             # non-numeric value
+                          'bogus(5)',                  # unknown transform type
+                          'notmatrix(1 0 0 1 0 0)',    # unknown transform type
+                          'translate(nan)',            # non-finite value
+                          'scale(1 inf)',              # non-finite value
+                          'translate(1_0)',            # not an SVG number
+                          'scale(1e999)',              # overflows to inf
+                          'foo(1',                     # missing closing paren
+                          'matrix',                    # no parens at all
+                          'matrix(1(2)',               # extra opening paren
+                          'rotate(30))')               # stray closing paren
+
+        # By default, each invalid substring warns and contributes an
+        # identity matrix.  ('rotate(30))' is excluded because its valid
+        # 'rotate(30)' part still applies.)
+        identity = np.identity(3)
+        for bad in bad_transforms[:-1]:
+            with warnings.catch_warnings(record=True) as caught:
+                warnings.simplefilter('always')
+                tf = svgpathtools.parser.parse_transform(bad)
+            self.assertTrue(caught, msg=bad)
+            self.assertTrue(np.array_equal(identity, tf), msg=bad)
+
+        # Valid substrings still apply alongside skipped invalid ones.
+        expected_tf_translate = np.identity(3)
+        expected_tf_translate[0, 2] = 10
+        expected_tf_translate[1, 2] = 20
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter('always')
+            tf = svgpathtools.parser.parse_transform(
+                'translate(10 20) matrix(1 x 3 4 5 6)')
+        self.assertTrue(caught)
+        self.assertTrue(np.array_equal(expected_tf_translate, tf))
+
+        # With strict=True, invalid transform syntax raises a ValueError.
+        for bad in bad_transforms:
+            with self.assertRaises(ValueError, msg=bad):
+                svgpathtools.parser.parse_transform(bad, strict=True)
+
+        # Error messages identify the offending substring.
+        with self.assertRaisesRegex(ValueError, r'rotate\(1 2'):
+            svgpathtools.parser.parse_transform('rotate(1 2)', strict=True)
+
+        # None, '' and 'none' yield identity silently, even in strict
+        # mode; other non-strings raise TypeError.
+        for empty in (None, '', 'none', ' none '):
+            with warnings.catch_warnings():
+                warnings.simplefilter('error')
+                tf = svgpathtools.parser.parse_transform(empty, strict=True)
+            self.assertTrue(np.array_equal(identity, tf), msg=repr(empty))
+        for bad_type in (0, False, [], 0.5):
+            with self.assertRaises(TypeError, msg=repr(bad_type)):
+                svgpathtools.parser.parse_transform(bad_type)
+
+    def test_transform_separators(self):
+        # Transforms in a list may be separated by whitespace, commas, or
+        # (leniently) nothing at all; all should parse identically, in
+        # strict mode too.
+        expected = svgpathtools.parser.parse_transform(
+            'translate(10 20) rotate(30)', strict=True)
+        for tf_str in ('translate(10 20),rotate(30)',
+                       'translate(10 20) , rotate(30)',
+                       'translate(10 20)\nrotate(30)',
+                       'translate(10 20)rotate(30)',
+                       # A trailing list-separator comma is harmless.
+                       'translate(10 20),rotate(30),',
+                       'translate(10 20),rotate(30) , '):
+            with warnings.catch_warnings():
+                warnings.simplefilter('error')
+                tf = svgpathtools.parser.parse_transform(tf_str, strict=True)
+            self.assertTrue(np.array_equal(expected, tf), msg=tf_str)
+
+    def test_transform_warning_category(self):
+        # Lenient-mode warnings use SVGSyntaxWarning, a UserWarning
+        # subclass, so they can be filtered or escalated selectively
+        # while existing UserWarning filters keep working.
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter('always')
+            svgpathtools.parse_transform('translate(a)')
+        self.assertTrue(caught)
+        for w in caught:
+            self.assertTrue(issubclass(w.category,
+                                       svgpathtools.SVGSyntaxWarning))
+            self.assertTrue(issubclass(w.category, UserWarning))
+
+    def test_document_strict_transform_parsing(self):
+        svg = ('<svg xmlns="http://www.w3.org/2000/svg">'
+               '<path d="M 0,0 L 1,1" transform="translate(a)"/></svg>')
+
+        # Default: lenient, warns with SVGSyntaxWarning.
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter('always')
+            paths = svgpathtools.Document.from_svg_string(svg).paths()
+        self.assertEqual(len(paths), 1)
+        self.assertTrue(any(issubclass(w.category,
+                                       svgpathtools.SVGSyntaxWarning)
+                            for w in caught))
+
+        # The warning category can be escalated to an error.
+        with warnings.catch_warnings():
+            warnings.simplefilter('error', svgpathtools.SVGSyntaxWarning)
+            with self.assertRaises(svgpathtools.SVGSyntaxWarning):
+                svgpathtools.Document.from_svg_string(svg).paths()
+
+        # Opt-in strict parsing raises ValueError.
+        doc = svgpathtools.Document.from_svg_string(
+            svg, strict_transform_parsing=True)
+        with self.assertRaises(ValueError):
+            doc.paths()
+
+    def test_sax_document_strict_transform_parsing(self):
+        svg = ('<svg xmlns="http://www.w3.org/2000/svg">'
+               '<path d="M 0,0 L 1,1" transform="translate(a)"/></svg>')
+        fd, fname = tempfile.mkstemp(suffix='.svg')
+        try:
+            with os.fdopen(fd, 'w') as f:
+                f.write(svg)
+
+            # Default: lenient, warns with SVGSyntaxWarning.
+            with warnings.catch_warnings(record=True) as caught:
+                warnings.simplefilter('always')
+                svgpathtools.SaxDocument(fname)
+            self.assertTrue(any(issubclass(w.category,
+                                           svgpathtools.SVGSyntaxWarning)
+                                for w in caught))
+
+            # Opt-in strict parsing raises ValueError.
+            with self.assertRaises(ValueError):
+                svgpathtools.SaxDocument(fname,
+                                         strict_transform_parsing=True)
+        finally:
+            os.remove(fname)
 
     def test_pathd_init(self):
         path0 = Path('')
