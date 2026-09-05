@@ -4,6 +4,7 @@ Note: This file was taken (nearly) as is from the svg.path module (v 2.0)."""
 
 # External dependencies
 from __future__ import division, absolute_import, print_function
+from typing import Optional, Sequence
 import numpy as np
 import warnings
 
@@ -15,7 +16,7 @@ def parse_path(pathdef, current_pos=0j, tree_element=None):
     return Path(pathdef, current_pos=current_pos, tree_element=tree_element)
 
 
-def _check_num_parsed_values(values, allowed):
+def _check_num_parsed_values(values: Sequence[float], allowed: Sequence[int]) -> None:
     if not any(num == len(values) for num in allowed):
         if len(allowed) > 1:
             raise ValueError('Expected one of the following number of values {0}, but found {1} values instead: {2}'
@@ -26,7 +27,7 @@ def _check_num_parsed_values(values, allowed):
             raise ValueError('Expected 1 value, found {0}: {1}'.format(len(values), values))
 
 
-def _parse_transform_substr(transform_substr):
+def _parse_transform_substr(transform_substr: str) -> np.ndarray:
     """Converts a single SVG transform substring, `type(v1 v2 ...)`, into
     a 3x3 matrix.  Raises a ValueError on invalid transform syntax."""
 
@@ -92,7 +93,7 @@ def _parse_transform_substr(transform_substr):
     return transform
 
 
-def parse_transform(transform_str, strict=False):
+def parse_transform(transform_str: Optional[str], strict: bool = False) -> np.ndarray:
     """Converts a valid SVG transformation string into a 3x3 matrix.
     If the string is empty or null, this returns a 3x3 identity matrix.
 
