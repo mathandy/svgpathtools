@@ -5,6 +5,7 @@ Note: This file was taken (nearly) as is from the svg.path module (v 2.0)."""
 # External dependencies
 from __future__ import division, absolute_import, print_function
 from typing import Optional, Sequence
+import math
 import numpy as np
 import warnings
 
@@ -16,15 +17,19 @@ def parse_path(pathdef, current_pos=0j, tree_element=None):
     return Path(pathdef, current_pos=current_pos, tree_element=tree_element)
 
 
-def _check_num_parsed_values(values: Sequence[float], allowed: Sequence[int]) -> None:
+def _check_num_parsed_values(values: Sequence[float], allowed: Sequence[int],
+                             transform_substr: str) -> None:
     if not any(num == len(values) for num in allowed):
         if len(allowed) > 1:
-            raise ValueError('Expected one of the following number of values {0}, but found {1} values instead: {2}'
-                             .format(allowed, len(values), values))
+            raise ValueError('Expected one of the following number of values {0}, '
+                             'but found {1} values in {2!r}: {3}'
+                             .format(allowed, len(values), transform_substr, values))
         elif allowed[0] != 1:
-            raise ValueError('Expected {0} values, found {1}: {2}'.format(allowed[0], len(values), values))
+            raise ValueError('Expected {0} values in {1!r}, found {2}: {3}'
+                             .format(allowed[0], transform_substr, len(values), values))
         else:
-            raise ValueError('Expected 1 value, found {0}: {1}'.format(len(values), values))
+            raise ValueError('Expected 1 value in {0!r}, found {1}: {2}'
+                             .format(transform_substr, len(values), values))
 
 
 def _parse_transform_substr(transform_substr: str) -> np.ndarray:
@@ -35,34 +40,39 @@ def _parse_transform_substr(transform_substr: str) -> np.ndarray:
         raise ValueError('Invalid SVG transform substring: {0!r}'.format(transform_substr))
 
     type_str, value_str = transform_substr.split('(')
+    # Any leading commas/whitespace are the separator from the preceding
+    # transform in the list, e.g. 'translate(1), rotate(30)'.
+    type_str = type_str.strip(', \t\n\r')
     try:
         values = [float(s) for s in value_str.replace(',', ' ').split()]
     except ValueError:
         raise ValueError('Invalid SVG transform substring: {0!r}'.format(transform_substr))
+    if not all(math.isfinite(v) for v in values):
+        raise ValueError('Non-finite value in SVG transform substring: {0!r}'.format(transform_substr))
 
     transform = np.identity(3)
-    if 'matrix' in type_str:
-        _check_num_parsed_values(values, [6])
+    if type_str == 'matrix':
+        _check_num_parsed_values(values, [6], transform_substr)
 
         transform[0:2, 0:3] = np.array([values[0:6:2], values[1:6:2]])
 
-    elif 'translate' in transform_substr:
-        _check_num_parsed_values(values, [1, 2])
+    elif type_str == 'translate':
+        _check_num_parsed_values(values, [1, 2], transform_substr)
 
         transform[0, 2] = values[0]
         if len(values) > 1:
             transform[1, 2] = values[1]
 
-    elif 'scale' in transform_substr:
-        _check_num_parsed_values(values, [1, 2])
+    elif type_str == 'scale':
+        _check_num_parsed_values(values, [1, 2], transform_substr)
 
         x_scale = values[0]
         y_scale = values[1] if (len(values) > 1) else x_scale
         transform[0, 0] = x_scale
         transform[1, 1] = y_scale
 
-    elif 'rotate' in transform_substr:
-        _check_num_parsed_values(values, [1, 3])
+    elif type_str == 'rotate':
+        _check_num_parsed_values(values, [1, 3], transform_substr)
 
         angle = values[0] * np.pi / 180.0
         if len(values) == 3:
@@ -78,13 +88,13 @@ def _parse_transform_substr(transform_substr: str) -> np.ndarray:
 
         transform = tf_offset.dot(tf_rotate).dot(tf_offset_neg)
 
-    elif 'skewX' in transform_substr:
-        _check_num_parsed_values(values, [1])
+    elif type_str == 'skewX':
+        _check_num_parsed_values(values, [1], transform_substr)
 
         transform[0, 1] = np.tan(values[0] * np.pi / 180.0)
 
-    elif 'skewY' in transform_substr:
-        _check_num_parsed_values(values, [1])
+    elif type_str == 'skewY':
+        _check_num_parsed_values(values, [1], transform_substr)
 
         transform[1, 0] = np.tan(values[0] * np.pi / 180.0)
     else:
@@ -100,7 +110,7 @@ def parse_transform(transform_str: Optional[str], strict: bool = False) -> np.nd
     By default each invalid transform substring is skipped (i.e.
     contributes an identity matrix) with a warning.  If `strict` is
     true, a ValueError is raised on invalid transform syntax instead."""
-    if not transform_str:
+    if transform_str is None or transform_str == '':
         return np.identity(3)
     elif not isinstance(transform_str, str):
         raise TypeError('Must provide a string to parse')

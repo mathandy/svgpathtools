@@ -306,15 +306,18 @@ class TestParser(unittest.TestCase):
         self.assertTrue(np.array_equal(expected_tf_matrix, tf_matrix))
 
     def test_transform_malformed(self):
-        bad_transforms = ('matrix(1 x 3 4 5 6)',  # non-numeric value
-                          'translate(a)',         # non-numeric value
-                          'scale()',              # wrong number of values
-                          'rotate(1 2 z)',        # non-numeric value
-                          'bogus(5)',             # unknown transform type
-                          'foo(1',                # missing closing paren
-                          'matrix',               # no parens at all
-                          'matrix(1(2)',          # extra opening paren
-                          'rotate(30))')          # stray closing paren
+        bad_transforms = ('matrix(1 x 3 4 5 6)',       # non-numeric value
+                          'translate(a)',              # non-numeric value
+                          'scale()',                   # wrong number of values
+                          'rotate(1 2 z)',             # non-numeric value
+                          'bogus(5)',                  # unknown transform type
+                          'notmatrix(1 0 0 1 0 0)',    # unknown transform type
+                          'translate(nan)',            # non-finite value
+                          'scale(1 inf)',              # non-finite value
+                          'foo(1',                     # missing closing paren
+                          'matrix',                    # no parens at all
+                          'matrix(1(2)',               # extra opening paren
+                          'rotate(30))')               # stray closing paren
 
         # By default, each invalid substring warns and contributes an
         # identity matrix.  ('rotate(30))' is excluded because its valid
@@ -342,6 +345,32 @@ class TestParser(unittest.TestCase):
         for bad in bad_transforms:
             with self.assertRaises(ValueError, msg=bad):
                 svgpathtools.parser.parse_transform(bad, strict=True)
+
+        # Error messages identify the offending substring.
+        with self.assertRaisesRegex(ValueError, r'rotate\(1 2'):
+            svgpathtools.parser.parse_transform('rotate(1 2)', strict=True)
+
+        # None and '' yield identity; other non-strings raise TypeError.
+        self.assertTrue(np.array_equal(
+            identity, svgpathtools.parser.parse_transform(None)))
+        self.assertTrue(np.array_equal(
+            identity, svgpathtools.parser.parse_transform('')))
+        for bad_type in (0, False, [], 0.5):
+            with self.assertRaises(TypeError, msg=repr(bad_type)):
+                svgpathtools.parser.parse_transform(bad_type)
+
+    def test_transform_separators(self):
+        # Transforms in a list may be separated by whitespace, commas, or
+        # (leniently) nothing at all; all should parse identically, in
+        # strict mode too.
+        expected = svgpathtools.parser.parse_transform(
+            'translate(10 20) rotate(30)', strict=True)
+        for tf_str in ('translate(10 20),rotate(30)',
+                       'translate(10 20) , rotate(30)',
+                       'translate(10 20)\nrotate(30)',
+                       'translate(10 20)rotate(30)'):
+            tf = svgpathtools.parser.parse_transform(tf_str, strict=True)
+            self.assertTrue(np.array_equal(expected, tf), msg=tf_str)
 
     def test_pathd_init(self):
         path0 = Path('')
