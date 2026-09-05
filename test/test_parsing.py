@@ -1,5 +1,7 @@
 # Note: This file was taken mostly as is from the svg.path module (v 2.0)
 from __future__ import division, absolute_import, print_function
+import os
+import tempfile
 import unittest
 import warnings
 from svgpathtools import Path, Line, QuadraticBezier, CubicBezier, Arc, parse_path
@@ -314,6 +316,8 @@ class TestParser(unittest.TestCase):
                           'notmatrix(1 0 0 1 0 0)',    # unknown transform type
                           'translate(nan)',            # non-finite value
                           'scale(1 inf)',              # non-finite value
+                          'translate(1_0)',            # not an SVG number
+                          'scale(1e999)',              # overflows to inf
                           'foo(1',                     # missing closing paren
                           'matrix',                    # no parens at all
                           'matrix(1(2)',               # extra opening paren
@@ -385,7 +389,7 @@ class TestParser(unittest.TestCase):
         # while existing UserWarning filters keep working.
         with warnings.catch_warnings(record=True) as caught:
             warnings.simplefilter('always')
-            svgpathtools.parser.parse_transform('translate(a)')
+            svgpathtools.parse_transform('translate(a)')
         self.assertTrue(caught)
         for w in caught:
             self.assertTrue(issubclass(w.category,
@@ -416,6 +420,29 @@ class TestParser(unittest.TestCase):
             svg, strict_transform_parsing=True)
         with self.assertRaises(ValueError):
             doc.paths()
+
+    def test_sax_document_strict_transform_parsing(self):
+        svg = ('<svg xmlns="http://www.w3.org/2000/svg">'
+               '<path d="M 0,0 L 1,1" transform="translate(a)"/></svg>')
+        fd, fname = tempfile.mkstemp(suffix='.svg')
+        try:
+            with os.fdopen(fd, 'w') as f:
+                f.write(svg)
+
+            # Default: lenient, warns with SVGSyntaxWarning.
+            with warnings.catch_warnings(record=True) as caught:
+                warnings.simplefilter('always')
+                svgpathtools.SaxDocument(fname)
+            self.assertTrue(any(issubclass(w.category,
+                                           svgpathtools.SVGSyntaxWarning)
+                                for w in caught))
+
+            # Opt-in strict parsing raises ValueError.
+            with self.assertRaises(ValueError):
+                svgpathtools.SaxDocument(fname,
+                                         strict_transform_parsing=True)
+        finally:
+            os.remove(fname)
 
     def test_pathd_init(self):
         path0 = Path('')

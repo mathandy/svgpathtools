@@ -10,11 +10,18 @@ from __future__ import division, absolute_import, print_function
 from typing import Optional, Sequence
 from xml.etree.ElementTree import Element
 import math
+import re
 import numpy as np
 import warnings
 
 # Internal dependencies
 from .path import Path
+
+# The SVG number grammar. Stricter than float(), which also accepts
+# e.g. '1_0', 'nan', and non-ASCII digits.  (The one deliberate
+# looseness: '1.' is accepted, though the grammar technically wants a
+# digit after the point.)
+_NUMBER_RE = re.compile(r'[+-]?([0-9]+(\.[0-9]*)?|\.[0-9]+)([eE][+-]?[0-9]+)?\Z')
 
 
 class SVGSyntaxWarning(UserWarning):
@@ -56,10 +63,11 @@ def _parse_transform_substr(transform_substr: str) -> np.ndarray:
     # Any leading commas/whitespace are the separator from the preceding
     # transform in the list, e.g. 'translate(1), rotate(30)'.
     type_str = type_str.strip(', \t\n\r')
-    try:
-        values = [float(s) for s in value_str.replace(',', ' ').split()]
-    except ValueError:
+    tokens = value_str.replace(',', ' ').split()
+    if not all(_NUMBER_RE.match(t) for t in tokens):
         raise ValueError('Invalid SVG transform substring: {0!r}'.format(transform_substr))
+    values = [float(t) for t in tokens]
+    # A grammar-valid value can still overflow float, e.g. '1e999'.
     if not all(math.isfinite(v) for v in values):
         raise ValueError('Non-finite value in SVG transform substring: {0!r}'.format(transform_substr))
 

@@ -103,6 +103,10 @@ def flattened_paths(group, group_filter=lambda x: True,
             dictionary will be ignored (including the `path` tag). To
             only convert explicit path elements, pass in
             `path_conversions=CONVERT_ONLY_PATHS`.
+        strict_transform_parsing (bool): If true, a ValueError is
+            raised when a transform attribute contains invalid syntax;
+            by default invalid transform substrings are skipped with
+            an SVGSyntaxWarning.
     """
     if not isinstance(group, Element):
         raise TypeError('Must provide an xml.etree.Element object. '
@@ -169,7 +173,11 @@ def flattened_paths_from_group(group_to_flatten, root, recursive=True,
 
     The paths will be flattened into the 'root' frame. Note that root
     needs to be an ancestor of the group that is being flattened.
-    Otherwise, no paths will be returned."""
+    Otherwise, no paths will be returned.
+
+    If `strict_transform_parsing` is true, a ValueError is raised when
+    a transform attribute contains invalid syntax; by default invalid
+    transform substrings are skipped with an SVGSyntaxWarning."""
 
     if not any(group_to_flatten is descendant for descendant in root.iter()):
         warnings.warn('The requested group_to_flatten is not a '
@@ -250,9 +258,11 @@ class Document:
             filepath (str or file-like): The filepath of the
                 DOM-style object or a file-like object containing it.
             strict_transform_parsing (bool): If true, a ValueError is
-                raised when a transform attribute contains invalid
-                syntax; by default invalid transform substrings are
-                skipped with an SVGSyntaxWarning.
+                raised when a transform attribute containing invalid
+                syntax is parsed (transforms are parsed lazily, by
+                `paths()` and `paths_from_group()`); by default invalid
+                transform substrings are skipped with an
+                SVGSyntaxWarning.
         """
         self.strict_transform_parsing = strict_transform_parsing
 
