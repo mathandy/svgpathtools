@@ -33,9 +33,12 @@ def _check_num_parsed_values(values: Sequence[float], allowed: Sequence[int],
 
 
 def _parse_transform_substr(transform_substr: str) -> np.ndarray:
-    """Converts a single SVG transform substring, `type(v1 v2 ...)`, into
-    a 3x3 matrix.  Raises a ValueError on invalid transform syntax."""
+    """
+    Convert a single SVG transform substring into a 3x3 matrix.
 
+    A well-formed transform substring has the form `type(v1 v2 ...)`.
+    Raises a ValueError on invalid transform syntax.
+    """
     if transform_substr.count('(') != 1:
         raise ValueError('Invalid SVG transform substring: {0!r}'.format(transform_substr))
 
@@ -104,12 +107,15 @@ def _parse_transform_substr(transform_substr: str) -> np.ndarray:
 
 
 def parse_transform(transform_str: Optional[str], strict: bool = False) -> np.ndarray:
-    """Converts a valid SVG transformation string into a 3x3 matrix.
-    If the string is empty or null, this returns a 3x3 identity matrix.
+    """
+    Convert a valid SVG transformation string into a 3x3 matrix.
 
-    By default each invalid transform substring is skipped (i.e.
-    contributes an identity matrix) with a warning.  If `strict` is
-    true, a ValueError is raised on invalid transform syntax instead."""
+    If the string is empty, null, or 'none', this returns a 3x3
+    identity matrix.  By default each invalid transform substring is
+    skipped (i.e. contributes an identity matrix) with a warning.  If
+    `strict` is true, a ValueError is raised on invalid transform
+    syntax instead.
+    """
     if transform_str is None or transform_str == '':
         return np.identity(3)
     elif not isinstance(transform_str, str):
