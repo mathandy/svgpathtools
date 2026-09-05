@@ -8,6 +8,7 @@ taken (nearly) as is from the svg.path module (v 2.0).
 # External dependencies
 from __future__ import division, absolute_import, print_function
 from typing import Optional, Sequence
+from xml.etree.ElementTree import Element
 import math
 import numpy as np
 import warnings
@@ -20,7 +21,8 @@ class SVGSyntaxWarning(UserWarning):
     """Category for warnings about invalid SVG syntax handled leniently."""
 
 
-def parse_path(pathdef, current_pos=0j, tree_element=None):
+def parse_path(pathdef: str, current_pos: complex = 0j,
+               tree_element: Optional[Element] = None) -> Path:
     """Convert an SVG path element d-string into a Path object."""
     return Path(pathdef, current_pos=current_pos, tree_element=tree_element)
 
