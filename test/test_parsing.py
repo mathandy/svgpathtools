@@ -1,6 +1,7 @@
 # Note: This file was taken mostly as is from the svg.path module (v 2.0)
 from __future__ import division, absolute_import, print_function
 import unittest
+import warnings
 from svgpathtools import Path, Line, QuadraticBezier, CubicBezier, Arc, parse_path
 import svgpathtools
 
@@ -295,18 +296,52 @@ class TestParser(unittest.TestCase):
                    scale(10 0.5)""")
         ))
 
+    def test_transform_whitespace(self):
+        # Values may be separated by any whitespace, not just spaces.
+        expected_tf_matrix = np.identity(3)
+        expected_tf_matrix[0:2, 0:3] = np.array([[1.0, 3.0, 5.0],
+                                                 [2.0, 4.0, 6.0]])
+        tf_matrix = svgpathtools.parser.parse_transform(
+            'matrix(1, 2,\n3  4\t5 6)')
+        self.assertTrue(np.array_equal(expected_tf_matrix, tf_matrix))
+
     def test_transform_malformed(self):
-        # Malformed transform substrings (non-numeric values, missing or extra
-        # parentheses) used to raise a bare ValueError; they should degrade to
-        # the identity matrix like the unknown-type case.
-        import warnings
+        bad_transforms = ('matrix(1 x 3 4 5 6)',  # non-numeric value
+                          'translate(a)',         # non-numeric value
+                          'scale()',              # wrong number of values
+                          'rotate(1 2 z)',        # non-numeric value
+                          'bogus(5)',             # unknown transform type
+                          'foo(1',                # missing closing paren
+                          'matrix',               # no parens at all
+                          'matrix(1(2)',          # extra opening paren
+                          'rotate(30))')          # stray closing paren
+
+        # By default, each invalid substring warns and contributes an
+        # identity matrix.  ('rotate(30))' is excluded because its valid
+        # 'rotate(30)' part still applies.)
         identity = np.identity(3)
-        for bad in ('matrix(1 x 3 4 5 6)', 'translate(a)', 'scale()',
-                    'rotate(1 2 z)', 'foo(1', 'matrix'):
-            with warnings.catch_warnings():
-                warnings.simplefilter('ignore')
+        for bad in bad_transforms[:-1]:
+            with warnings.catch_warnings(record=True) as caught:
+                warnings.simplefilter('always')
                 tf = svgpathtools.parser.parse_transform(bad)
-            self.assertTrue(np.array_equal(identity, tf))
+            self.assertTrue(caught, msg=bad)
+            self.assertTrue(np.array_equal(identity, tf), msg=bad)
+
+        # Valid substrings still apply alongside skipped invalid ones.
+        expected_tf_translate = np.identity(3)
+        expected_tf_translate[0, 2] = 10
+        expected_tf_translate[1, 2] = 20
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter('always')
+            tf = svgpathtools.parser.parse_transform(
+                'translate(10 20) matrix(1 x 3 4 5 6)')
+        self.assertTrue(caught)
+        self.assertTrue(np.array_equal(expected_tf_translate, tf))
+
+        # With strict=True, invalid transform syntax raises a ValueError.
+        for bad in bad_transforms:
+            with self.assertRaises(ValueError, msg=bad):
+                svgpathtools.parser.parse_transform(bad, strict=True)
 
     def test_pathd_init(self):
         path0 = Path('')
