@@ -115,11 +115,16 @@ def parse_transform(transform_str: Optional[str], strict: bool = False) -> np.nd
     elif not isinstance(transform_str, str):
         raise TypeError('Must provide a string to parse')
 
+    # 'none' is valid (SVG 2 / CSS transform syntax) and means no transform.
+    if transform_str.strip() == 'none':
+        return np.identity(3)
+
     transform_substrs = transform_str.split(')')
     # Anything after the last ')' (e.g. a stray 'matrix' with no
-    # parentheses) is invalid syntax, not a transform to apply.
+    # parentheses) is invalid syntax, not a transform to apply -- but a
+    # trailing list-separator comma is harmless.
     trailing = transform_substrs.pop()
-    if trailing.strip():
+    if trailing.strip(', \t\n\r'):
         if strict:
             raise ValueError('Invalid SVG transform substring: {0!r}'.format(trailing))
         warnings.warn('Skipping invalid SVG transform substring: {0!r}'.format(trailing))

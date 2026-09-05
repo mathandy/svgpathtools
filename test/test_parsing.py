@@ -350,11 +350,13 @@ class TestParser(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, r'rotate\(1 2'):
             svgpathtools.parser.parse_transform('rotate(1 2)', strict=True)
 
-        # None and '' yield identity; other non-strings raise TypeError.
-        self.assertTrue(np.array_equal(
-            identity, svgpathtools.parser.parse_transform(None)))
-        self.assertTrue(np.array_equal(
-            identity, svgpathtools.parser.parse_transform('')))
+        # None, '' and 'none' yield identity silently, even in strict
+        # mode; other non-strings raise TypeError.
+        for empty in (None, '', 'none', ' none '):
+            with warnings.catch_warnings():
+                warnings.simplefilter('error')
+                tf = svgpathtools.parser.parse_transform(empty, strict=True)
+            self.assertTrue(np.array_equal(identity, tf), msg=repr(empty))
         for bad_type in (0, False, [], 0.5):
             with self.assertRaises(TypeError, msg=repr(bad_type)):
                 svgpathtools.parser.parse_transform(bad_type)
@@ -368,8 +370,13 @@ class TestParser(unittest.TestCase):
         for tf_str in ('translate(10 20),rotate(30)',
                        'translate(10 20) , rotate(30)',
                        'translate(10 20)\nrotate(30)',
-                       'translate(10 20)rotate(30)'):
-            tf = svgpathtools.parser.parse_transform(tf_str, strict=True)
+                       'translate(10 20)rotate(30)',
+                       # A trailing list-separator comma is harmless.
+                       'translate(10 20),rotate(30),',
+                       'translate(10 20),rotate(30) , '):
+            with warnings.catch_warnings():
+                warnings.simplefilter('error')
+                tf = svgpathtools.parser.parse_transform(tf_str, strict=True)
             self.assertTrue(np.array_equal(expected, tf), msg=tf_str)
 
     def test_pathd_init(self):
