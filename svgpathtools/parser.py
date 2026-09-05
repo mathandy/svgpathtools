@@ -1,6 +1,9 @@
-"""This submodule contains the path_parse() function used to convert SVG path
-element d-strings into svgpathtools Path objects.
-Note: This file was taken (nearly) as is from the svg.path module (v 2.0)."""
+"""
+Parse SVG path element d-strings into svgpathtools Path objects.
+
+This submodule contains the parse_path() function.  Note: this file was
+taken (nearly) as is from the svg.path module (v 2.0).
+"""
 
 # External dependencies
 from __future__ import division, absolute_import, print_function
@@ -14,6 +17,7 @@ from .path import Path
 
 
 def parse_path(pathdef, current_pos=0j, tree_element=None):
+    """Convert an SVG path element d-string into a Path object."""
     return Path(pathdef, current_pos=current_pos, tree_element=tree_element)
 
 
