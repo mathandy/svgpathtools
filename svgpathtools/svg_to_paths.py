@@ -2,18 +2,36 @@
 The main tool being the svg2paths() function."""
 
 # External dependencies
-from __future__ import division, absolute_import, print_function
+from __future__ import division, absolute_import, print_function, annotations
+from typing import (IO, TYPE_CHECKING, Any, Dict, List, Literal, Mapping,
+                    Tuple, Union, overload)
 from xml.dom.minidom import parse
 import os
 from io import StringIO
 import re
-try:
-    from os import PathLike as FilePathLike
-except ImportError:
-    FilePathLike = str
+from os import PathLike as FilePathLike
 
 # Internal dependencies
 from .parser import parse_path
+from .path import Path
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
+
+# The SVG element to convert: either an ElementTree Element or a plain
+# mapping of its attributes (which is what `svg2paths` and `SaxDocument`
+# build and pass in).
+SVGElement = Union["Element", Mapping[str, str]]
+
+# An SVG element's attributes, as returned alongside the paths.
+Attributes = Dict[str, str]
+
+# What `svg2paths` returns, with and without the <svg> element's attributes.
+PathsAndAttributes = Tuple[List[Path], List[Attributes]]
+PathsAttributesAndSVG = Tuple[List[Path], List[Attributes], Attributes]
+
+# An SVG to read: a path to one, or an already-open file-like object.
+SVGSource = Union[str, "os.PathLike[str]", IO[str], IO[bytes]]
 
 
 COORD_PAIR_TMPLT = re.compile(
@@ -23,18 +41,22 @@ COORD_PAIR_TMPLT = re.compile(
 )
 
 
-def path2pathd(path):
+def path2pathd(path: SVGElement) -> str:
     return path.get('d', '')
 
 
-def ellipse2pathd(ellipse, use_cubics=False):
+def ellipse2pathd(ellipse: SVGElement, use_cubics: bool = False) -> str:
     """converts the parameters from an ellipse or a circle to a string for a 
     Path object d-attribute"""
 
-    cx = ellipse.get('cx', 0)
-    cy = ellipse.get('cy', 0)
-    rx = ellipse.get('rx', None)
-    ry = ellipse.get('ry', None)
+    cx: float
+    cy: float
+    rx: float
+    ry: float
+    cx = ellipse.get('cx', 0)  # type: ignore[assignment]
+    cy = ellipse.get('cy', 0)  # type: ignore[assignment]
+    rx = ellipse.get('rx', None)  # type: ignore[assignment, arg-type]
+    ry = ellipse.get('ry', None)  # type: ignore[assignment, arg-type]
     r = ellipse.get('r', None)
 
     if r is not None:
@@ -76,11 +98,15 @@ def ellipse2pathd(ellipse, use_cubics=False):
     return d + 'z'
 
 
-def polyline2pathd(polyline, is_polygon=False):
+def polyline2pathd(polyline: Union[str, SVGElement],
+                   is_polygon: bool = False) -> str:
     """converts the string from a polyline points-attribute to a string for a
     Path object d-attribute"""
+    points: list[tuple[str, str]]
     if isinstance(polyline, str):
-        points = polyline
+        # NOTE: a bare points-string does not actually work here -- the code
+        # below indexes `points` as a list of (x, y) pairs.
+        points = polyline  # type: ignore[assignment]
     else:
         points = COORD_PAIR_TMPLT.findall(polyline.get('points', ''))
 
@@ -102,7 +128,8 @@ def polyline2pathd(polyline, is_polygon=False):
     return d
 
 
-def polygon2pathd(polyline, is_polygon=True):
+def polygon2pathd(polyline: Union[str, SVGElement],
+                  is_polygon: bool = True) -> str:
     """converts the string from a polygon points-attribute to a string 
     for a Path object d-attribute.
     Note:  For a polygon made from n points, the resulting path will be
@@ -111,7 +138,7 @@ def polygon2pathd(polyline, is_polygon=True):
     return polyline2pathd(polyline, is_polygon)
 
 
-def rect2pathd(rect):
+def rect2pathd(rect: SVGElement) -> str:
     """Converts an SVG-rect element to a Path d-string.
     
     The rectangle will start at the (x,y) coordinate specified by the 
@@ -123,8 +150,10 @@ def rect2pathd(rect):
 
         # if only one, rx or ry, is present, use that value for both
         # https://developer.mozilla.org/en-US/docs/Web/SVG/Element/rect
-        rx = rect.get('rx', None)
-        ry = rect.get('ry', None)
+        rx: float
+        ry: float
+        rx = rect.get('rx', None)  # type: ignore[assignment, arg-type]
+        ry = rect.get('ry', None)  # type: ignore[assignment, arg-type]
         if rx is None:
             rx = ry or 0.
         if ry is None:
@@ -153,21 +182,58 @@ def rect2pathd(rect):
     return d
 
 
-def line2pathd(l):
+def line2pathd(l: Element) -> str:
     return (
         'M' + l.attrib.get('x1', '0') + ' ' + l.attrib.get('y1', '0')
         + 'L' + l.attrib.get('x2', '0') + ' ' + l.attrib.get('y2', '0')
     )
 
 
-def svg2paths(svg_file_location,
-              return_svg_attributes=False,
-              convert_circles_to_paths=True,
-              convert_ellipses_to_paths=True,
-              convert_lines_to_paths=True,
-              convert_polylines_to_paths=True,
-              convert_polygons_to_paths=True,
-              convert_rectangles_to_paths=True):
+@overload
+def svg2paths(svg_file_location: SVGSource,
+              return_svg_attributes: Literal[False] = ...,
+              convert_circles_to_paths: bool = ...,
+              convert_ellipses_to_paths: bool = ...,
+              convert_lines_to_paths: bool = ...,
+              convert_polylines_to_paths: bool = ...,
+              convert_polygons_to_paths: bool = ...,
+              convert_rectangles_to_paths: bool = ...
+              ) -> PathsAndAttributes: ...
+
+
+@overload
+def svg2paths(svg_file_location: SVGSource,
+              return_svg_attributes: Literal[True],
+              convert_circles_to_paths: bool = ...,
+              convert_ellipses_to_paths: bool = ...,
+              convert_lines_to_paths: bool = ...,
+              convert_polylines_to_paths: bool = ...,
+              convert_polygons_to_paths: bool = ...,
+              convert_rectangles_to_paths: bool = ...
+              ) -> PathsAttributesAndSVG: ...
+
+
+@overload
+def svg2paths(svg_file_location: SVGSource,
+              return_svg_attributes: bool,
+              convert_circles_to_paths: bool = ...,
+              convert_ellipses_to_paths: bool = ...,
+              convert_lines_to_paths: bool = ...,
+              convert_polylines_to_paths: bool = ...,
+              convert_polygons_to_paths: bool = ...,
+              convert_rectangles_to_paths: bool = ...
+              ) -> Union[PathsAndAttributes, PathsAttributesAndSVG]: ...
+
+
+def svg2paths(svg_file_location: SVGSource,
+              return_svg_attributes: bool = False,
+              convert_circles_to_paths: bool = True,
+              convert_ellipses_to_paths: bool = True,
+              convert_lines_to_paths: bool = True,
+              convert_polylines_to_paths: bool = True,
+              convert_polygons_to_paths: bool = True,
+              convert_rectangles_to_paths: bool = True
+              ) -> Union[PathsAndAttributes, PathsAttributesAndSVG]:
     """Converts an SVG into a list of Path objects and attribute dictionaries. 
 
     Converts an SVG file into a list of Path objects and a list of
@@ -204,11 +270,12 @@ def svg2paths(svg_file_location,
     # strings are interpreted as file location everything else is treated as
     # file-like object and passed to the xml parser directly
     from_filepath = isinstance(svg_file_location, str) or isinstance(svg_file_location, FilePathLike)
-    svg_file_location = os.path.abspath(svg_file_location) if from_filepath else svg_file_location
+    svg_file_location = (os.path.abspath(svg_file_location)  # type: ignore[arg-type]
+                         if from_filepath else svg_file_location)
 
-    doc = parse(svg_file_location)
+    doc = parse(svg_file_location)  # type: ignore[arg-type]
 
-    def dom2dict(element):
+    def dom2dict(element: Any) -> Attributes:
         """Converts DOM elements to dictionaries of attributes."""
         keys = list(element.attributes.keys())
         values = [val.value for val in list(element.attributes.values())]
@@ -265,14 +332,39 @@ def svg2paths(svg_file_location,
         return path_list, attribute_dictionary_list
 
 
-def svg2paths2(svg_file_location,
-               return_svg_attributes=True,
-               convert_circles_to_paths=True,
-               convert_ellipses_to_paths=True,
-               convert_lines_to_paths=True,
-               convert_polylines_to_paths=True,
-               convert_polygons_to_paths=True,
-               convert_rectangles_to_paths=True):
+@overload
+def svg2paths2(svg_file_location: SVGSource,
+               return_svg_attributes: Literal[True] = ...,
+               convert_circles_to_paths: bool = ...,
+               convert_ellipses_to_paths: bool = ...,
+               convert_lines_to_paths: bool = ...,
+               convert_polylines_to_paths: bool = ...,
+               convert_polygons_to_paths: bool = ...,
+               convert_rectangles_to_paths: bool = ...
+               ) -> PathsAttributesAndSVG: ...
+
+
+@overload
+def svg2paths2(svg_file_location: SVGSource,
+               return_svg_attributes: Literal[False],
+               convert_circles_to_paths: bool = ...,
+               convert_ellipses_to_paths: bool = ...,
+               convert_lines_to_paths: bool = ...,
+               convert_polylines_to_paths: bool = ...,
+               convert_polygons_to_paths: bool = ...,
+               convert_rectangles_to_paths: bool = ...
+               ) -> PathsAndAttributes: ...
+
+
+def svg2paths2(svg_file_location: SVGSource,
+               return_svg_attributes: bool = True,
+               convert_circles_to_paths: bool = True,
+               convert_ellipses_to_paths: bool = True,
+               convert_lines_to_paths: bool = True,
+               convert_polylines_to_paths: bool = True,
+               convert_polygons_to_paths: bool = True,
+               convert_rectangles_to_paths: bool = True
+               ) -> Union[PathsAndAttributes, PathsAttributesAndSVG]:
     """Convenience function; identical to svg2paths() except that
     return_svg_attributes=True by default.  See svg2paths() docstring for more
     info."""
@@ -286,14 +378,39 @@ def svg2paths2(svg_file_location,
                      convert_rectangles_to_paths=convert_rectangles_to_paths)
 
 
-def svgstr2paths(svg_string,
-               return_svg_attributes=False,
-               convert_circles_to_paths=True,
-               convert_ellipses_to_paths=True,
-               convert_lines_to_paths=True,
-               convert_polylines_to_paths=True,
-               convert_polygons_to_paths=True,
-               convert_rectangles_to_paths=True):
+@overload
+def svgstr2paths(svg_string: str,
+                 return_svg_attributes: Literal[False] = ...,
+                 convert_circles_to_paths: bool = ...,
+                 convert_ellipses_to_paths: bool = ...,
+                 convert_lines_to_paths: bool = ...,
+                 convert_polylines_to_paths: bool = ...,
+                 convert_polygons_to_paths: bool = ...,
+                 convert_rectangles_to_paths: bool = ...
+                 ) -> PathsAndAttributes: ...
+
+
+@overload
+def svgstr2paths(svg_string: str,
+                 return_svg_attributes: Literal[True],
+                 convert_circles_to_paths: bool = ...,
+                 convert_ellipses_to_paths: bool = ...,
+                 convert_lines_to_paths: bool = ...,
+                 convert_polylines_to_paths: bool = ...,
+                 convert_polygons_to_paths: bool = ...,
+                 convert_rectangles_to_paths: bool = ...
+                 ) -> PathsAttributesAndSVG: ...
+
+
+def svgstr2paths(svg_string: str,
+               return_svg_attributes: bool = False,
+               convert_circles_to_paths: bool = True,
+               convert_ellipses_to_paths: bool = True,
+               convert_lines_to_paths: bool = True,
+               convert_polylines_to_paths: bool = True,
+               convert_polygons_to_paths: bool = True,
+               convert_rectangles_to_paths: bool = True
+               ) -> Union[PathsAndAttributes, PathsAttributesAndSVG]:
     """Convenience function; identical to svg2paths() except that it takes the
     svg object as string.  See svg2paths() docstring for more
     info."""

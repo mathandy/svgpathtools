@@ -4,7 +4,8 @@ See also the document.py submodule.
 """
 
 # External dependencies:
-from __future__ import division, absolute_import, print_function
+from __future__ import division, absolute_import, print_function, annotations
+from typing import Any, Mapping, Optional, Sequence, Tuple, Union
 from math import ceil
 from os import path as os_path, makedirs
 from tempfile import gettempdir
@@ -15,8 +16,17 @@ from warnings import warn
 import re
 
 # Internal dependencies
-from .path import Path, Line, is_path_segment
+from .path import Path, Line, is_path_segment, Segment
+from .bezier import BoundingBox
 from .misctools import open_in_browser
+
+# Something `disvg` can draw: a Path, a single path segment, or a path
+# d-string.
+Drawable = Union[Path, Segment, str]
+
+# A stroke/fill color: anything the SVG viewer understands, or an RGB
+# 3-tuple.
+Color = Union[str, Tuple[int, int, int]]
 
 # color shorthand for inputting color list as string of chars.
 color_dict = {'a': 'aqua',
@@ -47,7 +57,7 @@ color_dict = {'a': 'aqua',
               'z': 'azure'}
 
 
-def str2colorlist(s, default_color=None):
+def str2colorlist(s: str, default_color: Optional[str] = None) -> list[str]:
     color_list = [color_dict[ch] for ch in s]
     if default_color:
         for idx, c in enumerate(color_list):
@@ -56,11 +66,12 @@ def str2colorlist(s, default_color=None):
     return color_list
 
 
-def is3tuple(c):
+def is3tuple(c: object) -> bool:
     return isinstance(c, tuple) and len(c) == 3
 
 
-def big_bounding_box(paths_n_stuff):
+def big_bounding_box(
+        paths_n_stuff: Sequence[Union[Drawable, complex]]) -> BoundingBox:
     """returns minimal upright bounding box.
 
     Args:
@@ -71,7 +82,7 @@ def big_bounding_box(paths_n_stuff):
         extrema of bounding box, (xmin, xmax, ymin, ymax)
 
     """
-    bbs = []
+    bbs: list[BoundingBox] = []
     for thing in paths_n_stuff:
         if is_path_segment(thing) or isinstance(thing, Path):
             bbs.append(thing.bbox())
@@ -94,13 +105,27 @@ def big_bounding_box(paths_n_stuff):
     return xmin, xmax, ymin, ymax
 
 
-def disvg(paths=None, colors=None, filename=None, stroke_widths=None,
-          nodes=None, node_colors=None, node_radii=None,
-          openinbrowser=True, timestamp=None, margin_size=0.1,
-          mindim=600, dimensions=None, viewbox=None, text=None,
-          text_path=None, font_size=None, attributes=None,
-          svg_attributes=None, svgwrite_debug=False,
-          paths2Drawing=False, baseunit='px'):
+def disvg(paths: Union[Drawable, Sequence[Drawable], None] = None,  # type: ignore[return]
+          colors: Union[str, Sequence[Color], None] = None,
+          filename: Optional[str] = None,
+          stroke_widths: Optional[Sequence[float]] = None,
+          nodes: Optional[Sequence[complex]] = None,
+          node_colors: Union[str, Sequence[Color], None] = None,
+          node_radii: Optional[Sequence[float]] = None,
+          openinbrowser: bool = True,
+          timestamp: Optional[bool] = None,
+          margin_size: float = 0.1,
+          mindim: Optional[int] = 600,
+          dimensions: Optional[Sequence[Union[str, float]]] = None,
+          viewbox: Union[str, Sequence[float], None] = None,
+          text: Union[str, Sequence[str], None] = None,
+          text_path: Optional[Sequence[Drawable]] = None,
+          font_size: Union[float, Sequence[float], None] = None,
+          attributes: Optional[Sequence[Mapping[str, Any]]] = None,
+          svg_attributes: Optional[Mapping[str, Any]] = None,
+          svgwrite_debug: bool = False,
+          paths2Drawing: bool = False,
+          baseunit: str = 'px') -> Optional[Drawing]:
     """Creates (and optionally displays) an SVG file.
 
     REQUIRED INPUTS:
@@ -258,7 +283,7 @@ def disvg(paths=None, colors=None, filename=None, stroke_widths=None,
     # set up the viewBox and display dimensions of the output SVG
     # along the way, set stroke_widths and node_radii if not provided
     assert paths or nodes
-    stuff2bound = []
+    stuff2bound: list[Union[Drawable, complex]] = []
     if viewbox:
         if not isinstance(viewbox, str):
             viewbox = '%s %s %s %s' % viewbox
@@ -362,14 +387,15 @@ def disvg(paths=None, colors=None, filename=None, stroke_widths=None,
 
                 dwg.add(dwg.path(**good_attribs))
             else:
-                dwg.add(dwg.path(ps, stroke=colors[i],
-                                 stroke_width=str(stroke_widths[i]),
+                dwg.add(dwg.path(ps, stroke=colors[i],  # type: ignore[index]
+                                 stroke_width=str(stroke_widths[i]),  # type: ignore[index]
                                  fill='none'))
 
     # add nodes (filled in circles)
     if nodes:
         for i_pt, pt in enumerate([(z.real, z.imag) for z in nodes]):
-            dwg.add(dwg.circle(pt, node_radii[i_pt], fill=node_colors[i_pt]))
+            dwg.add(dwg.circle(pt, node_radii[i_pt],  # type: ignore[index]
+                               fill=node_colors[i_pt]))  # type: ignore[index]
 
     # add texts
     if text:
@@ -382,17 +408,17 @@ def disvg(paths=None, colors=None, filename=None, stroke_widths=None,
                 font_size = [_default_font_size]
             if not text_path:
                 pos = complex(xmin + margin_size*dx, ymin + margin_size*dy)
-                text_path = [Line(pos, pos + 1).d()]
+                text_path = [Line(pos, pos + 1).d()]  # type: ignore[attr-defined]
         else:
             if font_size:
                 if isinstance(font_size, list):
                     assert len(font_size) == len(text)
                 else:
-                    font_size = [font_size] * len(text)
+                    font_size = [font_size] * len(text)  # type: ignore[list-item]
             else:
                 font_size = [_default_font_size] * len(text)
         for idx, s in enumerate(text):
-            p = text_path[idx]
+            p = text_path[idx]  # type: ignore[index]
             if isinstance(p, Path):
                 ps = p.d()
             elif is_path_segment(p):
@@ -404,7 +430,7 @@ def disvg(paths=None, colors=None, filename=None, stroke_widths=None,
             # paragraph.add(dwg.textPath(ps, s))
             pathid = 'tp' + str(idx)
             dwg.defs.add(dwg.path(d=ps, id=pathid))
-            txter = dwg.add(dwg.text('', font_size=font_size[idx]))
+            txter = dwg.add(dwg.text('', font_size=font_size[idx]))  # type: ignore[index]
             txter.add(txt.TextPath('#'+pathid, s))
 
     if paths2Drawing:
@@ -426,13 +452,27 @@ def disvg(paths=None, colors=None, filename=None, stroke_widths=None,
             print(filename)
 
 
-def wsvg(paths=None, colors=None, filename=None, stroke_widths=None,
-         nodes=None, node_colors=None, node_radii=None,
-         openinbrowser=False, timestamp=False, margin_size=0.1,
-         mindim=600, dimensions=None, viewbox=None, text=None,
-         text_path=None, font_size=None, attributes=None,
-         svg_attributes=None, svgwrite_debug=False,
-         paths2Drawing=False, baseunit='px'):
+def wsvg(paths: Union[Drawable, Sequence[Drawable], None] = None,
+         colors: Union[str, Sequence[Color], None] = None,
+         filename: Optional[str] = None,
+         stroke_widths: Optional[Sequence[float]] = None,
+         nodes: Optional[Sequence[complex]] = None,
+         node_colors: Union[str, Sequence[Color], None] = None,
+         node_radii: Optional[Sequence[float]] = None,
+         openinbrowser: bool = False,
+         timestamp: Optional[bool] = False,
+         margin_size: float = 0.1,
+         mindim: Optional[int] = 600,
+         dimensions: Optional[Sequence[Union[str, float]]] = None,
+         viewbox: Union[str, Sequence[float], None] = None,
+         text: Union[str, Sequence[str], None] = None,
+         text_path: Optional[Sequence[Drawable]] = None,
+         font_size: Union[float, Sequence[float], None] = None,
+         attributes: Optional[Sequence[Mapping[str, Any]]] = None,
+         svg_attributes: Optional[Mapping[str, Any]] = None,
+         svgwrite_debug: bool = False,
+         paths2Drawing: bool = False,
+         baseunit: str = 'px') -> Optional[Drawing]:
     """Create SVG and write to disk.
 
     Note: This is identical to `disvg()` except that `openinbrowser`
@@ -454,13 +494,27 @@ def wsvg(paths=None, colors=None, filename=None, stroke_widths=None,
                  paths2Drawing=paths2Drawing, baseunit=baseunit)
     
     
-def paths2Drawing(paths=None, colors=None, filename=None,
-                  stroke_widths=None, nodes=None, node_colors=None,
-                  node_radii=None, openinbrowser=False, timestamp=False,
-                  margin_size=0.1, mindim=600, dimensions=None,
-                  viewbox=None, text=None, text_path=None,
-                  font_size=None, attributes=None, svg_attributes=None,
-                  svgwrite_debug=False, paths2Drawing=True, baseunit='px'):
+def paths2Drawing(paths: Union[Drawable, Sequence[Drawable], None] = None,
+                  colors: Union[str, Sequence[Color], None] = None,
+                  filename: Optional[str] = None,
+                  stroke_widths: Optional[Sequence[float]] = None,
+                  nodes: Optional[Sequence[complex]] = None,
+                  node_colors: Union[str, Sequence[Color], None] = None,
+                  node_radii: Optional[Sequence[float]] = None,
+                  openinbrowser: bool = False,
+                  timestamp: Optional[bool] = False,
+                  margin_size: float = 0.1,
+                  mindim: Optional[int] = 600,
+                  dimensions: Optional[Sequence[Union[str, float]]] = None,
+                  viewbox: Union[str, Sequence[float], None] = None,
+                  text: Union[str, Sequence[str], None] = None,
+                  text_path: Optional[Sequence[Drawable]] = None,
+                  font_size: Union[float, Sequence[float], None] = None,
+                  attributes: Optional[Sequence[Mapping[str, Any]]] = None,
+                  svg_attributes: Optional[Mapping[str, Any]] = None,
+                  svgwrite_debug: bool = False,
+                  paths2Drawing: bool = True,
+                  baseunit: str = 'px') -> Optional[Drawing]:
     """Create and return `svg.Drawing` object.
 
     Note: This is identical to `disvg()` except that `paths2Drawing`

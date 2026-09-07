@@ -3,7 +3,8 @@
 """
 
 # External dependencies
-from __future__ import division, absolute_import, print_function
+from __future__ import division, absolute_import, print_function, annotations
+from typing import Any, Dict, Optional
 import os
 from xml.etree.ElementTree import iterparse, Element, ElementTree, SubElement
 import numpy as np
@@ -14,13 +15,11 @@ from .parser import parse_transform
 from .svg_to_paths import (path2pathd, ellipse2pathd, line2pathd,
                            polyline2pathd, polygon2pathd, rect2pathd)
 from .misctools import open_in_browser
-from .path import transform
+from .path import transform, Path
 
-# To maintain forward/backward compatibility
-try:
-    string = basestring
-except NameError:
-    string = str
+# The attributes accumulated for one element of the light tree, including
+# the 'd', 'name' and 'matrix' entries added by `SaxDocument.sax_parse`.
+ElementValues = Dict[str, Any]
 
 NAME_SVG = "svg"
 ATTR_VERSION = "version"
@@ -44,7 +43,8 @@ VALUE_NONE = "none"
 
 
 class SaxDocument:
-    def __init__(self, filename, strict_transform_parsing=False):
+    def __init__(self, filename: Optional[str],
+                 strict_transform_parsing: bool = False) -> None:
         """
         A container for a SAX SVG light tree objects document.
 
@@ -58,8 +58,9 @@ class SaxDocument:
                 skipped with an SVGSyntaxWarning.
         """
         self.strict_transform_parsing = strict_transform_parsing
-        self.root_values = {}
-        self.tree = []
+        self.root_values: ElementValues = {}
+        self.tree: list[ElementValues] = []
+        self.original_filename: Optional[str]
         # remember location of original svg file
         if filename is not None and os.path.dirname(filename) == '':
             self.original_filename = os.path.join(os.getcwd(), filename)
@@ -69,12 +70,12 @@ class SaxDocument:
         if filename is not None:
             self.sax_parse(filename)
 
-    def sax_parse(self, filename):
+    def sax_parse(self, filename: str) -> None:
         self.root_values = {}
         self.tree = []
-        stack = []
-        values = {}
-        matrix = None
+        stack: list[tuple[ElementValues, Optional[np.ndarray]]] = []
+        values: ElementValues = {}
+        matrix: Optional[np.ndarray] = None
         # Open the file ourselves (rather than letting iterparse do it)
         # so the handle is closed even if parsing raises; otherwise the
         # file stays locked on Windows until garbage collection.
@@ -116,7 +117,9 @@ class SaxDocument:
                     elif 'ellipse' == name:
                         values["d"] = ellipse2pathd(values)
                     elif 'line' == name:
-                        values["d"] = line2pathd(values)
+                        # NOTE: line2pathd reads `.attrib`, so passing the
+                        # plain attribute dict raises AttributeError here.
+                        values["d"] = line2pathd(values)  # type: ignore[arg-type]
                     elif 'polyline' == name:
                         values["d"] = polyline2pathd(values)
                     elif 'polygon' == name:
@@ -133,8 +136,8 @@ class SaxDocument:
                     values = v[0]
                     matrix = v[1]
 
-    def flatten_all_paths(self):
-        flat = []
+    def flatten_all_paths(self) -> list[Path]:
+        flat: list[Path] = []
         for values in self.tree:
             pathd = values['d']
             matrix = values['matrix']
@@ -144,15 +147,15 @@ class SaxDocument:
             flat.append(parsed_path)
         return flat
 
-    def get_pathd_and_matrix(self):
-        flat = []
+    def get_pathd_and_matrix(self) -> list[tuple[str, Optional[np.ndarray]]]:
+        flat: list[tuple[str, Optional[np.ndarray]]] = []
         for values in self.tree:
             pathd = values['d']
             matrix = values['matrix']
             flat.append((pathd, matrix))
         return flat
 
-    def generate_dom(self):
+    def generate_dom(self) -> ElementTree:
         root = Element(NAME_SVG)
         root.set(ATTR_VERSION, VALUE_SVG_VERSION)
         root.set(ATTR_XMLNS, VALUE_XMLNS)
@@ -177,17 +180,17 @@ class SaxDocument:
             if matrix is not None and not np.all(np.equal(matrix, identity)):
                 matrix_string = "matrix("
                 matrix_string += " "
-                matrix_string += string(matrix[0][0])
+                matrix_string += str(matrix[0][0])
                 matrix_string += " "
-                matrix_string += string(matrix[1][0])
+                matrix_string += str(matrix[1][0])
                 matrix_string += " "
-                matrix_string += string(matrix[0][1])
+                matrix_string += str(matrix[0][1])
                 matrix_string += " "
-                matrix_string += string(matrix[1][1])
+                matrix_string += str(matrix[1][1])
                 matrix_string += " "
-                matrix_string += string(matrix[0][2])
+                matrix_string += str(matrix[0][2])
                 matrix_string += " "
-                matrix_string += string(matrix[1][2])
+                matrix_string += str(matrix[1][2])
                 matrix_string += ")"
                 path.set(ATTR_TRANSFORM, matrix_string)
             if ATTR_DATA in values:
@@ -198,12 +201,12 @@ class SaxDocument:
                 path.set(ATTR_STROKE, values[ATTR_STROKE])
         return ElementTree(root)
 
-    def save(self, filename):
+    def save(self, filename: str) -> None:
         with open(filename, 'wb') as output_svg:
             dom_tree = self.generate_dom()
             dom_tree.write(output_svg)
 
-    def display(self, filename=None):
+    def display(self, filename: Optional[str] = None) -> None:
         """Displays/opens the doc using the OS's default application."""
         if filename is None:
             filename = 'display_temp.svg'

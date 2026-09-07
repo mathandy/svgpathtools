@@ -99,6 +99,7 @@ def _parse_transform_substr(transform_substr: str) -> np.ndarray:
         _check_num_parsed_values(values, [1, 3], transform_substr)
 
         angle = values[0] * np.pi / 180.0
+        offset: Sequence[float]
         if len(values) == 3:
             offset = values[1:3]
         else:

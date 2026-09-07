@@ -34,7 +34,8 @@ A Big Problem:
 """
 
 # External dependencies
-from __future__ import division, absolute_import, print_function
+from __future__ import division, absolute_import, print_function, annotations
+from typing import Any, Callable, Mapping, Optional, Sequence, Union
 import os
 import collections
 import xml.etree.ElementTree as etree
@@ -50,26 +51,24 @@ import numpy as np
 from .parser import parse_path
 from .parser import parse_transform
 from .svg_to_paths import (path2pathd, ellipse2pathd, line2pathd,
-                           polyline2pathd, polygon2pathd, rect2pathd)
+                           polyline2pathd, polygon2pathd, rect2pathd,
+                           SVGSource)
 from .misctools import open_in_browser
-from .path import transform, Path, is_path_segment
+from .path import transform, Path, is_path_segment, Segment
 
-# To maintain forward/backward compatibility
-try:
-    string = basestring
-except NameError:
-    string = str
-try:
-    from os import PathLike
-except ImportError:
-    PathLike = string
+# Converts one SVG element into a path d-string.
+PathConverter = Callable[[Element], str]
+
+# A group named by the chain of nested group names leading to it, or the
+# element itself.
+GroupRef = Union[Sequence[str], Element]
 
 # Let xml.etree.ElementTree know about the SVG namespace
 SVG_NAMESPACE = {'svg': 'http://www.w3.org/2000/svg'}
 register_namespace('svg', 'http://www.w3.org/2000/svg')
 
 # THESE MUST BE WRAPPED TO OUTPUT ElementTree.element objects
-CONVERSIONS = {'path': path2pathd,
+CONVERSIONS: dict[str, PathConverter] = {'path': path2pathd,
                'circle': ellipse2pathd,
                'ellipse': ellipse2pathd,
                'line': line2pathd,
@@ -77,15 +76,17 @@ CONVERSIONS = {'path': path2pathd,
                'polygon': polygon2pathd,
                'rect': rect2pathd}
 
-CONVERT_ONLY_PATHS = {'path': path2pathd}
+CONVERT_ONLY_PATHS: dict[str, PathConverter] = {'path': path2pathd}
 
 SVG_GROUP_TAG = 'svg:g'
 
 
-def flattened_paths(group, group_filter=lambda x: True,
-                    path_filter=lambda x: True, path_conversions=CONVERSIONS,
-                    group_search_xpath=SVG_GROUP_TAG,
-                    strict_transform_parsing=False):
+def flattened_paths(group: Element,
+                    group_filter: Callable[[Element], bool] = lambda x: True,
+                    path_filter: Callable[[Element], bool] = lambda x: True,
+                    path_conversions: Mapping[str, PathConverter] = CONVERSIONS,
+                    group_search_xpath: str = SVG_GROUP_TAG,
+                    strict_transform_parsing: bool = False) -> list[Path]:
     """Returns the paths inside a group (recursively), expressing the
     paths in the base coordinates.
 
@@ -126,12 +127,13 @@ def flattened_paths(group, group_filter=lambda x: True,
     StackElement = collections.namedtuple('StackElement',
                                           ['group', 'transform'])
 
-    def new_stack_element(element, last_tf):
+    def new_stack_element(element: Element, last_tf: np.ndarray) -> Any:
         return StackElement(element, last_tf.dot(
             parse_transform(element.get('transform'),
                             strict=strict_transform_parsing)))
 
-    def get_relevant_children(parent, last_tf):
+    def get_relevant_children(parent: Element,
+                              last_tf: np.ndarray) -> list[Any]:
         children = []
         for elem in filter(group_filter,
                            parent.iterfind(group_search_xpath, SVG_NAMESPACE)):
@@ -140,7 +142,7 @@ def flattened_paths(group, group_filter=lambda x: True,
 
     stack = [new_stack_element(group, np.identity(3))]
 
-    paths = []
+    paths: list[Path] = []
     while stack:
         top = stack.pop()
 
@@ -153,7 +155,10 @@ def flattened_paths(group, group_filter=lambda x: True,
                 path_tf = top.transform.dot(
                     parse_transform(path_elem.get('transform'),
                                     strict=strict_transform_parsing))
-                path = transform(parse_path(converter(path_elem)), path_tf)
+                # transform() only changes a curve's type for a degenerate
+                # Arc; given a Path it always returns a Path.
+                path: Path = transform(  # type: ignore[assignment]
+                    parse_path(converter(path_elem)), path_tf)
                 path.element = path_elem
                 path.transform = path_tf
                 paths.append(path)
@@ -163,12 +168,13 @@ def flattened_paths(group, group_filter=lambda x: True,
     return paths
 
 
-def flattened_paths_from_group(group_to_flatten, root, recursive=True,
-                               group_filter=lambda x: True,
-                               path_filter=lambda x: True,
-                               path_conversions=CONVERSIONS,
-                               group_search_xpath=SVG_GROUP_TAG,
-                               strict_transform_parsing=False):
+def flattened_paths_from_group(
+        group_to_flatten: Element, root: Element, recursive: bool = True,
+        group_filter: Callable[[Element], bool] = lambda x: True,
+        path_filter: Callable[[Element], bool] = lambda x: True,
+        path_conversions: Mapping[str, PathConverter] = CONVERSIONS,
+        group_search_xpath: str = SVG_GROUP_TAG,
+        strict_transform_parsing: bool = False) -> list[Path]:
     """Flatten all the paths in a specific group.
 
     The paths will be flattened into the 'root' frame. Note that root
@@ -189,18 +195,18 @@ def flattened_paths_from_group(group_to_flatten, root, recursive=True,
     # We create a set of the unique IDs of each element that we wish to
     # flatten, if those elements are groups. Any groups outside of this
     # set will be skipped while we flatten the paths.
-    desired_groups = set()
+    desired_groups: set[int] = set()
     if recursive:
         for group in group_to_flatten.iter():
             desired_groups.add(id(group))
     else:
         desired_groups.add(id(group_to_flatten))
 
-    ignore_paths = set()
+    ignore_paths: set[int] = set()
     # Use breadth-first search to find the path to the group that we care about
     if root is not group_to_flatten:
-        search = [[root]]
-        route = None
+        search: list[list[Element]] = [[root]]
+        route: Optional[list[Element]] = None
         while search:
             top = search.pop(0)
             frontier = top[-1]
@@ -231,10 +237,10 @@ def flattened_paths_from_group(group_to_flatten, root, recursive=True,
         if route is None:
             raise ValueError('The group_to_flatten is not a descendant of the root!')
 
-    def desired_group_filter(x):
+    def desired_group_filter(x: Element) -> bool:
         return (id(x) in desired_groups) and group_filter(x)
 
-    def desired_path_filter(x):
+    def desired_path_filter(x: Element) -> bool:
         return (id(x) not in ignore_paths) and path_filter(x)
 
     return flattened_paths(root, desired_group_filter, desired_path_filter,
@@ -243,7 +249,8 @@ def flattened_paths_from_group(group_to_flatten, root, recursive=True,
 
 
 class Document:
-    def __init__(self, filepath=None, strict_transform_parsing=False):
+    def __init__(self, filepath: Optional[SVGSource] = None,
+                 strict_transform_parsing: bool = False) -> None:
         """
         A container for a DOM-style SVG document.
 
@@ -268,9 +275,14 @@ class Document:
 
         # strings are interpreted as file location everything else is treated as
         # file-like object and passed to the xml parser directly
-        from_filepath = isinstance(filepath, string) or isinstance(filepath, PathLike)
-        self.original_filepath = os.path.abspath(filepath) if from_filepath else None
+        from_filepath = isinstance(filepath, (str, os.PathLike))
+        # `from_filepath` is a plain bool, so it cannot narrow the union
+        # here, though it selects exactly the path-like cases.
+        self.original_filepath: Optional[str] = (
+            os.path.abspath(filepath) if from_filepath else None)  # type: ignore[arg-type]
 
+        # Both branches below set a root, so it is not Optional here.
+        self.tree: etree.ElementTree[Element]
         if filepath is None:
             self.tree = etree.ElementTree(Element('svg'))
         else:
@@ -280,7 +292,8 @@ class Document:
         self.root = self.tree.getroot()
 
     @classmethod
-    def from_svg_string(cls, svg_string, strict_transform_parsing=False):
+    def from_svg_string(cls, svg_string: str,
+                        strict_transform_parsing: bool = False) -> Document:
         """Constructor for creating a Document object from a string."""
         # wrap string into StringIO object
         svg_file_obj = StringIO(svg_string)
@@ -288,8 +301,11 @@ class Document:
         return Document(svg_file_obj,
                         strict_transform_parsing=strict_transform_parsing)
 
-    def paths(self, group_filter=lambda x: True,
-              path_filter=lambda x: True, path_conversions=CONVERSIONS):
+    def paths(self,
+              group_filter: Callable[[Element], bool] = lambda x: True,
+              path_filter: Callable[[Element], bool] = lambda x: True,
+              path_conversions: Mapping[str, PathConverter] = CONVERSIONS
+              ) -> list[Path]:
         """Returns a list of all paths in the document.
 
         Note that any transform attributes are applied before returning
@@ -299,12 +315,16 @@ class Document:
             self.tree.getroot(), group_filter, path_filter, path_conversions,
             strict_transform_parsing=self.strict_transform_parsing)
 
-    def paths_from_group(self, group, recursive=True, group_filter=lambda x: True,
-                         path_filter=lambda x: True, path_conversions=CONVERSIONS):
-        if all(isinstance(s, string) for s in group):
+    def paths_from_group(
+            self, group: GroupRef, recursive: bool = True,
+            group_filter: Callable[[Element], bool] = lambda x: True,
+            path_filter: Callable[[Element], bool] = lambda x: True,
+            path_conversions: Mapping[str, PathConverter] = CONVERSIONS
+            ) -> list[Path]:
+        if all(isinstance(s, str) for s in group):
             # If we're given a list of strings, assume it represents a
             # nested sequence
-            group = self.get_group(group)
+            group = self.get_group(group)  # type: ignore[arg-type, assignment]
         elif not isinstance(group, Element):
             raise TypeError(
                 'Must provide a list of strings that represent a nested '
@@ -316,11 +336,14 @@ class Document:
             return []
 
         return flattened_paths_from_group(
-            group, self.tree.getroot(), recursive, group_filter, path_filter,
+            group, self.tree.getroot(), recursive,  # type: ignore[arg-type]
+            group_filter, path_filter,
             path_conversions,
             strict_transform_parsing=self.strict_transform_parsing)
 
-    def add_path(self, path, attribs=None, group=None):
+    def add_path(self, path: Union[Path, Segment, str],
+                 attribs: Optional[dict[str, str]] = None,
+                 group: Union[GroupRef, None] = None) -> Element:
         """Add a new path to the SVG."""
 
         # If not given a parent, assume that the path does not have a group
@@ -330,7 +353,7 @@ class Document:
         # If given a list of strings (one or more), assume it represents
         # a sequence of nested group names
         elif len(group) > 0 and all(isinstance(elem, str) for elem in group):
-            group = self.get_or_add_group(group)
+            group = self.get_or_add_group(group)  # type: ignore[arg-type]
 
         elif not isinstance(group, Element):
             raise TypeError(
@@ -348,7 +371,7 @@ class Document:
             path_svg = path.d()
         elif is_path_segment(path):
             path_svg = Path(path).d()
-        elif isinstance(path, string):
+        elif isinstance(path, str):
             # Assume this is a valid d-string.
             # TODO: Should we sanity check the input string?
             path_svg = path
@@ -366,10 +389,11 @@ class Document:
 
         return SubElement(group, 'path', attribs)
 
-    def contains_group(self, group):
+    def contains_group(self, group: Element) -> bool:
         return any(group is owned for owned in self.tree.iter())
 
-    def get_group(self, nested_names, name_attr='id'):
+    def get_group(self, nested_names: list[str],
+                  name_attr: str = 'id') -> Optional[Element]:
         """Get a group from the tree, or None if the requested group
         does not exist. Use get_or_add_group(~) if you want a new group
         to be created if it did not already exist.
@@ -400,7 +424,8 @@ class Document:
 
         return group
 
-    def get_or_add_group(self, nested_names, name_attr='id'):
+    def get_or_add_group(self, nested_names: list[str],
+                         name_attr: str = 'id') -> Element:
         """Get a group from the tree, or add a new one with the given
         name structure.
 
@@ -439,7 +464,8 @@ class Document:
                 # while-loop will end
         return group
 
-    def add_group(self, group_attribs=None, parent=None):
+    def add_group(self, group_attribs: Optional[dict[str, str]] = None,
+                  parent: Optional[Element] = None) -> Element:
         """Add an empty group element to the SVG."""
         if parent is None:
             parent = self.tree.getroot()
@@ -455,20 +481,21 @@ class Document:
         return SubElement(parent, '{{{0}}}g'.format(
             SVG_NAMESPACE['svg']), group_attribs)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return etree.tostring(self.tree.getroot()).decode()
 
-    def pretty(self, **kwargs):
+    def pretty(self, **kwargs: Any) -> str:
         return parseString(repr(self)).toprettyxml(**kwargs)
 
-    def save(self, filepath, prettify=False, **kwargs):
+    def save(self, filepath: str, prettify: bool = False,
+             **kwargs: Any) -> None:
         with open(filepath, 'w+') as output_svg:
             if prettify:
                 output_svg.write(self.pretty(**kwargs))
             else:
                 output_svg.write(repr(self))
 
-    def display(self, filepath=None):
+    def display(self, filepath: Optional[str] = None) -> None:
         """Displays/opens the doc using the OS's default application."""
 
         if filepath is None:
