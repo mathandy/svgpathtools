@@ -24,6 +24,11 @@ def polyroots(p: Coefficients, realroots: Literal[True],
               condition: Callable[[float], bool] = ...) -> list[float]: ...
 
 
+@overload
+def polyroots(p: Coefficients, realroots: bool,
+              condition: Callable[[float], bool] = ...) -> list[Any]: ...
+
+
 def polyroots(p: Coefficients, realroots: bool = False,
               condition: Callable[[float], bool] = lambda r: True
               ) -> list[Any]:

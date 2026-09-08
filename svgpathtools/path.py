@@ -64,6 +64,10 @@ Curve = Union[Segment, "Path"]
 # transform collapses a radius), so it is not typed with this.
 CurveT = TypeVar("CurveT", bound=Curve)
 
+# `transform` is type-preserving for everything except an `Arc`, so it is
+# spelled out per kind rather than with a single TypeVar.
+BezierSegmentT = TypeVar("BezierSegmentT", bound=BezierSegment)
+
 # `z` in the `Arc` isometries below is a point, an array of points, or a
 # polynomial with complex coefficients; each maps to its own kind.
 PointLike = TypeVar("PointLike", complex, np.ndarray, np.poly1d)
@@ -264,7 +268,13 @@ def bez2poly(bez: Union[BezierSegment, Sequence[complex]],
 @overload
 def bez2poly(bez: Union[BezierSegment, Sequence[complex]],
              numpy_ordering: bool = ...,
-             *, return_poly1d: Literal[True]) -> np.poly1d: ...
+             return_poly1d: Literal[True] = ...) -> np.poly1d: ...
+
+
+@overload
+def bez2poly(bez: Union[BezierSegment, Sequence[complex]],
+             numpy_ordering: bool = ..., return_poly1d: bool = ...
+             ) -> Union[Sequence[complex], np.poly1d]: ...
 
 
 def bez2poly(bez: Union[BezierSegment, Sequence[complex]],
@@ -398,12 +408,24 @@ def scale(curve: CurveT, sx: float, sy: Optional[float] = None,
                         "QuadraticBezier, CubicBezier, or Arc object.")
 
 
-def transform(curve: Curve, tf: np.ndarray) -> Curve:
+@overload
+def transform(curve: Path, tf: np.ndarray) -> Path: ...
+
+
+@overload
+def transform(curve: BezierSegmentT, tf: np.ndarray) -> BezierSegmentT: ...
+
+
+@overload
+def transform(curve: Arc, tf: np.ndarray) -> Union[Arc, Line]: ...
+
+
+def transform(curve: Curve, tf: np.ndarray) -> Any:
     """Transforms the curve by the homogeneous transformation matrix tf
 
-    Note: unlike `rotate`/`translate`/`scale`, this does not always return
-    the same kind of curve it was given -- an `Arc` whose radius the
-    transform collapses degenerates to a `Line`.
+    Note: unlike `rotate`/`translate`/`scale`, this is not type-preserving
+    for an `Arc` -- one whose radius the transform collapses degenerates to
+    a `Line`.
     """
 
     if all((tf == np.eye(3)).ravel()):
@@ -419,8 +441,11 @@ def transform(curve: Curve, tf: np.ndarray) -> Curve:
         return v.item(0) + 1j * v.item(1)
 
     if isinstance(curve, Path):
-        transformation = lambda seg: transform(seg, tf)
-        return transform_segments_together(curve, transformation)  # type: ignore[arg-type]
+        # Annotated so the lambda is checked against the element type;
+        # assigning it to a bare name would lose that context.
+        transformation: Callable[[Segment], Segment] = \
+            lambda seg: transform(seg, tf)
+        return transform_segments_together(curve, transformation)
 
     elif is_bezier_segment(curve):
         return bpoints2bezier([to_complex(tf.dot(to_point(p)))
@@ -556,7 +581,7 @@ def bezier_radialrange(seg: BezierSegment, origin: complex,
     By default, this will only return one. Set return_all_global_extrema=True
     to return all such global extrema."""
 
-    def _radius(tau):
+    def _radius(tau: float) -> float:
         return abs(seg.point(tau) - origin)
 
     shifted_seg_poly = seg.poly() - origin

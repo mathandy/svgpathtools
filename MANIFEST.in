@@ -1,2 +1,3 @@
 include *.svg LICENSE*
+include svgpathtools/py.typed
 recursive-include test *.svg

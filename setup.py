@@ -19,6 +19,7 @@ def read(relative_path):
 
 setup(name='svgpathtools',
       packages=['svgpathtools'],
+      package_data={'svgpathtools': ['py.typed']},
       version=VERSION,
       description=('A collection of tools for manipulating and analyzing SVG '
                    'Path objects and Bezier curves.'),

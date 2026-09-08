@@ -105,7 +105,7 @@ def big_bounding_box(
     return xmin, xmax, ymin, ymax
 
 
-def disvg(paths: Union[Drawable, Sequence[Drawable], None] = None,  # type: ignore[return]
+def disvg(paths: Union[Path, Segment, Sequence[Drawable], None] = None,  # type: ignore[return]
           colors: Union[str, Sequence[Color], None] = None,
           filename: Optional[str] = None,
           stroke_widths: Optional[Sequence[float]] = None,
@@ -291,8 +291,9 @@ def disvg(paths: Union[Drawable, Sequence[Drawable], None] = None,  # type: igno
             dimensions = viewbox.split(' ')[2:4]
     elif dimensions:
         dimensions = tuple(map(str, dimensions))
-        def strip_units(s):
-            return re.search(r'\d*\.?\d*', s.strip()).group()
+        def strip_units(s: str) -> str:
+            # The pattern can match empty, so search never returns None.
+            return re.search(r'\d*\.?\d*', s.strip()).group()  # type: ignore[union-attr]
         viewbox = '0 0 %s %s' % tuple(map(strip_units, dimensions))
     else:
         if paths:
@@ -387,6 +388,10 @@ def disvg(paths: Union[Drawable, Sequence[Drawable], None] = None,  # type: igno
 
                 dwg.add(dwg.path(**good_attribs))
             else:
+                # `colors` is defaulted above under `if paths:`; but
+                # `stroke_widths` is only defaulted in the branch that
+                # computes the viewbox, so it is genuinely None when the
+                # caller passed `viewbox` or `dimensions` (raises TypeError).
                 dwg.add(dwg.path(ps, stroke=colors[i],  # type: ignore[index]
                                  stroke_width=str(stroke_widths[i]),  # type: ignore[index]
                                  fill='none'))
@@ -394,6 +399,8 @@ def disvg(paths: Union[Drawable, Sequence[Drawable], None] = None,  # type: igno
     # add nodes (filled in circles)
     if nodes:
         for i_pt, pt in enumerate([(z.real, z.imag) for z in nodes]):
+            # As above: node_colors is defaulted, node_radii only in the
+            # viewbox branch.
             dwg.add(dwg.circle(pt, node_radii[i_pt],  # type: ignore[index]
                                fill=node_colors[i_pt]))  # type: ignore[index]
 
@@ -408,6 +415,10 @@ def disvg(paths: Union[Drawable, Sequence[Drawable], None] = None,  # type: igno
                 font_size = [_default_font_size]
             if not text_path:
                 pos = complex(xmin + margin_size*dx, ymin + margin_size*dy)
+                # NOTE: Line has no .d() method (only Path does), so this
+                # raises AttributeError; it is reached by passing `text`
+                # without `text_path`.  xmin/dx are also only bound in the
+                # viewbox-computing branch.
                 text_path = [Line(pos, pos + 1).d()]  # type: ignore[attr-defined]
         else:
             if font_size:
@@ -452,7 +463,7 @@ def disvg(paths: Union[Drawable, Sequence[Drawable], None] = None,  # type: igno
             print(filename)
 
 
-def wsvg(paths: Union[Drawable, Sequence[Drawable], None] = None,
+def wsvg(paths: Union[Path, Segment, Sequence[Drawable], None] = None,
          colors: Union[str, Sequence[Color], None] = None,
          filename: Optional[str] = None,
          stroke_widths: Optional[Sequence[float]] = None,
@@ -494,7 +505,7 @@ def wsvg(paths: Union[Drawable, Sequence[Drawable], None] = None,
                  paths2Drawing=paths2Drawing, baseunit=baseunit)
     
     
-def paths2Drawing(paths: Union[Drawable, Sequence[Drawable], None] = None,
+def paths2Drawing(paths: Union[Path, Segment, Sequence[Drawable], None] = None,
                   colors: Union[str, Sequence[Color], None] = None,
                   filename: Optional[str] = None,
                   stroke_widths: Optional[Sequence[float]] = None,

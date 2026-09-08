@@ -35,7 +35,7 @@ A Big Problem:
 
 # External dependencies
 from __future__ import division, absolute_import, print_function, annotations
-from typing import Any, Callable, Mapping, Optional, Sequence, Union
+from typing import Any, Callable, List, Mapping, Optional, Union
 import os
 import collections
 import xml.etree.ElementTree as etree
@@ -60,21 +60,24 @@ from .path import transform, Path, is_path_segment, Segment
 PathConverter = Callable[[Element], str]
 
 # A group named by the chain of nested group names leading to it, or the
-# element itself.
-GroupRef = Union[Sequence[str], Element]
+# element itself.  The name list must be mutable: `get_group` and
+# `get_or_add_group` consume it in place with .pop(0)/.insert(0, ...).
+GroupRef = Union[List[str], Element]
 
 # Let xml.etree.ElementTree know about the SVG namespace
 SVG_NAMESPACE = {'svg': 'http://www.w3.org/2000/svg'}
 register_namespace('svg', 'http://www.w3.org/2000/svg')
 
 # THESE MUST BE WRAPPED TO OUTPUT ElementTree.element objects
-CONVERSIONS: dict[str, PathConverter] = {'path': path2pathd,
-               'circle': ellipse2pathd,
-               'ellipse': ellipse2pathd,
-               'line': line2pathd,
-               'polyline': polyline2pathd,
-               'polygon': polygon2pathd,
-               'rect': rect2pathd}
+CONVERSIONS: dict[str, PathConverter] = {
+    'path': path2pathd,
+    'circle': ellipse2pathd,
+    'ellipse': ellipse2pathd,
+    'line': line2pathd,
+    'polyline': polyline2pathd,
+    'polygon': polygon2pathd,
+    'rect': rect2pathd,
+}
 
 CONVERT_ONLY_PATHS: dict[str, PathConverter] = {'path': path2pathd}
 
@@ -155,10 +158,7 @@ def flattened_paths(group: Element,
                 path_tf = top.transform.dot(
                     parse_transform(path_elem.get('transform'),
                                     strict=strict_transform_parsing))
-                # transform() only changes a curve's type for a degenerate
-                # Arc; given a Path it always returns a Path.
-                path: Path = transform(  # type: ignore[assignment]
-                    parse_path(converter(path_elem)), path_tf)
+                path = transform(parse_path(converter(path_elem)), path_tf)
                 path.element = path_elem
                 path.transform = path_tf
                 paths.append(path)
@@ -343,7 +343,7 @@ class Document:
 
     def add_path(self, path: Union[Path, Segment, str],
                  attribs: Optional[dict[str, str]] = None,
-                 group: Union[GroupRef, None] = None) -> Element:
+                 group: Optional[GroupRef] = None) -> Element:
         """Add a new path to the SVG."""
 
         # If not given a parent, assume that the path does not have a group

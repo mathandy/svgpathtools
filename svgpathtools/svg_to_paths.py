@@ -49,24 +49,23 @@ def ellipse2pathd(ellipse: SVGElement, use_cubics: bool = False) -> str:
     """converts the parameters from an ellipse or a circle to a string for a 
     Path object d-attribute"""
 
-    cx: float
-    cy: float
-    rx: float
-    ry: float
-    cx = ellipse.get('cx', 0)  # type: ignore[assignment]
-    cy = ellipse.get('cy', 0)  # type: ignore[assignment]
-    rx = ellipse.get('rx', None)  # type: ignore[assignment, arg-type]
-    ry = ellipse.get('ry', None)  # type: ignore[assignment, arg-type]
+    cx_attr = ellipse.get('cx', 0)
+    cy_attr = ellipse.get('cy', 0)
+    rx_attr = ellipse.get('rx', None)
+    ry_attr = ellipse.get('ry', None)
     r = ellipse.get('r', None)
 
+    rx: float
+    ry: float
     if r is not None:
         rx = ry = float(r)
     else:
-        rx = float(rx)
-        ry = float(ry)
+        # An ellipse without rx/ry is malformed; float(None) raises.
+        rx = float(rx_attr)  # type: ignore[arg-type]
+        ry = float(ry_attr)  # type: ignore[arg-type]
 
-    cx = float(cx)
-    cy = float(cy)
+    cx = float(cx_attr)
+    cy = float(cy_attr)
 
     if use_cubics:
         # Modified by NXP 2024, 2025
@@ -98,15 +97,15 @@ def ellipse2pathd(ellipse: SVGElement, use_cubics: bool = False) -> str:
     return d + 'z'
 
 
-def polyline2pathd(polyline: Union[str, SVGElement],
-                   is_polygon: bool = False) -> str:
+def polyline2pathd(polyline: SVGElement, is_polygon: bool = False) -> str:
     """converts the string from a polyline points-attribute to a string for a
     Path object d-attribute"""
     points: list[tuple[str, str]]
     if isinstance(polyline, str):
-        # NOTE: a bare points-string does not actually work here -- the code
-        # below indexes `points` as a list of (x, y) pairs.
-        points = polyline  # type: ignore[assignment]
+        # NOTE: this branch cannot work -- the code below treats `points` as
+        # a list of (x, y) pairs, so a bare points-string raises IndexError.
+        # Left as-is, but no longer advertised in the signature.
+        points = polyline
     else:
         points = COORD_PAIR_TMPLT.findall(polyline.get('points', ''))
 
@@ -128,8 +127,7 @@ def polyline2pathd(polyline: Union[str, SVGElement],
     return d
 
 
-def polygon2pathd(polyline: Union[str, SVGElement],
-                  is_polygon: bool = True) -> str:
+def polygon2pathd(polyline: SVGElement, is_polygon: bool = True) -> str:
     """converts the string from a polygon points-attribute to a string 
     for a Path object d-attribute.
     Note:  For a polygon made from n points, the resulting path will be
@@ -150,15 +148,13 @@ def rect2pathd(rect: SVGElement) -> str:
 
         # if only one, rx or ry, is present, use that value for both
         # https://developer.mozilla.org/en-US/docs/Web/SVG/Element/rect
-        rx: float
-        ry: float
-        rx = rect.get('rx', None)  # type: ignore[assignment, arg-type]
-        ry = rect.get('ry', None)  # type: ignore[assignment, arg-type]
-        if rx is None:
-            rx = ry or 0.
-        if ry is None:
-            ry = rx or 0.
-        rx, ry = float(rx), float(ry)
+        rx_attr: Union[str, float, None] = rect.get('rx', None)
+        ry_attr: Union[str, float, None] = rect.get('ry', None)
+        if rx_attr is None:
+            rx_attr = ry_attr or 0.
+        if ry_attr is None:
+            ry_attr = rx_attr or 0.
+        rx, ry = float(rx_attr), float(ry_attr)
 
         d = "M {} {} ".format(x + rx, y)  # right of p0
         d += "L {} {} ".format(x + w - rx, y)  # go to p1
@@ -356,6 +352,18 @@ def svg2paths2(svg_file_location: SVGSource,
                ) -> PathsAndAttributes: ...
 
 
+@overload
+def svg2paths2(svg_file_location: SVGSource,
+               return_svg_attributes: bool,
+               convert_circles_to_paths: bool = ...,
+               convert_ellipses_to_paths: bool = ...,
+               convert_lines_to_paths: bool = ...,
+               convert_polylines_to_paths: bool = ...,
+               convert_polygons_to_paths: bool = ...,
+               convert_rectangles_to_paths: bool = ...
+               ) -> Union[PathsAndAttributes, PathsAttributesAndSVG]: ...
+
+
 def svg2paths2(svg_file_location: SVGSource,
                return_svg_attributes: bool = True,
                convert_circles_to_paths: bool = True,
@@ -402,15 +410,27 @@ def svgstr2paths(svg_string: str,
                  ) -> PathsAttributesAndSVG: ...
 
 
+@overload
 def svgstr2paths(svg_string: str,
-               return_svg_attributes: bool = False,
-               convert_circles_to_paths: bool = True,
-               convert_ellipses_to_paths: bool = True,
-               convert_lines_to_paths: bool = True,
-               convert_polylines_to_paths: bool = True,
-               convert_polygons_to_paths: bool = True,
-               convert_rectangles_to_paths: bool = True
-               ) -> Union[PathsAndAttributes, PathsAttributesAndSVG]:
+                 return_svg_attributes: bool,
+                 convert_circles_to_paths: bool = ...,
+                 convert_ellipses_to_paths: bool = ...,
+                 convert_lines_to_paths: bool = ...,
+                 convert_polylines_to_paths: bool = ...,
+                 convert_polygons_to_paths: bool = ...,
+                 convert_rectangles_to_paths: bool = ...
+                 ) -> Union[PathsAndAttributes, PathsAttributesAndSVG]: ...
+
+
+def svgstr2paths(svg_string: str,
+                 return_svg_attributes: bool = False,
+                 convert_circles_to_paths: bool = True,
+                 convert_ellipses_to_paths: bool = True,
+                 convert_lines_to_paths: bool = True,
+                 convert_polylines_to_paths: bool = True,
+                 convert_polygons_to_paths: bool = True,
+                 convert_rectangles_to_paths: bool = True
+                 ) -> Union[PathsAndAttributes, PathsAttributesAndSVG]:
     """Convenience function; identical to svg2paths() except that it takes the
     svg object as string.  See svg2paths() docstring for more
     info."""

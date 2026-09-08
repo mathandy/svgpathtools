@@ -19,6 +19,7 @@ if TYPE_CHECKING:
     # be circular (`path` imports this submodule).
     from .path import Arc, Line
 
+
 class Bezier(Protocol):
     """A Bezier curve in the standard representation used throughout this
     submodule: its control points.
@@ -32,10 +33,11 @@ class Bezier(Protocol):
     def __len__(self) -> int: ...
 
     @overload
-    def __getitem__(self, i: int) -> complex: ...
+    def __getitem__(self, i: int, /) -> complex: ...
 
     @overload
-    def __getitem__(self, i: slice) -> Sequence[complex]: ...
+    def __getitem__(self, i: slice, /) -> Sequence[complex]: ...
+
 
 # Several functions below also accept an `Arc` (see the "arc support"
 # blocks), which is not expressible as a sequence of control points.
@@ -109,12 +111,12 @@ def bezier2polynomial(p: Bezier, numpy_ordering: bool = ...,
 
 @overload
 def bezier2polynomial(p: Bezier, numpy_ordering: bool = ...,
-                      *, return_poly1d: Literal[True]) -> poly1d: ...
+                      return_poly1d: Literal[True] = ...) -> poly1d: ...
 
 
 @overload
 def bezier2polynomial(p: Bezier, numpy_ordering: bool = ...,
-                      *, return_poly1d: bool
+                      return_poly1d: bool = ...
                       ) -> Union[Sequence[complex], poly1d]: ...
 
 
