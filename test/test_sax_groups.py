@@ -1,6 +1,6 @@
 from __future__ import division, absolute_import, print_function
 import unittest
-from svgpathtools import SaxDocument
+from svgpathtools import SaxDocument, Path, Line, svg2paths
 from os.path import join, dirname
 
 
@@ -27,3 +27,19 @@ class TestSaxGroups(unittest.TestCase):
                 self.assertEqual(matrix, None)
             if i == 9:
                 self.assertEqual(values['fill'], 'lime')
+
+    def test_parse_line(self):
+        # Regression test: <line> elements used to crash SaxDocument with
+        # AttributeError because line2pathd read `.attrib` from the plain
+        # attribute dict that sax_parse passes to it.
+        doc = SaxDocument(join(dirname(__file__), 'line.svg'))
+        self.assertEqual(len(doc.tree), 1)
+        self.assertEqual(doc.tree[0]['name'], 'line')
+        self.assertEqual(doc.tree[0]['d'], 'M0 0L10 10')
+
+        expected = Path(Line(0+0j, 10+10j))
+        self.assertEqual(doc.flatten_all_paths(), [expected])
+
+        # SaxDocument and svg2paths should agree on the same <line>.
+        paths, _ = svg2paths(join(dirname(__file__), 'line.svg'))
+        self.assertEqual(paths, [expected])

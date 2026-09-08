@@ -117,9 +117,7 @@ class SaxDocument:
                     elif 'ellipse' == name:
                         values["d"] = ellipse2pathd(values)
                     elif 'line' == name:
-                        # NOTE: line2pathd reads `.attrib`, so passing the
-                        # plain attribute dict raises AttributeError here.
-                        values["d"] = line2pathd(values)  # type: ignore[arg-type]
+                        values["d"] = line2pathd(values)
                     elif 'polyline' == name:
                         values["d"] = polyline2pathd(values)
                     elif 'polygon' == name:

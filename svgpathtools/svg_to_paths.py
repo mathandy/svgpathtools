@@ -178,10 +178,10 @@ def rect2pathd(rect: SVGElement) -> str:
     return d
 
 
-def line2pathd(l: Element) -> str:
+def line2pathd(l: SVGElement) -> str:
     return (
-        'M' + l.attrib.get('x1', '0') + ' ' + l.attrib.get('y1', '0')
-        + 'L' + l.attrib.get('x2', '0') + ' ' + l.attrib.get('y2', '0')
+        'M' + l.get('x1', '0') + ' ' + l.get('y1', '0')
+        + 'L' + l.get('x2', '0') + ' ' + l.get('y2', '0')
     )
 
 
