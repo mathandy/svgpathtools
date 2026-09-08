@@ -34,39 +34,9 @@ from .misctools import BugException
 from .polytools import rational_limit, polyroots, polyroots01, imag, real
 
 if TYPE_CHECKING:
-    # Imported for type annotations only; no XML is parsed in this submodule.
     from xml.etree.ElementTree import Element
-    # These are never imported at runtime, so typing_extensions is not a
-    # dependency of the package -- only of type-checking it.  TypeIs is
-    # used for the plain isinstance checks (it also narrows the negative
-    # branch); is_bezier_path needs TypeGuard, since it answers False for
-    # a Path that contains an Arc.
     from typing_extensions import TypeGuard, TypeIs
 
-# NOTE: the aliases below are ordinary assignments, evaluated at import
-# time, so names not yet defined must be quoted and `typing.Tuple`/`Union`
-# are used rather than the builtin generics (which only became subscriptable
-# in 3.9).  Annotations themselves need neither, thanks to
-# `from __future__ import annotations` above.
-
-# A path segment of any kind.  `Segment` is the type most functions here
-# accept and return; the narrower `BezierSegment` excludes `Arc`, for
-# which several algorithms below are not implemented.
-BezierSegment = Union["Line", "QuadraticBezier", "CubicBezier"]
-Segment = Union[BezierSegment, "Arc"]
-
-# Anything that can be evaluated/transformed as a curve, i.e. a single
-# segment or a whole path.
-Curve = Union[Segment, "Path"]
-
-# `rotate`, `translate` and `scale` return the same kind of curve they are
-# given; `transform` does not (it degenerates an `Arc` to a `Line` when the
-# transform collapses a radius), so it is not typed with this.
-CurveT = TypeVar("CurveT", bound=Curve)
-
-# `transform` is type-preserving for everything except an `Arc`, so it is
-# spelled out per kind rather than with a single TypeVar.
-BezierSegmentT = TypeVar("BezierSegmentT", bound=BezierSegment)
 
 # `z` in the `Arc` isometries below is a point, an array of points, or a
 # polynomial with complex coefficients; each maps to its own kind.
@@ -79,10 +49,6 @@ SegmentRadialRange = Tuple[Tuple[float, float], Tuple[float, float]]
 # and the index are None only for an empty `Path`.
 PathExtremum = Tuple[float, Optional[float], Optional[int]]
 PathRadialRange = Tuple[PathExtremum, PathExtremum]
-
-# One entry of `Path.intersect()`'s result: ((T1, seg1, t1), (T2, seg2, t2)).
-Intersection = Tuple[Tuple[float, Segment, float],
-                     Tuple[float, Segment, float]]
 
 
 COMMANDS = set('MmZzLlHhVvCcSsQqTtAa')
@@ -2711,6 +2677,21 @@ class Arc(object):
             current_t = next_t
 
 
+# A path segment of any kind.  `Segment` is the type most functions here
+# accept and return; the narrower `BezierSegment` excludes `Arc`, for
+# which several algorithms above are not implemented.
+BezierSegment = Union[Line, QuadraticBezier, CubicBezier]
+Segment = Union[BezierSegment, Arc]
+
+# `transform` is type-preserving for everything except an `Arc`, so it is
+# spelled out per kind rather than with a single TypeVar.
+BezierSegmentT = TypeVar("BezierSegmentT", bound=BezierSegment)
+
+# One entry of `Path.intersect()`'s result: ((T1, seg1, t1), (T2, seg2, t2)).
+Intersection = Tuple[Tuple[float, Segment, float],
+                     Tuple[float, Segment, float]]
+
+
 class Path(MutableSequence):
     """A Path is a sequence of path segments"""
 
@@ -3702,3 +3683,13 @@ class Path(MutableSequence):
                 current_pos = end
 
         return segments
+
+
+# Anything that can be evaluated/transformed as a curve, i.e. a single
+# segment or a whole path.
+Curve = Union[Segment, Path]
+
+# `rotate`, `translate` and `scale` return the same kind of curve they are
+# given; `transform` does not (it degenerates an `Arc` to a `Line` when the
+# transform collapses a radius), so it is not typed with this.
+CurveT = TypeVar("CurveT", bound=Curve)
