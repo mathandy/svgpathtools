@@ -278,7 +278,7 @@ def bezier_bounding_box(bez: BezierOrArc) -> BoundingBox:
 
     # begin arc support block ########################
     try:
-        bla = bez.large_arc  # type: ignore[union-attr]
+        bez.large_arc  # type: ignore[union-attr]
         return bez.bbox()  # type: ignore[union-attr]  # added to support Arc objects
     except:
         pass

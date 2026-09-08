@@ -36,6 +36,7 @@ A Big Problem:
 # External dependencies
 from __future__ import division, absolute_import, print_function, annotations
 from typing import Any, Callable, List, Mapping, Optional, Union
+from types import MappingProxyType
 import os
 import collections
 import xml.etree.ElementTree as etree
@@ -81,13 +82,19 @@ CONVERSIONS: dict[str, PathConverter] = {
 
 CONVERT_ONLY_PATHS: dict[str, PathConverter] = {'path': path2pathd}
 
+# A read-only view of CONVERSIONS, used as the default for the
+# `path_conversions` parameters below.  It tracks CONVERSIONS (so registering
+# a converter there still takes effect) but cannot itself be mutated, so a
+# caller holding the default cannot corrupt the shared dict.
+_DEFAULT_CONVERSIONS: Mapping[str, PathConverter] = MappingProxyType(CONVERSIONS)
+
 SVG_GROUP_TAG = 'svg:g'
 
 
 def flattened_paths(group: Element,
                     group_filter: Callable[[Element], bool] = lambda x: True,
                     path_filter: Callable[[Element], bool] = lambda x: True,
-                    path_conversions: Mapping[str, PathConverter] = CONVERSIONS,
+                    path_conversions: Mapping[str, PathConverter] = _DEFAULT_CONVERSIONS,
                     group_search_xpath: str = SVG_GROUP_TAG,
                     strict_transform_parsing: bool = False) -> list[Path]:
     """Returns the paths inside a group (recursively), expressing the
@@ -172,7 +179,7 @@ def flattened_paths_from_group(
         group_to_flatten: Element, root: Element, recursive: bool = True,
         group_filter: Callable[[Element], bool] = lambda x: True,
         path_filter: Callable[[Element], bool] = lambda x: True,
-        path_conversions: Mapping[str, PathConverter] = CONVERSIONS,
+        path_conversions: Mapping[str, PathConverter] = _DEFAULT_CONVERSIONS,
         group_search_xpath: str = SVG_GROUP_TAG,
         strict_transform_parsing: bool = False) -> list[Path]:
     """Flatten all the paths in a specific group.
@@ -304,7 +311,7 @@ class Document:
     def paths(self,
               group_filter: Callable[[Element], bool] = lambda x: True,
               path_filter: Callable[[Element], bool] = lambda x: True,
-              path_conversions: Mapping[str, PathConverter] = CONVERSIONS
+              path_conversions: Mapping[str, PathConverter] = _DEFAULT_CONVERSIONS
               ) -> list[Path]:
         """Returns a list of all paths in the document.
 
@@ -319,7 +326,7 @@ class Document:
             self, group: GroupRef, recursive: bool = True,
             group_filter: Callable[[Element], bool] = lambda x: True,
             path_filter: Callable[[Element], bool] = lambda x: True,
-            path_conversions: Mapping[str, PathConverter] = CONVERSIONS
+            path_conversions: Mapping[str, PathConverter] = _DEFAULT_CONVERSIONS
             ) -> list[Path]:
         if all(isinstance(s, str) for s in group):
             # If we're given a list of strings, assume it represents a
