@@ -3,7 +3,6 @@ aren't specific to SVGs or related mathematical objects."""
 
 # External dependencies:
 from __future__ import division, absolute_import, print_function, annotations
-from typing import Sequence
 import os
 import sys
 import webbrowser
@@ -24,7 +23,7 @@ def hex2rgb(value: str) -> tuple[int, ...]:
 
 
 # stackoverflow.com/questions/214359/converting-hex-color-to-rgb-and-vice-versa
-def rgb2hex(rgb: Sequence[int]) -> str:
+def rgb2hex(rgb: tuple[int, int, int]) -> str:
     """Converts an RGB 3-tuple to a hexadeximal color string.
 
     EXAMPLE

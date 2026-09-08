@@ -328,10 +328,13 @@ class Document:
             path_filter: Callable[[Element], bool] = lambda x: True,
             path_conversions: Mapping[str, PathConverter] = _DEFAULT_CONVERSIONS
             ) -> list[Path]:
-        if all(isinstance(s, str) for s in group):
+        # The isinstance check matters: iterating an *empty* Element yields
+        # nothing, so all(...) would be vacuously true and the element would
+        # be treated as an empty name list, resolving to the document root.
+        if isinstance(group, list) and all(isinstance(s, str) for s in group):
             # If we're given a list of strings, assume it represents a
             # nested sequence
-            group = self.get_group(group)  # type: ignore[arg-type, assignment]
+            group = self.get_group(group)  # type: ignore[assignment]
         elif not isinstance(group, Element):
             raise TypeError(
                 'Must provide a list of strings that represent a nested '
