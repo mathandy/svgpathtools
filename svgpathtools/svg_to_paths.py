@@ -216,7 +216,10 @@ def svg2paths(svg_file_location,
 
     # Use minidom to extract path strings from input SVG
     paths = [dom2dict(el) for el in doc.getElementsByTagName('path')]
-    d_strings = [el['d'] for el in paths]
+    # a <path> with no d attribute is valid SVG (it draws nothing); read it
+    # defensively like path2pathd does so one such element doesn't abort the
+    # whole parse with a bare KeyError
+    d_strings = [el.get('d', '') for el in paths]
     attribute_dictionary_list = paths
 
     # Use minidom to extract polyline strings from input SVG, convert to
