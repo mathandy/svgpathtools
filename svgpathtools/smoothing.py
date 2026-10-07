@@ -2,15 +2,16 @@
 curves."""
 
 # External Dependencies
-from __future__ import division, absolute_import, print_function
+from __future__ import division, absolute_import, print_function, annotations
+from typing import Any, NoReturn
 
 # Internal Dependencies
-from .path import Path, CubicBezier, Line
+from .path import Path, CubicBezier, Line, Segment
 from .misctools import isclose
 from .paths2svg import disvg
 
 
-def is_differentiable(path, tol=1e-8):
+def is_differentiable(path: Path, tol: float = 1e-8) -> bool:
     for idx in range(len(path)):
         u = path[(idx-1) % len(path)].unit_tangent(1)
         v = path[idx].unit_tangent(0)
@@ -20,9 +21,9 @@ def is_differentiable(path, tol=1e-8):
     return True
 
 
-def kinks(path, tol=1e-8):
+def kinks(path: Path, tol: float = 1e-8) -> list[int]:
     """returns indices of segments that start on a non-differentiable joint."""
-    kink_list = []
+    kink_list: list[int] = []
     for idx in range(len(path)):
         if idx == 0 and not path.isclosed():
             continue
@@ -39,7 +40,7 @@ def kinks(path, tol=1e-8):
     return kink_list
 
 
-def _report_unfixable_kinks(_path, _kink_list):
+def _report_unfixable_kinks(_path: Path, _kink_list: list[int]) -> NoReturn:
     mes = ("\n%s kinks have been detected at that cannot be smoothed.\n"
            "To ignore these kinks and fix all others, run this function "
            "again with the second argument 'ignore_unfixable_kinks=True' "
@@ -49,7 +50,9 @@ def _report_unfixable_kinks(_path, _kink_list):
     raise Exception(mes)
 
 
-def smoothed_joint(seg0, seg1, maxjointsize=3, tightness=1.99):
+def smoothed_joint(seg0: Segment, seg1: Segment, maxjointsize: float = 3,
+                   tightness: float = 1.99
+                   ) -> tuple[Segment, list[Segment], Segment]:
     """ See Andy's notes on
     Smoothing Bezier Paths for an explanation of the method.
     Input: two segments seg0, seg1 such that seg0.end==seg1.start, and
@@ -59,6 +62,13 @@ def smoothed_joint(seg0, seg1, maxjointsize=3, tightness=1.99):
         object that smoothly connects seg0_trimmed and seg1_trimmed.
 
     """
+    # `elbow` holds a single CubicBezier in the branches that wrap it in a
+    # list below, and an already-assembled list of segments in the last one.
+    elbow: Any
+    seg0_trimmed: Segment
+    seg1_trimmed: Segment
+    args: tuple[Segment, Segment, float, float]
+
     assert seg0.end == seg1.start
     assert 0 < maxjointsize
     assert 0 < tightness < 2
@@ -148,15 +158,17 @@ def smoothed_joint(seg0, seg1, maxjointsize=3, tightness=1.99):
         return seg0_trimmed, elbow, seg1_trimmed
 
 
-def smoothed_path(path, maxjointsize=3, tightness=1.99, ignore_unfixable_kinks=False):
+def smoothed_path(path: Path, maxjointsize: float = 3,
+                  tightness: float = 1.99,
+                  ignore_unfixable_kinks: bool = False) -> Path:
     """returns a path with no non-differentiable joints."""
     if len(path) == 1:
         return path
 
     assert path.iscontinuous()
 
-    sharp_kinks = []
-    new_path = [path[0]]
+    sharp_kinks: list[int] = []
+    new_path: list[Segment] = [path[0]]
     for idx in range(len(path)):
         if idx == len(path)-1:
             if not path.isclosed():

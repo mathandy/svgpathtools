@@ -42,6 +42,20 @@ class TestDocument(unittest.TestCase):
 
             self.assertEqual(len(doc.paths()), 2)
 
+    def test_paths_from_empty_group(self):
+        """An empty group has no paths, and must not fall back to the root."""
+        svg = ('<svg xmlns="http://www.w3.org/2000/svg">'
+               '<path d="M0,0 L10,10"/>'
+               '<g id="filled"><path d="M1,1 L2,2"/></g>'
+               '<g id="empty"></g>'
+               '</svg>')
+        doc = Document.from_svg_string(svg)
+
+        self.assertEqual(doc.paths_from_group(doc.get_group(['empty'])), [])
+        # a group that does have paths, and the nested-name form, still work
+        self.assertEqual(len(doc.paths_from_group(doc.get_group(['filled']))), 1)
+        self.assertEqual(len(doc.paths_from_group(['filled'])), 1)
+
     def test_from_string(self):
         """Test reading svg object contained in a string"""
         with open(join(dirname(__file__), 'polygons.svg'),

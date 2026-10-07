@@ -2,14 +2,14 @@
 aren't specific to SVGs or related mathematical objects."""
 
 # External dependencies:
-from __future__ import division, absolute_import, print_function
+from __future__ import division, absolute_import, print_function, annotations
 import os
 import sys
 import webbrowser
 
 
 # stackoverflow.com/questions/214359/converting-hex-color-to-rgb-and-vice-versa
-def hex2rgb(value):
+def hex2rgb(value: str) -> tuple[int, ...]:
     """Converts a hexadeximal color string to an RGB 3-tuple
 
     EXAMPLE
@@ -23,7 +23,7 @@ def hex2rgb(value):
 
 
 # stackoverflow.com/questions/214359/converting-hex-color-to-rgb-and-vice-versa
-def rgb2hex(rgb):
+def rgb2hex(rgb: tuple[int, int, int]) -> str:
     """Converts an RGB 3-tuple to a hexadeximal color string.
 
     EXAMPLE
@@ -34,12 +34,13 @@ def rgb2hex(rgb):
     return ('#%02x%02x%02x' % tuple(rgb)).upper()
 
 
-def isclose(a, b, rtol=1e-5, atol=1e-8):
+def isclose(a: complex, b: complex,
+            rtol: float = 1e-5, atol: float = 1e-8) -> bool:
     """This is essentially np.isclose, but slightly faster."""
     return abs(a - b) < (atol + rtol * abs(b))
 
 
-def open_in_browser(file_location):
+def open_in_browser(file_location: str) -> None:
     """Attempt to open file located at file_location in the default web
     browser."""
 

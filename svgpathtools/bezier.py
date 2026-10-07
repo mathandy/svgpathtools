@@ -4,29 +4,71 @@ Note:  Bezier curves here are always represented by the tuple of their control
 points given by their standard representation."""
 
 # External dependencies:
-from __future__ import division, absolute_import, print_function
+from __future__ import division, absolute_import, print_function, annotations
+from typing import (TYPE_CHECKING, Any, Literal, Protocol, Sequence, Tuple,
+                    Union, overload)
 from math import factorial as fac, ceil, log, sqrt
 from numpy import poly1d
 
 # Internal dependencies
-from .polytools import real, imag, polyroots, polyroots01
+from .polytools import real, imag, polyroots, polyroots01, Coefficients
 from .constants import FLOAT_EPSILON
+
+if TYPE_CHECKING:
+    # Imported for type annotations only; importing `path` at runtime would
+    # be circular (`path` imports this submodule).
+    from .path import Arc, Line
+
+
+class Bezier(Protocol):
+    """A Bezier curve in the standard representation used throughout this
+    submodule: its control points.
+
+    Structural, so that it covers both a plain sequence of control points
+    and the `Line`, `QuadraticBezier` and `CubicBezier` objects from
+    `path`, which expose their control points via __getitem__/__len__
+    without subclassing Sequence.
+    """
+
+    def __len__(self) -> int: ...
+
+    @overload
+    def __getitem__(self, i: int, /) -> complex: ...
+
+    @overload
+    def __getitem__(self, i: slice, /) -> Sequence[complex]: ...
+
+
+# Several functions below also accept an `Arc` (see the "arc support"
+# blocks), which is not expressible as a sequence of control points.
+BezierOrArc = Union[Bezier, "Arc"]
+
+# An upright bounding box, (xmin, xmax, ymin, ymax).
+BoundingBox = Tuple[float, float, float, float]
 
 
 # Evaluation ##################################################################
 
-def n_choose_k(n, k):
+def n_choose_k(n: int, k: int) -> int:
     return fac(n)//fac(k)//fac(n-k)
 
 
-def bernstein(n, t):
+def bernstein(n: int, t: float) -> list[float]:
     """returns a list of the Bernstein basis polynomials b_{i, n} evaluated at
     t, for i =0...n"""
     t1 = 1-t
     return [n_choose_k(n, k) * t1**(n-k) * t**k for k in range(n+1)]
 
 
-def bezier_point(p, t):
+@overload
+def bezier_point(p: Sequence[float], t: float) -> float: ...
+
+
+@overload
+def bezier_point(p: BezierOrArc, t: float) -> complex: ...
+
+
+def bezier_point(p: Any, t: float) -> Any:
     """Evaluates the Bezier curve given by it's control points, p, at t.
     Note: Uses Horner's rule for cubic and lower order Bezier curves.
     Warning:  Be concerned about numerical stability when using this function
@@ -61,13 +103,33 @@ def bezier_point(p, t):
 
 # Conversion ##################################################################
 
-def bezier2polynomial(p, numpy_ordering=True, return_poly1d=False):
+@overload
+def bezier2polynomial(p: Bezier, numpy_ordering: bool = ...,
+                      return_poly1d: Literal[False] = ...
+                      ) -> Sequence[complex]: ...
+
+
+@overload
+def bezier2polynomial(p: Bezier, numpy_ordering: bool = ...,
+                      return_poly1d: Literal[True] = ...) -> poly1d: ...
+
+
+@overload
+def bezier2polynomial(p: Bezier, numpy_ordering: bool = ...,
+                      return_poly1d: bool = ...
+                      ) -> Union[Sequence[complex], poly1d]: ...
+
+
+def bezier2polynomial(p: Bezier, numpy_ordering: bool = True,
+                      return_poly1d: bool = False
+                      ) -> Union[Sequence[complex], poly1d]:
     """Converts a tuple of Bezier control points to a tuple of coefficients
     of the expanded polynomial.
     return_poly1d : returns a numpy.poly1d object.  This makes computations
     of derivatives/anti-derivatives and many other operations quite quick.
     numpy_ordering : By default (to accommodate numpy) the coefficients will
     be output in reverse standard order."""
+    coeffs: Sequence[complex]
     if len(p) == 4:
         coeffs = (-p[0] + 3*(p[1] - p[2]) + p[3],
                   3*(p[0] - 2*p[1] + p[2]),
@@ -81,7 +143,7 @@ def bezier2polynomial(p, numpy_ordering=True, return_poly1d=False):
         coeffs = (p[1]-p[0],
                   p[0])
     elif len(p) == 1:
-        coeffs = p
+        coeffs = p  # type: ignore[assignment]
     else:
         # https://en.wikipedia.org/wiki/Bezier_curve#Polynomial_form
         n = len(p) - 1
@@ -96,14 +158,16 @@ def bezier2polynomial(p, numpy_ordering=True, return_poly1d=False):
     return coeffs
 
 
-def polynomial2bezier(poly):
+def polynomial2bezier(poly: Coefficients) -> tuple[complex, ...]:
     """Converts a cubic or lower order Polynomial object (or a sequence of
     coefficients) to a CubicBezier, QuadraticBezier, or Line object as
     appropriate."""
+    c: Coefficients
     if isinstance(poly, poly1d):
         c = poly.coeffs
     else:
         c = poly
+    bpoints: tuple[complex, ...]
     order = len(c)-1
     if order == 3:
         bpoints = (c[3], c[2]/3 + c[3], (c[1] + 2*c[2])/3 + c[3],
@@ -120,15 +184,19 @@ def polynomial2bezier(poly):
 
 # Curve Splitting #############################################################
 
-def split_bezier(bpoints, t):
+def split_bezier(bpoints: Bezier,
+                 t: float) -> tuple[list[complex], list[complex]]:
     """Uses deCasteljau's recursion to split the Bezier curve at t into two
     Bezier curves of the same order."""
-    def split_bezier_recursion(bpoints_left_, bpoints_right_, bpoints_, t_):
+    def split_bezier_recursion(
+            bpoints_left_: list[complex], bpoints_right_: list[complex],
+            bpoints_: Bezier, t_: float
+    ) -> tuple[list[complex], list[complex]]:
         if len(bpoints_) == 1:
             bpoints_left_.append(bpoints_[0])
             bpoints_right_.append(bpoints_[0])
         else:
-            new_points = [None]*(len(bpoints_) - 1)
+            new_points: list[complex] = [None]*(len(bpoints_) - 1)  # type: ignore[list-item]
             bpoints_left_.append(bpoints_[0])
             bpoints_right_.append(bpoints_[-1])
             for i in range(len(bpoints_) - 1):
@@ -137,15 +205,23 @@ def split_bezier(bpoints, t):
                 bpoints_left_, bpoints_right_, new_points, t_)
         return bpoints_left_, bpoints_right_
 
-    bpoints_left = []
-    bpoints_right = []
+    bpoints_left: list[complex] = []
+    bpoints_right: list[complex] = []
     bpoints_left, bpoints_right = \
         split_bezier_recursion(bpoints_left, bpoints_right, bpoints, t)
     bpoints_right.reverse()
     return bpoints_left, bpoints_right
 
 
-def halve_bezier(p):
+@overload
+def halve_bezier(p: Bezier) -> tuple[list[complex], list[complex]]: ...
+
+
+@overload
+def halve_bezier(p: Arc) -> tuple[Arc, Arc]: ...
+
+
+def halve_bezier(p: Any) -> Any:
 
     # begin arc support block ########################
     try:
@@ -166,9 +242,9 @@ def halve_bezier(p):
 
 # Bounding Boxes ##############################################################
 
-def bezier_real_minmax(p):
+def bezier_real_minmax(p: Sequence[float]) -> tuple[float, float]:
     """returns the minimum and maximum for any real cubic bezier"""
-    local_extremizers = [0, 1]
+    local_extremizers: list[float] = [0, 1]
     if len(p) == 4:  # cubic case
         a = [p.real for p in p]
         denom = a[0] - 3*a[1] + 3*a[2] - a[3]
@@ -195,38 +271,40 @@ def bezier_real_minmax(p):
     return min(local_extrema), max(local_extrema)
 
 
-def bezier_bounding_box(bez):
+def bezier_bounding_box(bez: BezierOrArc) -> BoundingBox:
     """returns the bounding box for the segment in the form
     (xmin, xmax, ymin, ymax).
     Warning: For the non-cubic case this is not particularly efficient."""
 
     # begin arc support block ########################
     try:
-        bla = bez.large_arc
-        return bez.bbox()  # added to support Arc objects
+        bez.large_arc  # type: ignore[union-attr]
+        return bez.bbox()  # type: ignore[union-attr]  # added to support Arc objects
     except:
         pass
     # end arc support block ##########################
 
-    if len(bez) == 4:
-        xmin, xmax = bezier_real_minmax([p.real for p in bez])
-        ymin, ymax = bezier_real_minmax([p.imag for p in bez])
+    if len(bez) == 4:  # type: ignore[arg-type]
+        # (mypy does not model iteration via __getitem__)
+        xmin, xmax = bezier_real_minmax([p.real for p in bez])  # type: ignore[union-attr]
+        ymin, ymax = bezier_real_minmax([p.imag for p in bez])  # type: ignore[union-attr]
         return xmin, xmax, ymin, ymax
-    poly = bezier2polynomial(bez, return_poly1d=True)
+    poly: poly1d
+    poly = bezier2polynomial(bez, return_poly1d=True)  # type: ignore[arg-type, assignment]
     x = real(poly)
     y = imag(poly)
     dx = x.deriv()
     dy = y.deriv()
-    x_extremizers = [0, 1] + polyroots(dx, realroots=True,
+    x_extremizers: list[float] = [0, 1] + polyroots(dx, realroots=True,
                                     condition=lambda r: 0 < r < 1)
-    y_extremizers = [0, 1] + polyroots(dy, realroots=True,
+    y_extremizers: list[float] = [0, 1] + polyroots(dy, realroots=True,
                                     condition=lambda r: 0 < r < 1)
     x_extrema = [x(t) for t in x_extremizers]
     y_extrema = [y(t) for t in y_extremizers]
     return min(x_extrema), max(x_extrema), min(y_extrema), max(y_extrema)
 
 
-def box_area(xmin, xmax, ymin, ymax):
+def box_area(xmin: float, xmax: float, ymin: float, ymax: float) -> float:
     """
     INPUT: 2-tuple of cubics (given by control points)
     OUTPUT: boolean
@@ -234,13 +312,14 @@ def box_area(xmin, xmax, ymin, ymax):
     return (xmax - xmin)*(ymax - ymin)
 
 
-def interval_intersection_width(a, b, c, d):
+def interval_intersection_width(a: float, b: float,
+                                c: float, d: float) -> float:
     """returns the width of the intersection of intervals [a,b] and [c,d]
     (thinking of these as intervals on the real number line)"""
     return max(0, min(b, d) - max(a, c))
 
 
-def boxes_intersect(box1, box2):
+def boxes_intersect(box1: BoundingBox, box2: BoundingBox) -> bool:
     """Determines if two rectangles, each input as a tuple
         (xmin, xmax, ymin, ymax), intersect."""
     xmin1, xmax1, ymin1, ymax1 = box1
@@ -257,29 +336,32 @@ def boxes_intersect(box1, box2):
 class ApproxSolutionSet(list):
     """A class that behaves like a set but treats two elements , x and y, as
     equivalent if abs(x-y) < self.tol"""
-    def __init__(self, tol):
+    def __init__(self, tol: float) -> None:
         self.tol = tol
 
-    def __contains__(self, x):
+    def __contains__(self, x: Any) -> bool:
         for y in self:
             if abs(x - y) < self.tol:
                 return True
         return False
 
-    def appadd(self, pt):
+    def appadd(self, pt: complex) -> None:
         if pt not in self:
             self.append(pt)
 
 
 class BPair(object):
-    def __init__(self, bez1, bez2, t1, t2):
+    def __init__(self, bez1: BezierOrArc, bez2: BezierOrArc,
+                 t1: float, t2: float) -> None:
         self.bez1 = bez1
         self.bez2 = bez2
         self.t1 = t1  # t value to get the mid point of this curve from cub1
         self.t2 = t2  # t value to get the mid point of this curve from cub2
 
 
-def bezier_intersections(bez1, bez2, longer_length, tol=1e-8, tol_deC=1e-8):
+def bezier_intersections(bez1: BezierOrArc, bez2: BezierOrArc,
+                         longer_length: float, tol: float = 1e-8,
+                         tol_deC: float = 1e-8) -> list[tuple[float, float]]:
     """INPUT:
     bez1, bez2 = [P0,P1,P2,...PN], [Q0,Q1,Q2,...,PN] defining the two
     Bezier curves to check for intersections between.
@@ -293,7 +375,7 @@ def bezier_intersections(bez1, bez2, longer_length, tol=1e-8, tol_deC=1e-8):
     (assuming tol_deC is small enough)."""
     maxits = int(ceil(1-log(tol_deC/longer_length)/log(2)))
     pair_list = [BPair(bez1, bez2, 0.5, 0.5)]
-    intersection_list = []
+    intersection_list: list[tuple[float, float]] = []
     k = 0
     approx_point_set = ApproxSolutionSet(tol)
     while pair_list and k < maxits:
@@ -336,7 +418,8 @@ def bezier_intersections(bez1, bez2, longer_length, tol=1e-8, tol_deC=1e-8):
     return intersection_list
 
 
-def bezier_by_line_intersections(bezier, line):
+def bezier_by_line_intersections(bezier: Bezier,
+                                 line: Line) -> list[tuple[float, float]]:
     """Returns tuples (t1,t2) such that bezier.point(t1) ~= line.point(t2)."""
     # The method here is to translate (shift) then rotate the complex plane so
     # that line starts at the origin and proceeds along the positive real axis.
@@ -345,13 +428,13 @@ def bezier_by_line_intersections(bezier, line):
     # between 0 and abs(line[1]-line[0])].
     assert len(line[:]) == 2
     assert line[0] != line[1]
-    if not any(p != bezier[0] for p in bezier):
+    if not any(p != bezier[0] for p in bezier):  # type: ignore[attr-defined]
         raise ValueError("bezier is nodal, use "
                          "bezier_by_line_intersection(bezier[0], line) "
                          "instead for a bool to be returned.")
 
     # First let's shift the complex plane so that line starts at the origin
-    shifted_bezier = [z - line[0] for z in bezier]
+    shifted_bezier = [z - line[0] for z in bezier]  # type: ignore[attr-defined]
     shifted_line_end = line[1] - line[0]
     line_length = abs(shifted_line_end)
 
@@ -366,7 +449,7 @@ def bezier_by_line_intersections(bezier, line):
     roots_y = list(polyroots01(coeffs_y))  # returns real roots 0 <= r <= 1
 
     transformed_bezier_real = [p.real for p in transformed_bezier]
-    intersection_list = []
+    intersection_list: list[tuple[float, float]] = []
     for bez_t in set(roots_y):
         xval = bezier_point(transformed_bezier_real, bez_t)
         if 0 <= xval <= line_length:
