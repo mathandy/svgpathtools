@@ -181,6 +181,17 @@ class TestSVG2Paths(unittest.TestCase):
         self.assertTrue(len(path)==0)
         self.assertTrue(path==path_correct)
 
+    def test_svg2paths_path_without_d(self):
+        # a <path> with no d attribute is valid SVG (it draws nothing); it
+        # should come back as an empty Path instead of raising KeyError: 'd',
+        # with its attributes still returned and aligned with the path list
+        paths, attributes = svgstr2paths('<svg><path class="placeholder"/></svg>')
+        self.assertTrue(len(paths)==1)
+        self.assertTrue(len(paths[0])==0)
+        self.assertTrue(paths[0]==Path())
+        self.assertTrue(len(attributes)==1)
+        self.assertTrue(attributes[0].get('class')=='placeholder')
+
     def test_svg2paths_polyline_tests(self):
 
         paths, _ = svg2paths(join(dirname(__file__), 'polyline.svg'))
