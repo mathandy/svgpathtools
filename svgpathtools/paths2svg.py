@@ -162,6 +162,10 @@ def disvg(paths=None, colors=None, filename=None, stroke_widths=None,
         these also can be used to specify units other than pixels. Using this 
         will override the `mindim` parameter.
 
+        :param baseunit - Unit string for inferred display dimensions (default
+        'px'). Viewbox-derived pixel dimensions retain unitless serialization.
+        Explicit `dimensions` and `svg_attributes` take precedence.
+
         :param viewbox - This specifies the coordinated system used in the svg.
         The SVG `viewBox` attribute works together with the the `height` and 
         `width` attrinutes.  Using these three attributes allows for shifting 
@@ -264,6 +268,8 @@ def disvg(paths=None, colors=None, filename=None, stroke_widths=None,
             viewbox = '%s %s %s %s' % viewbox
         if dimensions is None:
             dimensions = viewbox.split(' ')[2:4]
+            if isinstance(baseunit, str) and baseunit != 'px':
+                dimensions = [dimension + baseunit for dimension in dimensions]
     elif dimensions:
         dimensions = tuple(map(str, dimensions))
         def strip_units(s):
