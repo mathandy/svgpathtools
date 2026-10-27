@@ -362,8 +362,25 @@ def bezier_by_line_intersections(bezier, line):
     # Now all intersections should be roots of the imaginary component of
     # the transformed bezier
     transformed_bezier_imag = [p.imag for p in transformed_bezier]
+    if not any(transformed_bezier_imag):
+        return []
+    roots_y = []
+    # Remove exact endpoint factors in the Bernstein basis before finding
+    # numerical roots. Repeated roots can otherwise drift outside [0, 1].
+    while len(transformed_bezier_imag) > 1 and transformed_bezier_imag[0] == 0:
+        roots_y.append(0.)
+        degree = len(transformed_bezier_imag) - 1
+        transformed_bezier_imag = [
+            degree * value / i
+            for i, value in enumerate(transformed_bezier_imag[1:], 1)]
+    while len(transformed_bezier_imag) > 1 and transformed_bezier_imag[-1] == 0:
+        roots_y.append(1.)
+        degree = len(transformed_bezier_imag) - 1
+        transformed_bezier_imag = [
+            degree * value / (degree - i)
+            for i, value in enumerate(transformed_bezier_imag[:-1])]
     coeffs_y = bezier2polynomial(transformed_bezier_imag)
-    roots_y = list(polyroots01(coeffs_y))  # returns real roots 0 <= r <= 1
+    roots_y.extend(polyroots01(coeffs_y))  # returns real roots 0 <= r <= 1
 
     transformed_bezier_real = [p.real for p in transformed_bezier]
     intersection_list = []
@@ -373,4 +390,3 @@ def bezier_by_line_intersections(bezier, line):
             line_t = xval/line_length
             intersection_list.append((bez_t, line_t))
     return intersection_list
-
