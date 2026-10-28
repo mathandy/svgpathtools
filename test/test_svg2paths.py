@@ -9,10 +9,34 @@ from sys import version_info
 import tempfile
 import shutil
 
-from svgpathtools.svg_to_paths import rect2pathd
+from svgpathtools.svg_to_paths import rect2pathd, polyline2pathd, polygon2pathd
+from svgpathtools import parse_path
 
 
 class TestSVG2Paths(unittest.TestCase):
+    def test_polyline_point_string_inputs(self):
+        cases = [
+            ('0,0 10,0 10,10', [0j, 10+0j, 10+10j]),
+            ('-1,-2 3.5,4.5', [-1-2j, 3.5+4.5j]),
+            ('1e1,-2E1 3e1,4e1', [10-20j, 30+40j]),
+            ('0,0 1,0 0,0', [0j, 1+0j, 0j]),
+        ]
+        for points, vertices in cases:
+            for converter in (polyline2pathd, polygon2pathd):
+                with self.subTest(points=points, converter=converter.__name__):
+                    actual = parse_path(converter(points))
+                    expected = Path(*[Line(a, b) for a, b in zip(vertices, vertices[1:])])
+                    if converter is polygon2pathd:
+                        expected.append(Line(vertices[-1], vertices[0]))
+                    self.assertEqual(actual, expected)
+                    self.assertEqual(converter(points), converter({'points': points}))
+
+    def test_empty_polyline_point_strings(self):
+        for converter in (polyline2pathd, polygon2pathd):
+            for points in ('', '  \n '):
+                with self.subTest(converter=converter.__name__, points=points):
+                    self.assertEqual(converter(points), '')
+
     def test_svg2paths_polygons(self):
 
         paths, _ = svg2paths(join(dirname(__file__), 'polygons.svg'))

@@ -78,9 +78,12 @@ def ellipse2pathd(ellipse, use_cubics=False):
 
 def polyline2pathd(polyline, is_polygon=False):
     """converts the string from a polyline points-attribute to a string for a
-    Path object d-attribute"""
+    Path object d-attribute.
+
+    Accepts a raw points string or an SVG attribute dictionary.
+    """
     if isinstance(polyline, str):
-        points = polyline
+        points = COORD_PAIR_TMPLT.findall(polyline)
     else:
         points = COORD_PAIR_TMPLT.findall(polyline.get('points', ''))
 
