@@ -1208,6 +1208,43 @@ class TestPath(unittest.TestCase):
                 pt_xpct = (pt_orig - complex(0, -100)) * 0.3 + complex(0, -100)
                 self.assertAlmostEqual(pt_xpct, pt_trns, delta=0.000001)
 
+    def test_d_closed_curves_round_trip(self):
+        paths = [
+            Path(QuadraticBezier(0j, 1+2j, 0j)),
+            Path(CubicBezier(0j, 1+2j, 3+2j, 0j)),
+            Path(Arc(1+0j, 1+1j, 0, False, True, -1+0j),
+                 Arc(-1+0j, 1+1j, 0, False, True, 1+0j)),
+            Path(Line(2+3j, 2+3j)),
+        ]
+        for path in paths:
+            for relative in (False, True):
+                for smooth in (False, True):
+                    with self.subTest(path=path, relative=relative,
+                                      smooth=smooth):
+                        data = path.d(use_closed_attrib=True,
+                                      rel=relative, useSandT=smooth)
+                        self.assertTrue(data.lower().endswith('z'))
+                        restored = parse_path(data)
+                        self.assertEqual(restored, path)
+                        self.assertAlmostEqual(restored.length(), path.length())
+
+    def test_closed_curves_preserve_smooth_control_context(self):
+        paths = [
+            Path(QuadraticBezier(0j, 1, 0j),
+                 QuadraticBezier(0j, -1, 0j)),
+            Path(CubicBezier(0j, 1, 1j, 0j),
+                 CubicBezier(0j, -1j, -1, 0j)),
+        ]
+        for path in paths:
+            for relative in (False, True):
+                for smooth in (False, True):
+                    with self.subTest(path=path, relative=relative,
+                                      smooth=smooth):
+                        data = path.d(use_closed_attrib=True,
+                                      rel=relative, useSandT=smooth)
+                        self.assertEqual(data.lower().count('m'), 1)
+                        self.assertEqual(parse_path(data), path)
+
     def test_d(self):
         # the following two path represent the same path but in absolute and relative forms
         abs_s = 'M 38.0,130.0 C 37.0,132.0 38.0,136.0 40.0,137.0 L 85.0,161.0 C 87.0,162.0 91.0,162.0 93.0,160.0 L 127.0,133.0 C 129.0,131.0 129.0,128.0 127.0,126.0 L 80.0,70.0 C 78.0,67.0 75.0,68.0 74.0,70.0 Z'
