@@ -2547,8 +2547,12 @@ class Path(MutableSequence):
     def __setitem__(self, index, value):
         self._segments[index] = value
         self._length = None
-        self._start = self._segments[0].start
-        self._end = self._segments[-1].end
+        if self._segments:
+            self._start = self._segments[0].start
+            self._end = self._segments[-1].end
+        else:
+            self._start = None
+            self._end = None
 
     def __delitem__(self, index):
         del self._segments[index]
