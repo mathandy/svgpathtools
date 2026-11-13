@@ -2076,7 +2076,7 @@ class Arc(object):
                 # b^2 x^2 + a^2 m^2 x^2 + 2a^2 mcx + a^2 c^2 - a^2 b^2 = 0
                 # (a^2 m^2 + b^2)x^2 + 2a^2 mcx + a^2(c^2 - b^2) = 0
                 #
-                # The quadratic forumla tells us:  x = (-B +- sqrt(B^2 - 4AC)) / 2A
+                # The quadratic formula tells us:  x = (-B +- sqrt(B^2 - 4AC)) / 2A
                 # Where:
                 #     A = a^2 m^2 + b^2
                 #     B = 2 a^2 mc
@@ -2300,7 +2300,7 @@ class Arc(object):
         # atanres = arctan((ry/rx)*cot(phi)) === atan_y
         # ~~~~~~~~
         # (2*pi/360)*(self.theta + self.delta*t) = atanres + pi*k
-        # Therfore, for both x' and y', we have...
+        # Therefore, for both x' and y', we have...
         # t = ((atan_{x/y} + pi*k)*(360/(2*pi)) - self.theta)/self.delta
         # for all k s.t. 0 < t < 1
         from math import atan, tan
