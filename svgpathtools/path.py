@@ -5,10 +5,7 @@ Arc."""
 # External dependencies
 from __future__ import annotations
 import re
-try:
-    from collections.abc import MutableSequence  # noqa
-except ImportError:
-    from collections import MutableSequence  # noqa
+from collections.abc import MutableSequence  # noqa
 from warnings import warn
 from operator import itemgetter
 import numpy as np
@@ -418,8 +415,8 @@ def bezier_unit_tangent(seg, t):
             aft = seg.poly().deriv()(t + 1e-4)
             mes = ("Unit tangent appears to not be well-defined at "
                    "t = {}, \n".format(t) +
-                   "seg.poly().deriv()(t - 1e-4) = {}\n".format(bef) +
-                   "seg.poly().deriv()(t + 1e-4) = {}".format(aft))
+                   f"seg.poly().deriv()(t - 1e-4) = {bef}\n" +
+                   f"seg.poly().deriv()(t + 1e-4) = {aft}")
             raise ValueError(mes)
     return unit_tangent
 
@@ -631,7 +628,7 @@ def crop_bezier(seg, t0, t1):
 # Main Classes ################################################################
 
 
-class Line(object):
+class Line:
     def __init__(self, start, end):
         self.start = start
         self.end = end
@@ -640,7 +637,7 @@ class Line(object):
         return hash((self.start, self.end))
 
     def __repr__(self):
-        return 'Line(start=%s, end=%s)' % (self.start, self.end)
+        return f'Line(start={self.start}, end={self.end})'
 
     def __eq__(self, other):
         if not isinstance(other, Line):
@@ -896,7 +893,7 @@ class Line(object):
         return scale(self, sx=sx, sy=sy, origin=origin)
 
 
-class QuadraticBezier(object):
+class QuadraticBezier:
     # For compatibility with old pickle files.
     _length_info = {'length': None, 'bpoints': None}
 
@@ -912,7 +909,7 @@ class QuadraticBezier(object):
         return hash((self.start, self.control, self.end))
 
     def __repr__(self):
-        return 'QuadraticBezier(start=%s, control=%s, end=%s)' % (
+        return 'QuadraticBezier(start={}, control={}, end={})'.format(
             self.start, self.control, self.end)
 
     def __eq__(self, other):
@@ -1165,7 +1162,7 @@ class QuadraticBezier(object):
         return scale(self, sx=sx, sy=sy, origin=origin)
 
 
-class CubicBezier(object):
+class CubicBezier:
     # For compatibility with old pickle files.
     _length_info = {'length': None, 'bpoints': None, 'error': None,
                     'min_depth': None}
@@ -1184,7 +1181,7 @@ class CubicBezier(object):
         return hash((self.start, self.control1, self.control2, self.end))
 
     def __repr__(self):
-        return 'CubicBezier(start=%s, control1=%s, control2=%s, end=%s)' % (
+        return 'CubicBezier(start={}, control1={}, control2={}, end={})'.format(
             self.start, self.control1, self.control2, self.end)
 
     def __eq__(self, other):
@@ -1430,7 +1427,7 @@ class CubicBezier(object):
         return scale(self, sx=sx, sy=sy, origin=origin)
 
 
-class Arc(object):
+class Arc:
     def __init__(self, start, radius, rotation, large_arc, sweep, end,
                  autoscale_radius=True):
         r"""
@@ -2633,7 +2630,7 @@ class Path(MutableSequence):
                     segment_end - segment_start)
                 return segment.point(segment_pos)
             segment_start = segment_end
-        raise RuntimeError("Something has gone wrong.  Could not compute Path.point({}) for path {}".format(pos, self))
+        raise RuntimeError(f"Something has gone wrong.  Could not compute Path.point({pos}) for path {self}")
 
     def length(self, T0=0, T1=1, error=LENGTH_ERROR, min_depth=LENGTH_MIN_DEPTH):
         self._calc_lengths(error=error, min_depth=min_depth)
@@ -2775,14 +2772,14 @@ class Path(MutableSequence):
                     _seg_start = seg_start - current_pos if current_pos is not None else seg_start
                 else:
                     _seg_start = seg_start
-                parts.append('M {},{}'.format(_seg_start.real, _seg_start.imag))
+                parts.append(f'M {_seg_start.real},{_seg_start.imag}')
     
             if isinstance(segment, Line):
                 if rel:
                     _seg_end = segment.end - seg_start
                 else:
                     _seg_end = segment.end
-                parts.append('L {},{}'.format(_seg_end.real, _seg_end.imag))
+                parts.append(f'L {_seg_end.real},{_seg_end.imag}')
             elif isinstance(segment, CubicBezier):
                 if useSandT and segment.is_smooth_from(previous_segment,
                                                        warning_on=False):
@@ -3233,11 +3230,9 @@ class Path(MutableSequence):
             if command in ('A', 'a'):
                 # Arc arguments need flag-aware tokenizing; the other commands
                 # only carry plain numbers.
-                for token in _tokenize_arc_args(x):
-                    yield token
+                yield from _tokenize_arc_args(x)
             else:
-                for token in FLOAT_RE.findall(x):
-                    yield token
+                yield from FLOAT_RE.findall(x)
 
     def _parse_path(self, pathdef, current_pos=0j, tree_element=None):
         # In the SVG specs, initial movetos are absolute, even if
@@ -3265,7 +3260,7 @@ class Path(MutableSequence):
                 # If this element starts with numbers, it is an implicit command
                 # and we don't change the command. Check that it's allowed:
                 if command is None:
-                    raise ValueError("Unallowed implicit command in %s, position %s" % (
+                    raise ValueError("Unallowed implicit command in {}, position {}".format(
                         pathdef, len(pathdef.split()) - len(elements)))
                 last_command = command  # Used by S and T
 

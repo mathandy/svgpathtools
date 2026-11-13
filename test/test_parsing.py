@@ -1,5 +1,4 @@
 # Note: This file was taken mostly as is from the svg.path module (v 2.0)
-from __future__ import division, absolute_import, print_function
 import os
 import tempfile
 import unittest

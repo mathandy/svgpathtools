@@ -6,7 +6,6 @@ taken (nearly) as is from the svg.path module (v 2.0).
 """
 
 # External dependencies
-from __future__ import division, absolute_import, print_function
 from typing import Optional, Sequence, TYPE_CHECKING
 import math
 import re
@@ -41,14 +40,14 @@ def _check_num_parsed_values(values: Sequence[float], allowed: Sequence[int],
                              transform_substr: str) -> None:
     if not any(num == len(values) for num in allowed):
         if len(allowed) > 1:
-            raise ValueError('Expected one of the following number of values {0}, '
-                             'but found {1} values in {2!r}: {3}'
+            raise ValueError('Expected one of the following number of values {}, '
+                             'but found {} values in {!r}: {}'
                              .format(allowed, len(values), transform_substr, values))
         elif allowed[0] != 1:
-            raise ValueError('Expected {0} values in {1!r}, found {2}: {3}'
+            raise ValueError('Expected {} values in {!r}, found {}: {}'
                              .format(allowed[0], transform_substr, len(values), values))
         else:
-            raise ValueError('Expected 1 value in {0!r}, found {1}: {2}'
+            raise ValueError('Expected 1 value in {!r}, found {}: {}'
                              .format(transform_substr, len(values), values))
 
 
@@ -60,7 +59,7 @@ def _parse_transform_substr(transform_substr: str) -> np.ndarray:
     Raises a ValueError on invalid transform syntax.
     """
     if transform_substr.count('(') != 1:
-        raise ValueError('Invalid SVG transform substring: {0!r}'.format(transform_substr))
+        raise ValueError(f'Invalid SVG transform substring: {transform_substr!r}')
 
     type_str, value_str = transform_substr.split('(')
     # Any leading commas/whitespace are the separator from the preceding
@@ -68,11 +67,11 @@ def _parse_transform_substr(transform_substr: str) -> np.ndarray:
     type_str = type_str.strip(', \t\n\r')
     tokens = value_str.replace(',', ' ').split()
     if not all(_NUMBER_RE.match(t) for t in tokens):
-        raise ValueError('Invalid SVG transform substring: {0!r}'.format(transform_substr))
+        raise ValueError(f'Invalid SVG transform substring: {transform_substr!r}')
     values = [float(t) for t in tokens]
     # A grammar-valid value can still overflow float, e.g. '1e999'.
     if not all(math.isfinite(v) for v in values):
-        raise ValueError('Non-finite value in SVG transform substring: {0!r}'.format(transform_substr))
+        raise ValueError(f'Non-finite value in SVG transform substring: {transform_substr!r}')
 
     transform = np.identity(3)
     if type_str == 'matrix':
@@ -122,7 +121,7 @@ def _parse_transform_substr(transform_substr: str) -> np.ndarray:
 
         transform[1, 0] = np.tan(values[0] * np.pi / 180.0)
     else:
-        raise ValueError('Unknown SVG transform type: {0}'.format(type_str))
+        raise ValueError(f'Unknown SVG transform type: {type_str}')
 
     return transform
 
@@ -157,8 +156,8 @@ def parse_transform(transform_str: Optional[str], strict: bool = False) -> np.nd
     trailing = transform_substrs.pop()
     if trailing.strip(', \t\n\r'):
         if strict:
-            raise ValueError('Invalid SVG transform substring: {0!r}'.format(trailing))
-        warnings.warn('Skipping invalid SVG transform substring: {0!r}'.format(trailing),
+            raise ValueError(f'Invalid SVG transform substring: {trailing!r}')
+        warnings.warn(f'Skipping invalid SVG transform substring: {trailing!r}',
                       SVGSyntaxWarning)
 
     total_transform = np.identity(3)
@@ -168,7 +167,7 @@ def parse_transform(transform_str: Optional[str], strict: bool = False) -> np.nd
         except ValueError as e:
             if strict:
                 raise
-            warnings.warn('Skipping invalid SVG transform substring {0!r}: {1}'.format(substr, e),
+            warnings.warn(f'Skipping invalid SVG transform substring {substr!r}: {e}',
                           SVGSyntaxWarning)
 
     return total_transform

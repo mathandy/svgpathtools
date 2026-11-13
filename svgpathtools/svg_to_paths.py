@@ -2,7 +2,6 @@
 The main tool being the svg2paths() function."""
 
 # External dependencies
-from __future__ import division, absolute_import, print_function
 from xml.dom.minidom import parse
 import os
 from io import StringIO
@@ -96,7 +95,7 @@ def polyline2pathd(polyline, is_polygon=False):
     if is_polygon and closed:
         points.append(points[0])
 
-    d = 'M' + 'L'.join('{0} {1}'.format(x,y) for x,y in points)
+    d = 'M' + 'L'.join(f'{x} {y}' for x,y in points)
     if is_polygon or closed:
         d += 'z'
     return d
@@ -131,15 +130,15 @@ def rect2pathd(rect):
             ry = rx or 0.
         rx, ry = float(rx), float(ry)
 
-        d = "M {} {} ".format(x + rx, y)  # right of p0
-        d += "L {} {} ".format(x + w - rx, y)  # go to p1
-        d += "A {} {} 0 0 1 {} {} ".format(rx, ry, x+w, y+ry)  # arc for p1
-        d += "L {} {} ".format(x+w, y+h-ry)  # above p2
-        d += "A {} {} 0 0 1 {} {} ".format(rx, ry, x+w-rx, y+h)  # arc for p2
-        d += "L {} {} ".format(x+rx, y+h)  # right of p3
-        d += "A {} {} 0 0 1 {} {} ".format(rx, ry, x, y+h-ry)  # arc for p3
-        d += "L {} {} ".format(x, y+ry)  # below p0
-        d += "A {} {} 0 0 1 {} {} z".format(rx, ry, x+rx, y)  # arc for p0
+        d = f"M {x + rx} {y} "  # right of p0
+        d += f"L {x + w - rx} {y} "  # go to p1
+        d += f"A {rx} {ry} 0 0 1 {x+w} {y+ry} "  # arc for p1
+        d += f"L {x+w} {y+h-ry} "  # above p2
+        d += f"A {rx} {ry} 0 0 1 {x+w-rx} {y+h} "  # arc for p2
+        d += f"L {x+rx} {y+h} "  # right of p3
+        d += f"A {rx} {ry} 0 0 1 {x} {y+h-ry} "  # arc for p3
+        d += f"L {x} {y+ry} "  # below p0
+        d += f"A {rx} {ry} 0 0 1 {x+rx} {y} z"  # arc for p0
         return d
 
     x0, y0 = x, y

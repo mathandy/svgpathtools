@@ -3,7 +3,6 @@
 To run these tests, you can use (from root svgpathtools directory):
 $ python -m unittest test.test_groups.TestGroups.test_group_flatten
 """
-from __future__ import division, absolute_import, print_function
 import unittest
 from svgpathtools import Document, SVG_NAMESPACE, parse_path, Line, Arc
 from os.path import join, dirname

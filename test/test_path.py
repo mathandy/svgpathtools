@@ -1,5 +1,4 @@
 # External dependencies
-from __future__ import division, absolute_import, print_function
 import os
 import time
 import unittest
@@ -1111,7 +1110,7 @@ class TestPath(unittest.TestCase):
             if isinstance(curve, Path):
                 seg_idx, seg_t = curve.T2t(t)
                 seg = curve[seg_idx]
-            _fail_msg = "Failure!\nseg  {}\n".format(seg)
+            _fail_msg = f"Failure!\nseg  {seg}\n"
 
             # case where no `sy` and no `origin` given
             curve_scaled = curve.scaled(sx)
@@ -1122,8 +1121,8 @@ class TestPath(unittest.TestCase):
             ans = scale_a_point(pt, sx, None)
             fail_msg = _fail_msg + ("curve.scaled({}, {}, {}) = \n{}\n"
                                     "".format(sx, None, None, curve_scaled))
-            fail_msg += "seg_scaled.point({}) = {}\n".format(seg_t, res)
-            fail_msg += "ans = {}".format(ans)
+            fail_msg += f"seg_scaled.point({seg_t}) = {res}\n"
+            fail_msg += f"ans = {ans}"
             self.assertAlmostEqual(ans, res, places=4, msg=fail_msg)
 
             # case where random `origin` given but no `sy`
@@ -1135,8 +1134,8 @@ class TestPath(unittest.TestCase):
                 res = curve_scaled.point(t)
             fail_msg = _fail_msg + ("curve.scaled({}, {}, {}) = \n{}\n"
                                     "".format(sx, None, origin, curve_scaled))
-            fail_msg += "seg_scaled.point({}) = {}\n".format(seg_t, res)
-            fail_msg += "ans = {}".format(ans)
+            fail_msg += f"seg_scaled.point({seg_t}) = {res}\n"
+            fail_msg += f"ans = {ans}"
             self.assertAlmostEqual(ans, res, places=4, msg=fail_msg)
 
             # case where `sx != sy`, and no `origin` given
@@ -1153,8 +1152,8 @@ class TestPath(unittest.TestCase):
                     res = curve_scaled.point(t)
                 fail_msg = _fail_msg + ("curve.scaled({}, {}, {}) = \n{}\n"
                                         "".format(sx, sy, None, curve_scaled))
-                fail_msg += "seg_scaled.point({}) = {}\n".format(seg_t, res)
-                fail_msg += "ans = {}".format(ans)
+                fail_msg += f"seg_scaled.point({seg_t}) = {res}\n"
+                fail_msg += f"ans = {ans}"
                 self.assertAlmostEqual(ans, res, places=4, msg=fail_msg)
 
             # case where `sx != sy`, and random `origin` given
@@ -1170,8 +1169,8 @@ class TestPath(unittest.TestCase):
                     res = curve_scaled.point(t)
                 fail_msg = _fail_msg + ("curve.scaled({}, {}, {}) = \n{}\n"
                                         "".format(sx, sy, origin, curve_scaled))
-                fail_msg += "seg_scaled.point({}) = {}\n".format(seg_t, res)
-                fail_msg += "ans = {}".format(ans)
+                fail_msg += f"seg_scaled.point({seg_t}) = {res}\n"
+                fail_msg += f"ans = {ans}"
                 self.assertAlmostEqual(ans, res, places=4, msg=fail_msg)
 
         # more tests for scalar (i.e. `sx == sy`) case
@@ -1660,7 +1659,7 @@ class Test_intersect(unittest.TestCase):
             for line_index in range(100):
                 l = random_line()
                 intersections = a.intersect(l)
-                msg = 'Generated: arc = {}, line = {}'.format(a, l)
+                msg = f'Generated: arc = {a}, line = {l}'
                 assert_intersections(self, a, l, intersections, None, msg=msg)
 
     def test_intersect_arc_line_1(self):

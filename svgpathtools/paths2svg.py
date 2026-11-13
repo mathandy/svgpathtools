@@ -4,7 +4,6 @@ See also the document.py submodule.
 """
 
 # External dependencies:
-from __future__ import division, absolute_import, print_function
 from math import ceil
 from os import path as os_path, makedirs
 from tempfile import gettempdir
@@ -314,11 +313,11 @@ def disvg(paths=None, colors=None, filename=None, stroke_widths=None,
         ymin -= margin_size*dy + extra_space_for_style/2
         dx += 2*margin_size*dx + extra_space_for_style
         dy += 2*margin_size*dy + extra_space_for_style
-        viewbox = "%s %s %s %s" % (xmin, ymin, dx, dy)
+        viewbox = f"{xmin} {ymin} {dx} {dy}"
 
         if mindim is None:
-            szx = "{}{}".format(dx, baseunit)
-            szy = "{}{}".format(dy, baseunit)
+            szx = f"{dx}{baseunit}"
+            szy = f"{dy}{baseunit}"
         else:
             if dx > dy:
                 szx = str(mindim) + baseunit
