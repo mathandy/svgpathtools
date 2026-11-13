@@ -2,7 +2,6 @@
 aren't specific to SVGs or related mathematical objects."""
 
 # External dependencies:
-from __future__ import division, absolute_import, print_function
 import os
 import sys
 import webbrowser
@@ -48,7 +47,7 @@ def open_in_browser(file_location):
     if not os.path.isfile(file_location):
         file_location = os.path.join(os.getcwd(), file_location)
     if not os.path.isfile(file_location):
-        raise IOError("\n\nFile not found.")
+        raise OSError("\n\nFile not found.")
 
     #  For some reason OSX requires this adjustment (tested on 10.10.4)
     if sys.platform == "darwin":

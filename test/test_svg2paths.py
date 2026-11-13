@@ -1,13 +1,11 @@
-from __future__ import division, absolute_import, print_function
 import unittest
 from svgpathtools import Path, Line, Arc, svg2paths, svgstr2paths
 from io import StringIO
-from io import open  # overrides build-in open for compatibility with python2
 import os
 from os.path import join, dirname
-from sys import version_info
 import tempfile
 import shutil
+import pathlib
 
 from svgpathtools.svg_to_paths import rect2pathd
 
@@ -61,7 +59,7 @@ class TestSVG2Paths(unittest.TestCase):
         self.assertTrue(path_circle.isclosed())
 
         # test for issue #198 (circles not being closed)
-        svg = u"""<?xml version="1.0" encoding="UTF-8"?>
+        svg = """<?xml version="1.0" encoding="UTF-8"?>
         <svg xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" width="40mm" height="40mm" 
           viewBox="0 0 40 40" version="1.1">
             
@@ -131,23 +129,20 @@ class TestSVG2Paths(unittest.TestCase):
 
     def test_from_file_path(self):
         """Test reading svg from file provided as pathlib POSIXPath"""
-        if version_info >= (3, 6):
-            import pathlib
-            paths, _ = svg2paths(pathlib.Path(__file__).parent / 'polygons.svg')
+        paths, _ = svg2paths(pathlib.Path(__file__).parent / 'polygons.svg')
 
-            self.assertEqual(len(paths), 2)
+        self.assertEqual(len(paths), 2)
 
     def test_from_file_object(self):
         """Test reading svg from file object that has already been opened"""
-        with open(join(dirname(__file__), 'polygons.svg'), 'r') as file:
+        with open(join(dirname(__file__), 'polygons.svg')) as file:
             paths, _ = svg2paths(file)
 
             self.assertEqual(len(paths), 2)
 
     def test_from_stringio(self):
         """Test reading svg object contained in a StringIO object"""
-        with open(join(dirname(__file__), 'polygons.svg'),
-                  'r', encoding='utf-8') as file:
+        with open(join(dirname(__file__), 'polygons.svg'), encoding='utf-8') as file:
             # read entire file into string
             file_content = file.read()
             # prepare stringio object
@@ -159,8 +154,7 @@ class TestSVG2Paths(unittest.TestCase):
 
     def test_from_string(self):
         """Test reading svg object contained in a string"""
-        with open(join(dirname(__file__), 'polygons.svg'),
-                  'r', encoding='utf-8') as file:
+        with open(join(dirname(__file__), 'polygons.svg'), encoding='utf-8') as file:
             # read entire file into string
             file_content = file.read()
 

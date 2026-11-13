@@ -1,4 +1,3 @@
-from __future__ import division, absolute_import, print_function
 import unittest
 from svgpathtools import SaxDocument
 from os.path import join, dirname

@@ -2,7 +2,6 @@
 curves."""
 
 # External Dependencies
-from __future__ import division, absolute_import, print_function
 
 # Internal Dependencies
 from .path import Path, CubicBezier, Line

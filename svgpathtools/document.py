@@ -34,7 +34,6 @@ A Big Problem:
 """
 
 # External dependencies
-from __future__ import division, absolute_import, print_function
 import os
 import collections
 import xml.etree.ElementTree as etree
@@ -110,7 +109,7 @@ def flattened_paths(group, group_filter=lambda x: True,
     """
     if not isinstance(group, Element):
         raise TypeError('Must provide an xml.etree.Element object. '
-                        'Instead you provided {0}'.format(type(group)))
+                        'Instead you provided {}'.format(type(group)))
 
     # Stop right away if the group_selector rejects this group
     if not group_filter(group):
@@ -309,7 +308,7 @@ class Document:
             raise TypeError(
                 'Must provide a list of strings that represent a nested '
                 'group name, or provide an xml.etree.Element object. '
-                'Instead you provided {0}'.format(group))
+                'Instead you provided {}'.format(group))
 
         if group is None:
             warnings.warn("Could not find the requested group!")
@@ -335,7 +334,7 @@ class Document:
         elif not isinstance(group, Element):
             raise TypeError(
                 'Must provide a list of strings or an xml.etree.Element '
-                'object. Instead you provided {0}'.format(group))
+                'object. Instead you provided {}'.format(group))
 
         else:
             # Make sure that the group belongs to this Document object
@@ -355,7 +354,7 @@ class Document:
         else:
             raise TypeError(
                 'Must provide a Path, a path segment type, or a valid '
-                'SVG path d-string. Instead you provided {0}'.format(path))
+                'SVG path d-string. Instead you provided {}'.format(path))
 
         if attribs is None:
             attribs = {}
@@ -444,7 +443,7 @@ class Document:
         if parent is None:
             parent = self.tree.getroot()
         elif not self.contains_group(parent):
-            warnings.warn('The requested group {0} does not belong to '
+            warnings.warn('The requested group {} does not belong to '
                           'this Document'.format(parent))
 
         if group_attribs is None:

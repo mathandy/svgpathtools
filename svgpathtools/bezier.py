@@ -4,7 +4,6 @@ Note:  Bezier curves here are always represented by the tuple of their control
 points given by their standard representation."""
 
 # External dependencies:
-from __future__ import division, absolute_import, print_function
 from math import factorial as fac, ceil, log, sqrt
 from numpy import poly1d
 
@@ -271,7 +270,7 @@ class ApproxSolutionSet(list):
             self.append(pt)
 
 
-class BPair(object):
+class BPair:
     def __init__(self, bez1, bez2, t1, t2):
         self.bez1 = bez1
         self.bez2 = bez2

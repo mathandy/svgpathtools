@@ -3,7 +3,6 @@
 """
 
 # External dependencies
-from __future__ import division, absolute_import, print_function
 import os
 from xml.etree.ElementTree import iterparse, Element, ElementTree, SubElement
 import numpy as np
