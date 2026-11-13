@@ -108,7 +108,7 @@ def disvg(paths=None, colors=None, filename=None, stroke_widths=None,
 
     OPTIONAL INPUT:
         :param colors - specifies the path stroke color.  By default all paths
-        will be black (#000000).  This paramater can be input in a few ways
+        will be black (#000000).  This parameter can be input in a few ways
         1) a list of strings that will be input into the path elements stroke
             attribute (so anything that is understood by the svg viewer).
         2) a string of single character colors -- e.g. setting colors='rrr' is
