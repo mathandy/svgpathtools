@@ -259,6 +259,7 @@ def disvg(paths=None, colors=None, filename=None, stroke_widths=None,
     # along the way, set stroke_widths and node_radii if not provided
     assert paths or nodes
     stuff2bound = []
+    explicit_layout = bool(viewbox or dimensions)
     if viewbox:
         if not isinstance(viewbox, str):
             viewbox = '%s %s %s %s' % viewbox
@@ -327,6 +328,19 @@ def disvg(paths=None, colors=None, filename=None, stroke_widths=None,
                 szx = str(int(ceil(mindim * dx / dy))) + baseunit
                 szy = str(mindim) + baseunit 
         dimensions = szx, szy
+
+    # An explicit layout skips bounding-box style initialization.
+    if explicit_layout:
+        default_widths = paths and not attributes and not stroke_widths
+        default_radii = nodes and not node_radii
+        if default_widths or default_radii:
+            fields = re.split(r"[,\s]+", viewbox.strip())
+            width, height = map(float, fields[2:4])
+            span = max(width or 1, height or 1)
+            if default_widths:
+                stroke_widths = [span * _default_relative_stroke_width] * len(paths)
+            if default_radii:
+                node_radii = [span * _default_relative_node_radius] * len(nodes)
 
     # Create an SVG file
     if svg_attributes is not None:
