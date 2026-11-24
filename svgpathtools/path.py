@@ -2730,6 +2730,7 @@ class Path(MutableSequence):
         self._start = pt
         if len(self._segments)>0:
             self._segments[0].start = pt
+            self._length = None
 
     @property
     def end(self):
@@ -2742,6 +2743,7 @@ class Path(MutableSequence):
         self._end = pt
         if len(self._segments)>0:
             self._segments[-1].end = pt
+            self._length = None
 
     def d(self, useSandT=False, use_closed_attrib=False, rel=False):
         """Returns a path d-string for the path object.
