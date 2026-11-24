@@ -782,6 +782,47 @@ class ArcTest(unittest.TestCase):
 
 class TestPath(unittest.TestCase):
 
+    def test_endpoint_changes_update_cached_lengths(self):
+        for endpoint, value, midpoint, index, t, T in (
+                ('start', -2, 0, 0, 2 / 3, 3 / 8),
+                ('end', 4, 2, 1, 1 / 3, 5 / 8)):
+            with self.subTest(endpoint=endpoint):
+                path = Path(Line(0, 1), Line(1, 2))
+                self.assertEqual(path.length(), 2)
+
+                setattr(path, endpoint, value)
+
+                self.assertAlmostEqual(path.point(0.5), midpoint)
+                self.assertEqual(path.length(), 4)
+                segment_index, segment_t = path.T2t(0.5)
+                self.assertEqual(segment_index, index)
+                self.assertAlmostEqual(segment_t, t)
+                self.assertAlmostEqual(path.t2T(index, 0.5), T)
+
+    def test_bezier_endpoint_changes_update_cached_lengths(self):
+        for path_data in (
+                'M0 0 Q0 1 1 0 Q2 1 2 0',
+                'M0 0 C0 1 1 1 1 0 C1 1 2 1 2 0'):
+            for endpoint, value in (('start', -2), ('end', 4)):
+                with self.subTest(path=path_data, endpoint=endpoint):
+                    path = Path(path_data)
+                    old_length = path.length()
+
+                    setattr(path, endpoint, value)
+                    expected = Path(*path)
+
+                    self.assertNotAlmostEqual(expected.length(), old_length)
+                    self.assertAlmostEqual(path.length(), expected.length())
+                    for T in (0.25, 0.5, 0.75):
+                        self.assertAlmostEqual(path.point(T), expected.point(T))
+                        index, t = path.T2t(T)
+                        expected_index, expected_t = expected.T2t(T)
+                        self.assertEqual(index, expected_index)
+                        self.assertAlmostEqual(t, expected_t)
+                    for index in range(len(path)):
+                        self.assertAlmostEqual(path.t2T(index, 0.5),
+                                               expected.t2T(index, 0.5))
+
     def test_hash(self):
         line1 = Line(600.5 + 350.5j, 650.5 + 325.5j)
         arc1 = Arc(650 + 325j, 25 + 25j, -30, 0, 1, 700 + 300j)
