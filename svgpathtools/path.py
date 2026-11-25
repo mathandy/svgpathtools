@@ -2746,7 +2746,8 @@ class Path(MutableSequence):
     def d(self, useSandT=False, use_closed_attrib=False, rel=False):
         """Returns a path d-string for the path object.
         For an explanation of useSandT and use_closed_attrib, see the
-        compatibility notes in the README."""
+        compatibility notes in the README. With relative output, a closing
+        curve may use absolute coordinates to preserve its exact endpoint."""
         if len(self) == 0:
             return ''
         if use_closed_attrib:
@@ -2764,8 +2765,13 @@ class Path(MutableSequence):
         current_pos = None
         parts = []
         previous_segment = None
+        track_relative_endpoint = (
+            rel and self_closed and not isinstance(self[-1], Line)
+        )
+        subpath_start = segments[0].start
+        relative_pos = subpath_start
     
-        for segment in segments:
+        for index, segment in enumerate(segments):
             seg_start = segment.start
             # Start a new subpath only at a discontinuity. A continuous curve
             # can revisit the closing point without resetting smooth controls.
@@ -2774,10 +2780,20 @@ class Path(MutableSequence):
                     _seg_start = seg_start - current_pos if current_pos is not None else seg_start
                 else:
                     _seg_start = seg_start
-                parts.append('M {},{}'.format(_seg_start.real, _seg_start.imag))
+                move = 'm' if rel else 'M'
+                parts.append('{} {},{}'.format(
+                    move, _seg_start.real, _seg_start.imag))
+
+            segment_rel = rel
+            if track_relative_endpoint:
+                relative_pos += segment.end - seg_start
+                # Relative offsets can accumulate rounding error. Use an
+                # absolute endpoint if Z would otherwise add a tiny line.
+                if index == len(segments) - 1 and relative_pos != subpath_start:
+                    segment_rel = False
     
             if isinstance(segment, Line):
-                if rel:
+                if segment_rel:
                     _seg_end = segment.end - seg_start
                 else:
                     _seg_end = segment.end
@@ -2785,7 +2801,7 @@ class Path(MutableSequence):
             elif isinstance(segment, CubicBezier):
                 if useSandT and segment.is_smooth_from(previous_segment,
                                                        warning_on=False):
-                    if rel:
+                    if segment_rel:
                         _seg_control2 = segment.control2 - seg_start
                         _seg_end = segment.end - seg_start
                     else:
@@ -2795,7 +2811,7 @@ class Path(MutableSequence):
                             _seg_end.real, _seg_end.imag)
                     parts.append('S {},{} {},{}'.format(*args))
                 else:
-                    if rel:
+                    if segment_rel:
                         _seg_control1 = segment.control1 - seg_start
                         _seg_control2 = segment.control2 - seg_start
                         _seg_end = segment.end - seg_start
@@ -2810,14 +2826,14 @@ class Path(MutableSequence):
             elif isinstance(segment, QuadraticBezier):
                 if useSandT and segment.is_smooth_from(previous_segment,
                                                        warning_on=False):
-                    if rel:
+                    if segment_rel:
                         _seg_end = segment.end - seg_start
                     else:
                         _seg_end = segment.end
                     args = _seg_end.real, _seg_end.imag
                     parts.append('T {},{}'.format(*args))
                 else:
-                    if rel:
+                    if segment_rel:
                         _seg_control = segment.control - seg_start
                         _seg_end = segment.end - seg_start
                     else:
@@ -2828,7 +2844,7 @@ class Path(MutableSequence):
                     parts.append('Q {},{} {},{}'.format(*args))
     
             elif isinstance(segment, Arc):
-                if rel:
+                if segment_rel:
                     _seg_end = segment.end - seg_start
                 else:
                     _seg_end = segment.end
@@ -2836,14 +2852,15 @@ class Path(MutableSequence):
                         segment.rotation,int(segment.large_arc),
                         int(segment.sweep),_seg_end.real, _seg_end.imag)
                 parts.append('A {},{} {} {:d},{:d} {},{}'.format(*args))
+            if segment_rel:
+                parts[-1] = parts[-1].lower()
             current_pos = segment.end
             previous_segment = segment
     
         if self_closed:
-            parts.append('Z')
+            parts.append('z' if rel else 'Z')
     
-        s = ' '.join(parts)
-        return s if not rel else s.lower()
+        return ' '.join(parts)
 
     def joins_smoothly_with(self, previous, wrt_parameterization=False):
         """Checks if this Path object joins smoothly with previous

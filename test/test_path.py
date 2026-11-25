@@ -1245,6 +1245,26 @@ class TestPath(unittest.TestCase):
                         self.assertEqual(data.lower().count('m'), 1)
                         self.assertEqual(parse_path(data), path)
 
+    def test_relative_closing_curve_keeps_exact_endpoint(self):
+        start = 0.1 + 0j
+        paths = [
+            Path(Line(start, 1 + 0j),
+                 QuadraticBezier(1 + 0j, 1 + 1j, start)),
+            Path(Line(start, 1 + 0j), Line(1 + 0j, 0.2 + 0j),
+                 QuadraticBezier(0.2 + 0j, 0.2 + 1j, start)),
+        ]
+        for path in paths:
+            with self.subTest(path=path):
+                data = path.d(use_closed_attrib=True, rel=True)
+                self.assertTrue(data.startswith('m '))
+                self.assertTrue(data.endswith(' z'))
+                restored = parse_path(data)
+                self.assertEqual(len(restored), len(path))
+                self.assertIsInstance(restored[-1], QuadraticBezier)
+                self.assertEqual(restored[-1].end, start)
+                self.assertAlmostEqual(restored.unit_tangent(1),
+                                       path.unit_tangent(1))
+
     def test_d(self):
         # the following two path represent the same path but in absolute and relative forms
         abs_s = 'M 38.0,130.0 C 37.0,132.0 38.0,136.0 40.0,137.0 L 85.0,161.0 C 87.0,162.0 91.0,162.0 93.0,160.0 L 127.0,133.0 C 129.0,131.0 129.0,128.0 127.0,126.0 L 80.0,70.0 C 78.0,67.0 75.0,68.0 74.0,70.0 Z'
