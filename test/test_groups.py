@@ -157,6 +157,23 @@ class TestGroups(unittest.TestCase):
                         subtended_angle = subtended_angle + s.delta
                 self.assertAlmostEqual(np.abs(subtended_angle), 360)
 
+    def test_affine_transform_of_rotated_arc(self):
+        for matrix, transform_point in [
+                ('2 0 0 1 0 0', lambda z: complex(2 * z.real, z.imag)),
+                ('0 1 1 0 0 0', lambda z: complex(z.imag, z.real))]:
+            for flags in ('0 1', '1 0'):
+                with self.subTest(matrix=matrix, flags=flags):
+                    d = 'M 0 0 A 20 10 30 {} 15 5'.format(flags)
+                    original = parse_path(d)[0]
+                    doc = Document.from_svg_string(
+                        '<svg xmlns="http://www.w3.org/2000/svg">'
+                        '<path transform="matrix({})" d="{}"/></svg>'
+                        .format(matrix, d))
+                    transformed = doc.paths()[0][0]
+                    for t in (0, 0.25, 0.5, 0.75, 1):
+                        self.assertAlmostEqual(transformed.point(t),
+                                               transform_point(original.point(t)))
+
     def test_group_flatten(self):
         # Test the Document.paths() function against the
         # groups.svg test file.
