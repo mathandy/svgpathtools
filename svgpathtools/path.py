@@ -13,7 +13,6 @@ from warnings import warn
 from operator import itemgetter
 import numpy as np
 from itertools import tee
-from functools import reduce
 
 # these imports were originally from math and cmath, now are from numpy
 # in order to encourage code that generalizes to vector inputs
@@ -357,8 +356,12 @@ def transform(curve, tf):
         ry2 = curve.radius.imag ** 2
 
         Q = np.array([[1/rx2, 0], [0, 1/ry2]])
-        invT = np.linalg.inv(tf[:2,:2])
-        D = reduce(np.matmul, [invT.T, Q, invT])
+        # The ellipse axes are rotated in the source coordinate system.
+        c, s = curve.rot_matrix.real, curve.rot_matrix.imag
+        axes = np.array([[c, -s], [s, c]])
+        linear = tf[:2, :2]
+        invT = np.linalg.inv(linear.dot(axes))
+        D = invT.T.dot(Q).dot(invT)
 
         eigvals, eigvecs = np.linalg.eigh(0.5*(D+D.T))  # symmetrized in case of floating point error; D already symmetric
 
@@ -373,11 +376,8 @@ def transform(curve, tf):
         if new_radius.real == 0 or new_radius.imag == 0 :
             return Line(new_start, new_end)
         else:
-            if tf[0][0] * tf[1][1] >= 0.0:
-                new_sweep = curve.sweep
-            else:
-                new_sweep = not curve.sweep
-            return Arc(new_start, radius=new_radius, rotation=curve.rotation + rot,
+            new_sweep = not curve.sweep if np.linalg.det(linear) < 0 else curve.sweep
+            return Arc(new_start, radius=new_radius, rotation=rot,
                        large_arc=curve.large_arc, sweep=new_sweep, end=new_end,
                        autoscale_radius=True)
 
