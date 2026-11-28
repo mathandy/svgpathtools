@@ -1,13 +1,35 @@
 from __future__ import division, absolute_import, print_function
 import unittest
-from svgpathtools import Document
+from svgpathtools import Document, parse_path
 from io import StringIO
 from io import open  # overrides build-in open for compatibility with python2
 from os.path import join, dirname
 from sys import version_info
+from tempfile import TemporaryDirectory
 
 
 class TestDocument(unittest.TestCase):
+    def test_added_paths_round_trip(self):
+        svg = '<svg xmlns="http://www.w3.org/2000/svg"/>'
+        root_path = parse_path('M0,0 L1,1')
+        group_path = parse_path('M2,2 L3,3')
+        documents = {'new': Document(), 'loaded': Document.from_svg_string(svg)}
+        for name, doc in documents.items():
+            with self.subTest(document=name), TemporaryDirectory() as directory:
+                doc.add_path(root_path)
+                group = doc.add_group({'id': 'layer'})
+                doc.add_path(group_path, group=group)
+                filename = join(directory, 'added.svg')
+                doc.save(filename)
+
+                restored = Document(filename)
+                self.assertEqual(restored.root.tag,
+                                 '{http://www.w3.org/2000/svg}svg')
+                self.assertCountEqual(doc.paths(), [root_path, group_path])
+                self.assertCountEqual(restored.paths(), [root_path, group_path])
+                self.assertEqual(restored.paths_from_group(['layer']),
+                                 [group_path])
+
     def test_from_file_path_string(self):
         """Test reading svg from file provided as path"""
         doc = Document(join(dirname(__file__), 'polygons.svg'))

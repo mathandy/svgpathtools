@@ -272,7 +272,8 @@ class Document:
         self.original_filepath = os.path.abspath(filepath) if from_filepath else None
 
         if filepath is None:
-            self.tree = etree.ElementTree(Element('svg'))
+            root = Element('{{{0}}}svg'.format(SVG_NAMESPACE['svg']))
+            self.tree = etree.ElementTree(root)
         else:
             # parse svg to ElementTree object
             self.tree = etree.parse(filepath)
@@ -364,7 +365,8 @@ class Document:
 
         attribs['d'] = path_svg
 
-        return SubElement(group, 'path', attribs)
+        return SubElement(group, '{{{0}}}path'.format(
+            SVG_NAMESPACE['svg']), attribs)
 
     def contains_group(self, group):
         return any(group is owned for owned in self.tree.iter())
